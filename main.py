@@ -1,7 +1,11 @@
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import io
 import os
 import random
+import time
+from datetime import timedelta
 from typing import Literal
+
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -9,14 +13,11 @@ from fastapi.responses import FileResponse
 from PIL import Image
 from pydantic import BaseModel
 from stability_sdk import client
-import time
-from minioTool import MinioClient
 
 load_dotenv()
-keys = [os.getenv('KEY1'), os.getenv('KEY2'), os.getenv('KEY3')]
+keys = [os.getenv('KEY1'), os.getenv('KEY2')]
 
 app = FastAPI()
-minio_client = MinioClient()
 
 @app.get("/")
 async def root():
@@ -124,20 +125,39 @@ class kbInput(BaseModel):
 @app.post("/kkbot")
 async def kbot(inp: kbInput):    
     start = time.time()
-    
+    h, w = 512, 512
+    match inp.size:
+        case '512x512':
+            type = -1
+        case '256x256':
+            type = 1
+        case '128x128':
+            type = 2
+        case '512x640':
+            type = 3
+            h, w = 512, 640
+        case '640x512':
+            type = 4
+            h, w = 640, 512
     stability_key = random.sample(keys, 1)[0]
     stability_api = client.StabilityInference(
         key=stability_key, # API Key reference.
         verbose=True, # Print debug messages.
         engine="stable-diffusion-xl-beta-v2-2-2", # Set the engine to use for generation.
     )
-    answers = await generate(stability_api, inp.prompt)
+    answers = await generate(stability_api, inp.prompt, h, w)
     for resp in answers:
+        if resp.artifacts[0].finish_reason == 4:
+            return {"code": 404, "message": "Invalid prompts detected"}
         for artifact in resp.artifacts:
            if artifact.type == generation.ARTIFACT_IMAGE:
                 img = Image.open(io.BytesIO(artifact.binary))
                 filename = str(artifact.seed)+ ".png"
                 file_path = os.path.join("output", filename)
+                if type == 1:
+                    img = img.resize((256, 256))
+                elif type == 2:
+                    img = img.resize((128, 128))
                 img.save(file_path)
                 break
     
@@ -155,7 +175,7 @@ async def kbot(inp: kbInput):
         }
     }
 
-async def generate(stability_api, pmt):
+async def generate(stability_api, pmt, h, w):
     answers = stability_api.generate(
         prompt= [generation.Prompt(text=pmt,parameters=generation.PromptParameters(weight=1.2)),
                  generation.Prompt(text="ugly",parameters=generation.PromptParameters(weight=-2)),
@@ -164,8 +184,8 @@ async def generate(stability_api, pmt):
         cfg_scale=7, # Influences how strongly your generation is guided to match your prompt.
                     # Setting this value higher increases the strength in which it tries to match your prompt.
                     # Defaults to 7.0 if not specified.
-        width=512, # Generation width, defaults to 512 if not included.
-        height=512, # Generation height, defaults to 512 if not included.
+        width=w, # Generation width, defaults to 512 if not included.
+        height=h, # Generation height, defaults to 512 if not included.
         samples=1, # Number of images to generate, defaults to 1 if not included.
         sampler=generation.SAMPLER_K_DPMPP_2M # Choose which sampler we want to denoise our generation with.
                                                     # Defaults to k_dpmpp_2m if not specified. Clip Guidance only supports ancestral samplers.
@@ -177,3 +197,24 @@ async def generate(stability_api, pmt):
 async def get_image(user_id, filename):
     image_path = os.path.join("images", user_id, filename)
     return FileResponse(image_path, media_type="image/jpeg")
+
+# 定期刪檔案
+FOLDER_PATH = '/home/adamwang/SDXL/output'  
+DELETE_INTERVAL = timedelta(days=1)
+
+def delete_old_files(folder_path: str, max_age: timedelta):
+    current_time = time.time()
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            file_access_time = os.path.getatime(file_path)
+            file_age = current_time - file_access_time
+            if file_age > max_age.total_seconds():
+                os.remove(file_path)
+                print(f"Deleted file: {file_path}")
+
+@app.on_event("startup")
+async def start_scheduler():
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(delete_old_files, 'interval', days=1, args=[FOLDER_PATH, DELETE_INTERVAL])
+    scheduler.start()

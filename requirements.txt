@@ -1,5 +1,5 @@
+apscheduler
 fastapi
-minio
 Pillow
 python-dotenv
 stability-sdk
