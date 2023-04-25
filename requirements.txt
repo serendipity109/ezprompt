@@ -1,0 +1,6 @@
+fastapi
+minio
+Pillow
+python-dotenv
+stability-sdk
+uvicorn[standard]
