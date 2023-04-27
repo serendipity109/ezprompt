@@ -18,7 +18,7 @@ router = APIRouter() # point!
 
 class t2iInput(BaseModel):
     prompt: str = ''
-    nprompt: str = "ugly, tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, bad anatomy, watermark, signature, cut off, low contrast, underexposed, overexposed, bad art, beginner, amateur, distorted face"
+    nprompt: str = "tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, bad anatomy, watermark, signature, cut off, low contrast, underexposed, overexposed, bad art, beginner, amateur, distorted face"
     height: int = '512'
     width: int = '512'
     n: int = 1
@@ -35,7 +35,8 @@ async def t2i(inp: t2iInput):
     )
     answers = stability_api.generate(
         prompt= [generation.Prompt(text=inp.prompt,parameters=generation.PromptParameters(weight=1.2)),
-        generation.Prompt(text=inp.nprompt,parameters=generation.PromptParameters(weight=-1))], # Negative prompting is now possible via the API, simply assign a negative weight to a prompt.
+                 generation.Prompt(text="ugly",parameters=generation.PromptParameters(weight=-2)),
+                 generation.Prompt(text=inp.nprompt,parameters=generation.PromptParameters(weight=-1))], # Negative prompting is now possible via the API, simply assign a negative weight to a prompt.
         # In the example above we are combining a mountain landscape with the style of thomas kinkade, and we are negative prompting trees out of the resulting concept.
         # When determining prompt weights, the total possible range is [-10, 10] but we recommend staying within the range of [-2, 2].
         # seed=9080980, # If a seed is provided, the resulting generated image will be deterministic.
@@ -55,6 +56,8 @@ async def t2i(inp: t2iInput):
     print(f"Prompt: {inp.prompt} \nnPrompt: {inp.nprompt}")
 
     for resp in answers:
+        if resp.artifacts[0].finish_reason == 4:
+            return {"code": 404, "message": "Invalid prompts detected"}
         for artifact in resp.artifacts:
             if artifact.type == generation.ARTIFACT_IMAGE:
                 img = Image.open(io.BytesIO(artifact.binary))

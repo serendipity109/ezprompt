@@ -1,0 +1,19 @@
+FROM python:3.10
+
+ENV PYTHONIOENCODING=utf-8
+
+RUN apt-get update
+
+COPY backend/requirements.txt /
+
+RUN pip3 install --upgrade pip
+RUN pip3 install -r /requirements.txt && rm /requirements.txt
+
+COPY ./backend /workspace
+
+WORKDIR /workspace
+
+HEALTHCHECK --start-period=10m --interval=10m --timeout=10m --retries=3 \
+    CMD curl http://127.0.0.1:8877
+
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8877", "--reload"]

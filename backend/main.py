@@ -4,12 +4,26 @@ from datetime import timedelta
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-
 from routes import kkbot, magicwriter, t2i
 
-
 app = FastAPI()
+
+# Add CORS middleware
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 api_router = APIRouter() 
 
 api_router.include_router(kkbot.router)
@@ -18,7 +32,7 @@ api_router.include_router(t2i.router)
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"Hello": "World"}
 
 @app.get("/show")
 async def get_image(user_id, filename):

@@ -1,0 +1,7 @@
+version: '3'
+services:
+  api:
+    image: harbor.emotibot.com/image/SDXL:${IMAGE_TAG}
+    build:
+        context: ./
+        dockerfile: ./docker/Dockerfile
