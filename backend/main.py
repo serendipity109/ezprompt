@@ -31,7 +31,7 @@ api_router.include_router(t2i.router)
 
 @app.get("/")
 async def root():
-    return {"Hello": "World"}
+    return {"Model": "SDXL"}
 
 @app.get("/show")
 async def get_image(user_id, filename):
@@ -39,7 +39,8 @@ async def get_image(user_id, filename):
     return FileResponse(image_path, media_type="image/jpeg")
 
 @app.get("/get_images")
-async def get_images():
+async def get_images(keyword):
+    print(keyword)
     imgs = ["s0", "s1","s2","s3","s4","s5","s6","s7","s8","s9","s10",]
     imgs = [img + ".png" for img in imgs]
     res = []
