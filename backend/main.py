@@ -6,15 +6,14 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from routes import kkbot, magicwriter, t2i
+from routes import kkbot, magicwriter, t2i, minioTool
+
 
 app = FastAPI()
+minio_client = minioTool.MinioClient()
 
 # Add CORS middleware
-origins = [
-    "http://localhost",
-    "http://localhost:8080",
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -38,6 +37,16 @@ async def root():
 async def get_image(user_id, filename):
     image_path = os.path.join("images", user_id, filename)
     return FileResponse(image_path, media_type="image/jpeg")
+
+@app.get("/get_images")
+async def get_images():
+    imgs = ["s0", "s1","s2","s3","s4","s5","s6","s7","s8","s9","s10",]
+    imgs = [img + ".png" for img in imgs]
+    res = []
+    for img in imgs:
+        res.append(minio_client.share_url("test", img).replace('172.17.0.1:9000', '192.168.3.16:7777'))
+        # res.append(minio_client.share_url("test", img))
+    return res
 
 # 定期刪檔案
 FOLDER_PATH = '/home/adamwang/stabilityaixl/output'  
