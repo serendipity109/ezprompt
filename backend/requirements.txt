@@ -3,5 +3,6 @@ fastapi
 minio
 Pillow
 python-dotenv
+redis
 stability-sdk
 uvicorn[standard]

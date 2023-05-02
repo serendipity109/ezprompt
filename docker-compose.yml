@@ -11,6 +11,9 @@ services:
       - WORKERS=2
       - MINIO_USER=minioadmin
       - MINIO_PASSWORD=minioadmin
+      - REDIS_HOST=cache
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     ports:
         - 8877:8877
   minio:
@@ -20,9 +23,17 @@ services:
       - 9000:9000
       - 9090:9090
     volumes:
-      - ./minio/data:/data
+      - ./backend/minio/data:/data
     restart: always    
     environment:
         MINIO_USER: minioadmin
         MINIO_PASSWORD: minioadmin
     command: server /data --console-address ":9090"
+  cache:
+    image: redis
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes: 
+      - ./backend/cache:/data

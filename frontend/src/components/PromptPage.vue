@@ -101,30 +101,7 @@
           style="height:fit-content;width:400px">
           <div class="mt-6 px-4 py-3 bg-zinc-700 rounded-xl shadow bg-opacity-50 font-light flex flex-col space-y-5">
             <p><a class="bg-red-500 bg-opacity-0 rounded hover:bg-opacity-40 cursor-pointer "
-                href="/?q=man">Man</a><span>, </span><a
-                class="bg-orange-500 bg-opacity-0 rounded hover:bg-opacity-40 cursor-pointer "
-                href="/?q=20+years+old">20 years old</a><span>, </span><a
-                class="bg-yellow-500 bg-opacity-0 rounded hover:bg-opacity-40 cursor-pointer "
-                href="/?q=rounded+chin">rounded chin</a><span>, </span><a
-                class="bg-green-500 bg-opacity-0 rounded hover:bg-opacity-40 cursor-pointer "
-                href="/?q=round+face">round face</a><span>, </span><a
-                class="bg-blue-500 bg-opacity-0 rounded hover:bg-opacity-40 cursor-pointer "
-                href="/?q=less+eyebrow">less eyebrow</a><span>, </span><a
-                class="bg-indigo-500 bg-opacity-0 rounded hover:bg-opacity-40 cursor-pointer "
-                href="/?q=korean+style+hair">korean style hair</a><span>, </span><a
-                class="bg-purple-500 bg-opacity-0 rounded hover:bg-opacity-40 cursor-pointer "
-                href="/?q=wear+black+glasses">wear black glasses</a><span>, </span><a
-                class="bg-red-500 bg-opacity-0 rounded hover:bg-opacity-40 cursor-pointer " href="/?q=upper+body">upper
-                body</a><span>, </span><a class="bg-orange-500 bg-opacity-0 rounded hover:bg-opacity-40 cursor-pointer "
-                href="/?q=head">head</a><span>, </span><a
-                class="bg-yellow-500 bg-opacity-0 rounded hover:bg-opacity-40 cursor-pointer "
-                href="/?q=selfie">selfie</a><span>, </span><a
-                class="bg-green-500 bg-opacity-0 rounded hover:bg-opacity-40 cursor-pointer "
-                href="/?q=4k+resolution">4k resolution</a><span>, </span><a
-                class="bg-blue-500 bg-opacity-0 rounded hover:bg-opacity-40 cursor-pointer "
-                href="/?q=highly+details">highly details</a><span>, </span><a
-                class="bg-indigo-500 bg-opacity-0 rounded hover:bg-opacity-40 cursor-pointer "
-                href="/?q=realistic">realistic</a></p>
+                href="/?q=man">{{pmt}}</a></p>
             <div class="flex text-xs font-light">
               <div class="flex flex-1 flex-row space-x-2 mr-2">
                 <div
@@ -169,7 +146,7 @@
             class="md:mt-6 mt-4 opacity-80 ml-2 grid grid-cols-2 gap-2  md:flex  flex-wrap md:flex-col md:space-x-0 md:space-y-1 h-auto pb-16 sm:pb-8">
             <div>
               <div class="text-xs opacity-50">Model</div>
-              <div class="text-sm">Lexica Aperture v2</div>
+              <div class="text-sm">SDXL</div>
             </div>
             <div>
               <div class="text-xs opacity-50">Guidance scale</div>
@@ -177,29 +154,54 @@
             </div>
             <div>
               <div class="text-xs opacity-50">Dimensions</div>
-              <div class="text-sm">512<!-- --> × <!-- -->768</div>
+              <div class="text-sm">{{dims}}</div>
             </div>
             <div>
               <div class="text-xs opacity-50">Upscaled</div>
-              <div class="text-sm">2048<!-- --> × <!-- -->3072</div>
+              <div class="text-sm">{{dims}}</div>
             </div>
             <div>
               <div class="text-xs opacity-50">Negative prompt</div>
-              <div class="text-sm">blurry, cartoon</div>
+              <div class="text-sm">{{npmt}}</div>
             </div>
           </div>
         </div>
         <div class="flex flex-wrap overflow-hidden flex-1 items-start justify-start thin-scrollbar h-auto pb-2"
-          style="height:fit-content;overscroll-behavior-x:contain"><img alt="" class="select-none "
-            src="https://image.lexica.art/full_jpg/b5d5b017-8ae3-4724-8dbf-d84a4a03a9d2"
-            style="object-fit:contain;height:100%;max-height:35vh" /><img alt="" class="select-none "
-            src="https://image.lexica.art/full_jpg/13aad0f8-4615-4126-b817-c5b36edb1886"
-            style="object-fit:contain;height:100%;max-height:35vh" /><img alt="" class="select-none "
-            src="https://image.lexica.art/full_jpg/e4ef183e-44a8-4eee-b865-51c7b57b8a54"
-            style="object-fit:contain;height:100%;max-height:35vh" /><img alt="" class="select-none "
-            src="https://image.lexica.art/full_jpg/f82cbd09-4a69-4e91-86a0-9e25802a9863"
-            style="object-fit:contain;height:100%;max-height:35vh" /></div>
+          style="height:fit-content;overscroll-behavior-x:contain">
+          <img v-bind:src="img_res" style="object-fit:contain;height:100%;max-height:35vh" />
+        </div>
       </div>
     </div>
   </div>
 </div></template>
+
+<script>
+import axios from "axios";
+
+export default {
+  data() {
+    return {
+      img_res: "",
+      pmt: "",
+      npmt: "",
+      dims: "",
+      CFG: "",
+    };
+  },
+  async created() {
+    const response = await axios.get('http://192.168.3.16:8877/get_image',
+      {
+        params: {
+          img: this.$route.params.img,
+        }
+      });
+    const res = response.data;
+    this.img_res = res.img_res;
+    const pmt_res = res.pmt_res;
+    this.pmt = pmt_res.prompt;
+    this.npmt = pmt_res.nprompt;
+    this.dims = pmt_res.dims;
+    this.CFG = pmt_res.CFG;
+  },
+};
+</script>

@@ -14,7 +14,11 @@ const router = new VueRouter({
   mode: 'history',
   routes: [
     {path: '/', component: Home, meta: {title: 'SDXL'}},
-    {path: '/page', component: Page, meta: {title: 'SDXL - prompt'}}
+    {
+      path: '/image/:img',
+      component: Page,
+      meta: {title: 'SDXL - prompt'}
+    },
   ]
 })
 

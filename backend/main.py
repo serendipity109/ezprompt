@@ -6,11 +6,12 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from routes import kkbot, magicwriter, t2i, minioTool
+from routes import kkbot, magicwriter, t2i, minioTool, redisTool
 
 
 app = FastAPI()
 minio_client = minioTool.MinioClient()
+redis_client = redisTool.RedisClient()
 
 # Add CORS middleware
 origins = ["*"]
@@ -39,15 +40,28 @@ async def get_image(user_id, filename):
     return FileResponse(image_path, media_type="image/jpeg")
 
 @app.get("/get_images")
-async def get_images(keyword):
-    print(keyword)
-    imgs = ["s0", "s1","s2","s3","s4","s5","s6","s7","s8","s9","s10",]
+async def get_images():
+    imgs = ["s0", "s1","s2","s3","s4","s5","s6","s7","s8","s9","s10","s11", "s12", "s13", "s14"]
     imgs = [img + ".png" for img in imgs]
     res = []
     for img in imgs:
-        res.append(minio_client.share_url("test", img).replace('172.17.0.1:9000', '192.168.3.16:7777'))
+        preview = redis_client.get(img)['prompt']
+        view1 = preview.split(',')[0]
+        view2 = preview.replace(view1+',', '')
+        res.append({
+            "img": img,
+            "url": minio_client.share_url("test", img).replace('172.17.0.1:9000', '192.168.3.16:7777'),
+            "view1": view1,
+            "view2": view2
+        })
         # res.append(minio_client.share_url("test", img))
     return res
+
+@app.get("/get_image")
+async def get_image(img='s0'):
+    img_res = minio_client.share_url("test", img).replace('172.17.0.1:9000', '192.168.3.16:7777')
+    pmt_res = redis_client.get(img)
+    return {"img_res": img_res, "pmt_res": pmt_res}
 
 # 定期刪檔案
 FOLDER_PATH = '/home/adamwang/stabilityaixl/output'  

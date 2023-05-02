@@ -157,7 +157,7 @@
             style="position: relative; width: 100%; max-width: 100%; height: 6053px; max-height: 6053px;">
             <div class="image-row" v-for="(row, index) in imageRows" :key="index">
               <div class="image-container" v-for="(image, index) in row" :key="index">
-                <router-link to="/page" class="block relative group select-none overflow-hidden m-0.5 border-indigo-600  rounded-xl"
+                <router-link :to="'/image/' + image.img" :key="index" class="block relative group select-none overflow-hidden m-0.5 border-indigo-600  rounded-xl"
                   style="transition: opacity 500ms ease 0s;">
                   <div
                     class="absolute inset-0 z-10 block text-zinc-100 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none line-clamp px-2 pb-2 text-sm px-2"
@@ -166,10 +166,10 @@
                       <div class="flex flex-col">
                         <p class="text-sm mb-1.5 font-medium leading-snug"
                           style="overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
-                          Photography of cyborg pilot Russian</p>
+                          {{ image.view1}}</p>
                         <p class="opacity-60 leading-snug text-sm"
                           style="overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
-                          Interior cockpit, hyperdetailed, by wes anderson, pastel colors,...</p>
+                          {{ image.view2}}</p>
                       </div>
                     </div>
                   </div>
@@ -200,7 +200,7 @@
                         </svg></button>
                     </div>
                   </div>
-                  <img v-bind:src="image" class="img-responsive" alt="Responsive Image">
+                  <img v-bind:src="image.url" class="img-responsive" alt="Responsive Image">
                 </router-link>
               </div>
             </div>
@@ -232,12 +232,7 @@
     },
     methods: {
       async sendRequest() {
-        const response = await axios.get('http://192.168.3.16:8877/get_images',
-          {
-            params: {
-              keyword: this.keyword,
-            }
-          });
+        const response = await axios.get('http://192.168.3.16:8877/get_images');
         this.images = response.data;
         console.log(response.data);
         this.imageRows = this.chunkArray(this.images, 5);
