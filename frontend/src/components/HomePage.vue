@@ -96,67 +96,68 @@
           </div>
         </div>
       </div>
-      <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
-        <div class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
-          <div class="flex flex-col items-center py-4 mt-16"><a class="font-semibold text-3xl text-gray-100"
-              href="/">SDXL</a>
-            <div class="flex items-center w-full max-w-[600px] md:ml-[48px] mt-8 px-4 pl-5 md:px-5">
-              <div class="w-full">
-                <div class="w-full flex items-center relative"><svg stroke="currentColor" fill="none" stroke-width="2"
-                    viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"
-                    class="absolute left-4 pointer-events-none" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  </svg><input id="main-search" autoComplete="off" v-model="keyword" type="text"
-                    class="bg-zinc-700 flex-1 pl-12 pr-12 rounded-full text-sm px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-700"
-                    placeholder="Search for an image" value="" />
-                  <button
-                    class="text-base absolute right-2 hover:bg-zinc-800 h-8 w-8 flex items-center justify-center rounded-full"
-                    data-state="closed">
-                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+      <div class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
+        <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
+          <div class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
+            <div class="flex flex-col items-center py-4 mt-16"><a class="font-semibold text-3xl text-gray-100"
+                href="/">SDXL</a>
+              <div class="flex items-center w-full max-w-[600px] md:ml-[48px] mt-8 px-4 pl-5 md:px-5">
+                <div class="w-full">
+                  <div class="w-full flex items-center relative"><svg stroke="currentColor" fill="none" stroke-width="2"
+                      viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"
+                      class="absolute left-4 pointer-events-none" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg><input id="main-search" autoComplete="off" v-model="keyword" type="text"
+                      class="bg-zinc-700 flex-1 pl-12 pr-12 rounded-full text-sm px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-700"
+                      placeholder="Search for an image" value="" />
+                    <button
+                      class="text-base absolute right-2 hover:bg-zinc-800 h-8 w-8 flex items-center justify-center rounded-full"
+                      data-state="closed">
+                      <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                        stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                      </svg></button>
+                  </div>
+                </div>
+                <div class="flex justify-center"><button
+                    class="ml-2 h-10 w-10 rounded-full cursor-pointer flex items-center justify-center  bg-transparent hover:bg-zinc-900"><svg
+                      stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
                       stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                      <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg></button>
+                      <line x1="4" y1="21" x2="4" y2="14"></line>
+                      <line x1="4" y1="10" x2="4" y2="3"></line>
+                      <line x1="12" y1="21" x2="12" y2="12"></line>
+                      <line x1="12" y1="8" x2="12" y2="3"></line>
+                      <line x1="20" y1="21" x2="20" y2="16"></line>
+                      <line x1="20" y1="12" x2="20" y2="3"></line>
+                      <line x1="1" y1="14" x2="7" y2="14"></line>
+                      <line x1="9" y1="8" x2="15" y2="8"></line>
+                      <line x1="17" y1="16" x2="23" y2="16"></line>
+                    </svg></button></div>
+              </div>
+              <div class="flex w-full max-w-[600px] md:ml-[48px] px-4 pl-5 md:px-5"></div>
+              <div class=" mb-8 flex flex-col items-center">
+                <div class="flex space-x-2">
+                  <button @click="sendRequest"
+                    class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 bg-gradient-to-t from-indigo-900 via-indigo-900 to-indigo-800">Search</button>
+                  <a href="/aperture">
+                    <button
+                      class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 border border-gray-700 hover:bg-zinc-700">Generate</button>
+                  </a>
                 </div>
               </div>
-              <div class="flex justify-center"><button
-                  class="ml-2 h-10 w-10 rounded-full cursor-pointer flex items-center justify-center  bg-transparent hover:bg-zinc-900"><svg
-                    stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
-                    stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                    <line x1="4" y1="21" x2="4" y2="14"></line>
-                    <line x1="4" y1="10" x2="4" y2="3"></line>
-                    <line x1="12" y1="21" x2="12" y2="12"></line>
-                    <line x1="12" y1="8" x2="12" y2="3"></line>
-                    <line x1="20" y1="21" x2="20" y2="16"></line>
-                    <line x1="20" y1="12" x2="20" y2="3"></line>
-                    <line x1="1" y1="14" x2="7" y2="14"></line>
-                    <line x1="9" y1="8" x2="15" y2="8"></line>
-                    <line x1="17" y1="16" x2="23" y2="16"></line>
-                  </svg></button></div>
+              <div class="mt-2"> </div>
+              <div class="w-full mt-4 px-1 relative"></div>
             </div>
-            <div class="flex w-full max-w-[600px] md:ml-[48px] px-4 pl-5 md:px-5"></div>
-            <div class=" mb-8 flex flex-col items-center">
-              <div class="flex space-x-2">
-                <button @click="sendRequest"
-                  class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 bg-gradient-to-t from-indigo-900 via-indigo-900 to-indigo-800">Search</button>
-                <a href="/aperture">
-                  <button
-                    class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 border border-gray-700 hover:bg-zinc-700">Generate</button>
-                </a>
-              </div>
-            </div>
-            <div class="mt-2"> </div>
-            <div class="w-full mt-4 px-1 relative"></div>
           </div>
-        </div>
         <div w-full mt-4 px-1 relative>
           <div role="grid" class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
             style="position: relative; width: 100%; max-width: 100%; height: 6053px; max-height: 6053px;">
             <div class="image-row" v-for="(row, index) in imageRows" :key="index">
               <div class="image-container" v-for="(image, index) in row" :key="index">
-                <router-link to="/pagination" class="block relative group select-none overflow-hidden m-0.5 border-indigo-600  rounded-xl"
+                <router-link to="/page" class="block relative group select-none overflow-hidden m-0.5 border-indigo-600  rounded-xl"
                   style="transition: opacity 500ms ease 0s;">
                   <div
                     class="absolute inset-0 z-10 block text-zinc-100 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none line-clamp px-2 pb-2 text-sm px-2"
@@ -205,6 +206,7 @@
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   </template>

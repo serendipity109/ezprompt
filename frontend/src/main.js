@@ -13,9 +13,14 @@ Vue.use(VueRouter)
 const router = new VueRouter({
   mode: 'history',
   routes: [
-    { path: '/', component: Home },
-    { path: '/page', component: Page }
+    {path: '/', component: Home, meta: {title: 'SDXL'}},
+    {path: '/page', component: Page, meta: {title: 'SDXL - prompt'}}
   ]
+})
+
+router.beforeEach((to, from, next) => {
+  document.title = to.meta.title // 設置網頁標題
+  next()
 })
 
 new Vue({
