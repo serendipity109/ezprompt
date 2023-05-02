@@ -168,8 +168,8 @@
         </div>
         <div class="flex flex-wrap overflow-hidden flex-1 items-start justify-start thin-scrollbar h-auto pb-2"
           style="height:fit-content;overscroll-behavior-x:contain">
-          <img v-bind:src="img_res" style="object-fit:contain;height:100%;max-height:35vh" />
-        </div>
+          <img v-bind:src="img_res" v-on:click="showViewer(img_res)" style="object-fit:contain;height:100%;max-height:35vh" />
+          </div>
       </div>
     </div>
   </div>
@@ -177,6 +177,9 @@
 
 <script>
 import axios from "axios";
+import Vue from 'vue'
+import Viewer from 'v-viewer'
+import 'viewerjs/dist/viewer.css'
 
 export default {
   data() {
@@ -203,5 +206,18 @@ export default {
     this.dims = pmt_res.dims;
     this.CFG = pmt_res.CFG;
   },
+  mounted() {
+    Vue.use(Viewer)
+  },
+  methods: {
+    showViewer(img_res) {
+      this.$viewerApi({
+          images: [img_res],
+          options: {
+            toolbar: false,
+          },
+        })
+    }
+  }
 };
 </script>

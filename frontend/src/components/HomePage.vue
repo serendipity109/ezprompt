@@ -59,9 +59,10 @@
                   </path>
                 </svg>
               </div>
-            </a><a
+            </a>
+            <button @click="NewTab"
               class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
-              style="width: 80px; z-index: 2; opacity: 0.5" href="/likes">
+              style="width: 80px; z-index: 2; opacity: 0.5">
               <div class="relative sm:flex justify-center hidden w-full">
                 <div class="absolute w-full" style="border-bottom: 2.5px solid transparent; bottom: -17px"></div>
                 <span class="text-slate-50">Likes</span>
@@ -75,7 +76,7 @@
                   </path>
                 </svg>
               </div>
-            </a><a
+            </button><a
               class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
               style="width: 80px; z-index: 2; opacity: 0.5" href="/account">
               <div class="relative sm:flex justify-center hidden w-full">
@@ -243,6 +244,10 @@
           chunkedArray.push(array.slice(i, i + size));
         }
         return chunkedArray;
+      },
+      NewTab() {
+        window.open(
+        "https://www.geeksforgeeks.org", "_blank").focus();
       }
     },
   };
