@@ -168,7 +168,9 @@
         </div>
         <div class="flex flex-wrap overflow-hidden flex-1 items-start justify-start thin-scrollbar h-auto pb-2"
           style="height:fit-content;overscroll-behavior-x:contain">
-          <img v-bind:src="img_res" v-on:click="showViewer(img_res)" style="object-fit:contain;height:100%;max-height:35vh" />
+            <div v-for="(img_url, index) in img_res" :key="index">
+              <img v-bind:src="img_url" v-on:click="showViewer(img_res)" style="object-fit:contain;height:100%;max-height:35vh" />
+            </div>
           </div>
       </div>
     </div>
@@ -212,9 +214,9 @@ export default {
   methods: {
     showViewer(img_res) {
       this.$viewerApi({
-          images: [img_res],
+          images: img_res,
           options: {
-            toolbar: false,
+            toolbar: true,
           },
         })
     }

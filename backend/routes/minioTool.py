@@ -1,7 +1,8 @@
 import os
-from minio import Minio
 from datetime import timedelta
 from distutils.util import strtobool
+
+from minio import Minio
 
 
 class MinioClient:
@@ -54,7 +55,13 @@ class MinioClient:
 
     def inspect(self, bucket):
         objects = self.client.list_objects(bucket)
-        return [obj.object_name.encode('utf-8') for obj in objects]
+        return [obj.object_name for obj in objects]
+
+    def check(self, bucket, filename):
+        if filename in self.inspect(bucket):
+            return True
+        else:
+            return False
 
     def share_url(self, bucket, file_name):
         url = self.client.get_presigned_url(

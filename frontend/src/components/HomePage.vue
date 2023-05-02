@@ -141,7 +141,7 @@
               <div class="flex w-full max-w-[600px] md:ml-[48px] px-4 pl-5 md:px-5"></div>
               <div class=" mb-8 flex flex-col items-center">
                 <div class="flex space-x-2">
-                  <button @click="sendRequest"
+                  <button @click="getImgs"
                     class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 bg-gradient-to-t from-indigo-900 via-indigo-900 to-indigo-800">Search</button>
                   <a href="/aperture">
                     <button
@@ -232,7 +232,7 @@
         });
     },
     methods: {
-      async sendRequest() {
+      async getImgs() {
         const response = await axios.get('http://192.168.3.16:8877/get_images');
         this.images = response.data;
         console.log(response.data);
