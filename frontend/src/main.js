@@ -2,7 +2,8 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import App from './App.vue'
 import Home from './components/HomePage.vue'
-import Page from './components/PromptPage.vue'
+import Prompt from './components/PromptPage.vue'
+import Gen from './components/GenPage.vue'
 import './assets/tailwind.css'
 
 Vue.config.productionTip = false
@@ -13,12 +14,14 @@ Vue.use(VueRouter)
 const router = new VueRouter({
   mode: 'history',
   routes: [
-    {path: '/', component: Home, meta: {title: 'SDXL'}},
+    {path: '/', redirect: '/home'},
+    {path: '/home', component: Home, meta: {title: 'SDXL'}},
     {
       path: '/image/:img',
-      component: Page,
+      component: Prompt,
       meta: {title: 'SDXL - prompt'}
     },
+    {path: '/generate', component: Gen, meta: {title: 'SDXL - Generate'}}
   ]
 })
 

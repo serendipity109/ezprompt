@@ -8,7 +8,7 @@
         <div class="flex relative items-center h-full -mt-1 w-full sm:w-auto">
           <div style="height: 32px; top: 15px; display: absolute" class="absolute rounded bg-zinc-700"></div>
           <a class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
-            style="width: 80px; z-index: 2; opacity: 1" href="/">
+            style="width: 80px; z-index: 2; opacity: 1" href="/home">
             <div class="relative sm:flex justify-center hidden w-full">
               <div class="absolute w-full" style="border-bottom: 2.5px solid #6366f1; bottom: -17px"></div>
               <span class="text-slate-50">Home</span>
@@ -23,7 +23,7 @@
             </div>
           </a>
           <a class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
-            style="width: 80px; z-index: 2; opacity: 0.5" href="/aperture">
+            style="width: 80px; z-index: 2; opacity: 0.5" href="/generate">
             <div class="relative sm:flex justify-center hidden w-full">
               <div class="absolute w-full" style="border-bottom: 2.5px solid transparent; bottom: -17px"></div>
               <span class="text-slate-50">Generate</span>
@@ -194,7 +194,7 @@ export default {
     };
   },
   async created() {
-    const response = await axios.get('http://192.168.3.16:8877/get_image',
+    const response = await axios.get('http://61.216.75.236:8087/api/get_image',
       {
         params: {
           img: this.$route.params.img,
