@@ -5,6 +5,7 @@ import Home from './components/HomePage.vue'
 import Prompt from './components/PromptPage.vue'
 import Gen from './components/GenPage.vue'
 import './assets/tailwind.css'
+import vuetify from "./plugins/vuetify";
 
 const app = createApp(App)
 
@@ -27,6 +28,7 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
+app.use(vuetify);
 app.use(router)
 
 app.mount('#app')

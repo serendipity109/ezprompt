@@ -94,7 +94,8 @@
             </div>
             <div class="hidden w-32 h-full  sm:flex items-center justify-end mr-4"></div>
         </div>
-        <div class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
+        <div
+            class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
             <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
                 <div class="w-screen overflow-x-hidden">
                     <div class="sm:hidden w-full flex items-center justify-end mr-4 pt-2"></div>
@@ -108,8 +109,8 @@
                                     <div class="relative"><textarea id="main-generate" autoComplete="off"
                                             class="shadow overflow-y-hidden w-full bg-zinc-700 bg-opacity-60 border border-zinc-700 rounded-xl leading-relaxed text-sm px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-700 placeholder:opacity-50"
                                             placeholder="A steampunk teddy bear vending machine"></textarea></div>
-                                    <p class="opacity-40 text-xs pl-2 pb-1 mt-2">Negative prompt</p><textarea id="main-generate"
-                                        autoComplete="off"
+                                    <p class="opacity-40 text-xs pl-2 pb-1 mt-2">Negative prompt</p><textarea
+                                        id="main-generate" autoComplete="off"
                                         class="shadow overflow-y-hidden w-full bg-zinc-700 bg-opacity-60 border border-zinc-700 rounded-xl leading-relaxed text-sm px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-700 placeholder:opacity-50"
                                         placeholder="text, blurry"></textarea>
                                     <div class="w-full flex items-center justify-center  md:justify-end">
@@ -129,34 +130,21 @@
                                             <div class="mt-1">
                                                 <div
                                                     class="select-none opacity-50 text-xs flex items-center justify-start mb-3">
-                                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24"
-                                                        stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-sm"
-                                                        height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                                    <svg stroke="currentColor" fill="none" stroke-width="2"
+                                                        viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"
+                                                        class="mr-2 text-sm" height="1em" width="1em"
+                                                        xmlns="http://www.w3.org/2000/svg">
                                                         <path
                                                             d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
                                                         </path>
                                                     </svg>
                                                     <p>Dimensions</p>
                                                 </div>
-                                                <div class=""><span dir="ltr" data-orientation="horizontal"
-                                                        aria-disabled="false" aria-label="Dimensions"
-                                                        class="w-full relative flex items-center select-none touch-none h-5 cursor-pointer"
-                                                        style="--radix-slider-thumb-transform:translateX(-50%)"><span
-                                                            data-orientation="horizontal"
-                                                            class="w-full h-0.5 bg-black rounded-full relative"><span
-                                                                data-orientation="horizontal"
-                                                                class="absolute bg-indigo-600 rounded-full h-full"
-                                                                style="left:0%;right:0%"></span></span><span
-                                                            style="transform:var(--radix-slider-thumb-transform);position:absolute;left:calc(0% + 0px)"><span
-                                                                role="slider" aria-valuemin="0" aria-valuemax="4"
-                                                                aria-orientation="horizontal" data-orientation="horizontal"
-                                                                tabindex="0"
-                                                                class="block w-4 h-4 bg-white shadow-md rounded-full focus:ring-8 hover:ring-4 hover:ring-indigo-500 focus:ring-indigo-500 hover:ring-opacity-30 focus:ring-opacity-30 focus:outline-none hover:bg-zinc-200 transition-all"
-                                                                style="display:none"
-                                                                data-radix-collection-item=""></span></span></span><input
-                                                        style="display:none" value="4" />
-                                                    <div class="flex justify-between w-full  select-none mt-2 text-base"><svg
-                                                            stroke="currentColor" fill="currentColor" stroke-width="0"
+                                                <div class="">
+                                                    <v-slider step="10" show-ticks="always" tick-size="4"></v-slider>
+                                                    <input style="display:none" value="4" />
+                                                    <div class="flex justify-between w-full  select-none mt-2 text-base">
+                                                        <svg stroke="currentColor" fill="currentColor" stroke-width="0"
                                                             viewBox="0 0 16 16" class="opacity-40" height="1em" width="1em"
                                                             xmlns="http://www.w3.org/2000/svg">
                                                             <path fill-rule="evenodd"
@@ -174,7 +162,8 @@
                                                             stroke="currentColor" fill="currentColor" stroke-width="0"
                                                             viewBox="0 0 16 16" class="opacity-40" height="1em" width="1em"
                                                             xmlns="http://www.w3.org/2000/svg">
-                                                            <path d="M8.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"></path>
+                                                            <path d="M8.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z">
+                                                            </path>
                                                             <path
                                                                 d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM3 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v8l-2.083-2.083a.5.5 0 0 0-.76.063L8 11 5.835 9.7a.5.5 0 0 0-.611.076L3 12V2z">
                                                             </path>
@@ -208,3 +197,4 @@
         </div>
     </div>
 </template>
+
