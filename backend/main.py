@@ -50,7 +50,7 @@ async def get_images():
         view2 = preview.replace(view1+',', '')
         res.append({
             "img": img,
-            "url": minio_client.share_url("test", img).replace('172.17.0.1:9000', '61.216.75.236:8087'),
+            "url": minio_client.share_url("test", img).replace('172.17.0.1:9000', '192.168.3.16:8087'),
             "view1": view1,
             "view2": view2
         })
@@ -61,10 +61,10 @@ async def get_images():
 async def get_image(img='s0.png'):
     img_res = []
     pmt_res = redis_client.get(img)
-    img_res.append(minio_client.share_url("test", img).replace('172.17.0.1:9000', '61.216.75.236:8087'))
+    img_res.append(minio_client.share_url("test", img).replace('172.17.0.1:9000', '192.168.3.16:8087'))
     if 'batch' in pmt_res.keys():
         for img in pmt_res['batch']:
-            img_res.append(minio_client.share_url("test", img).replace('172.17.0.1:9000', '61.216.75.236:8087'))
+            img_res.append(minio_client.share_url("test", img).replace('172.17.0.1:9000', '192.168.3.16:8087'))
     return {"img_res": img_res, "pmt_res": pmt_res}
 
 # 定期刪檔案
