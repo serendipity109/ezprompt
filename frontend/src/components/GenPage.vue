@@ -113,9 +113,10 @@
                                         id="main-generate" autoComplete="off"
                                         class="shadow overflow-y-hidden w-full bg-zinc-700 bg-opacity-60 border border-zinc-700 rounded-xl leading-relaxed text-sm px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-700 placeholder:opacity-50"
                                         placeholder="text, blurry"></textarea>
-                                    <div class="w-full flex items-center justify-center  md:justify-end">
-                                        <div class="transition-all" id="generate-button"><button
-                                                class="mt-2 text-sm bg-gradient-to-t from-indigo-900 via-indigo-900 to-indigo-800 rounded-full drop-shadow text-md px-8 py-2  transition-all  opacity-70 cursor-default">Loading...</button>
+                                    <div class="w-full flex items-center md:justify-end">
+                                        <div class="transition-all" id="generate-button">
+                                            <button
+                                                class="mt-2 text-sm bg-gradient-to-t from-indigo-900 via-indigo-900 to-indigo-800 rounded-full drop-shadow text-md px-8 py-2  transition-all  cursor-pointer active:scale-95 hover:brightness-110 shadow">Generate</button>
                                         </div>
                                     </div>
                                 </div>
@@ -141,7 +142,8 @@
                                                     <p>Dimensions</p>
                                                 </div>
                                                 <div class="">
-                                                    <v-slider step="10" show-ticks="always" tick-size="4"></v-slider>
+                                                    <v-slider :ticks="dimLabels" :max="3" step="1" tick-size="4"
+                                                        v-model="dimValue"></v-slider>
                                                     <input style="display:none" value="4" />
                                                     <div class="flex justify-between w-full  select-none mt-2 text-base">
                                                         <svg stroke="currentColor" fill="currentColor" stroke-width="0"
@@ -158,7 +160,7 @@
                                                                 clip-rule="evenodd"></path>
                                                         </svg>
                                                         <div class="text-xs flex items-center transition-all text-zinc-200"
-                                                            style="opacity:1">768<!-- --> × <!-- -->1152</div><svg
+                                                            style="opacity:1">{{ dimLabels[dimValue] }}</div><svg
                                                             stroke="currentColor" fill="currentColor" stroke-width="0"
                                                             viewBox="0 0 16 16" class="opacity-40" height="1em" width="1em"
                                                             xmlns="http://www.w3.org/2000/svg">
@@ -171,17 +173,29 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="mt-4 flex flex-col"><button
-                                                    class="select-none pt-2 text-xs cursor-pointer items-center justify-start opacity-50 hover:opacity-100 transition-all flex ">
-                                                    <div class="flex items-center justify-center"><svg stroke="currentColor"
-                                                            fill="currentColor" stroke-width="0" viewBox="0 0 16 16"
-                                                            height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                                                            <path
-                                                                d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 01.753 1.659l-4.796 5.48a1 1 0 01-1.506 0z">
-                                                            </path>
-                                                        </svg></div>
-                                                    <p class="ml-2">Advanced settings</p>
-                                                </button></div>
+                                            <div class="mt-4 flex flex-col">
+                                                <div class="flex items-center justify-between text-sm">
+                                                    <p
+                                                        class="select-none opacity-40 text-xs flex items-center justify-center">
+                                                        <svg stroke="currentColor" fill="none" stroke-width="2"
+                                                            viewBox="0 0 24 24" stroke-linecap="round"
+                                                            stroke-linejoin="round" class="mr-2 text-sm" height="1em"
+                                                            width="1em" xmlns="http://www.w3.org/2000/svg">
+                                                            <line x1="4" y1="21" x2="4" y2="14"></line>
+                                                            <line x1="4" y1="10" x2="4" y2="3"></line>
+                                                            <line x1="12" y1="21" x2="12" y2="12"></line>
+                                                            <line x1="12" y1="8" x2="12" y2="3"></line>
+                                                            <line x1="20" y1="21" x2="20" y2="16"></line>
+                                                            <line x1="20" y1="12" x2="20" y2="3"></line>
+                                                            <line x1="1" y1="14" x2="7" y2="14"></line>
+                                                            <line x1="9" y1="8" x2="15" y2="8"></line>
+                                                            <line x1="17" y1="16" x2="23" y2="16"></line>
+                                                        </svg>Guidance scale</p><button
+                                                        class="w-20 py-2 hover:ring-1 select-none hover:ring-zinc-700 cursor-text rounded flex justify-end pr-0.5 -mr-1">{{ cfgValue }}&nbsp;</button>
+                                                </div>
+                                                <v-slider ticks="always" :step="0.5" min="2" max="10"
+                                                    v-model="cfgValue"></v-slider>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -195,6 +209,21 @@
                 </div>
             </div>
         </div>
-    </div>
-</template>
+</div></template>
 
+<script>
+export default {
+    data() {
+        return {
+            dimValue: 1,
+            dimLabels: {
+                0: '256 x 256',
+                1: '512 x 512',
+                2: '512 x 640',
+                3: '640 x 512',
+            },
+            cfgValue: 7.0,
+        }
+    },
+}
+</script>
