@@ -179,11 +179,11 @@
 
 <script>
 import axios from "axios";
-import Vue from 'vue'
-import Viewer from 'v-viewer'
+import { defineComponent } from 'vue'
 import 'viewerjs/dist/viewer.css'
+import { api as viewerApi } from 'v-viewer'
 
-export default {
+export default defineComponent({
   data() {
     return {
       img_res: "",
@@ -208,18 +208,15 @@ export default {
     this.dims = pmt_res.dims;
     this.CFG = pmt_res.CFG;
   },
-  mounted() {
-    Vue.use(Viewer)
-  },
   methods: {
     showViewer(img_res) {
-      this.$viewerApi({
-          images: img_res,
+      viewerApi({
           options: {
             toolbar: true,
           },
-        })
+          images: img_res
+      })
     }
   }
-};
+});
 </script>
