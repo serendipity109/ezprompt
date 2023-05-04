@@ -6,7 +6,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from routes import kkbot, magicwriter, t2i, minioTool, redisTool
+from routes import kkbot, magicwriter, SDXL, t2i, minioTool, redisTool
 
 
 app = FastAPI()
@@ -29,6 +29,7 @@ api_router = APIRouter()
 api_router.include_router(kkbot.router)
 api_router.include_router(magicwriter.router)
 api_router.include_router(t2i.router)
+api_router.include_router(SDXL.router)
 
 @app.get("/")
 async def root():

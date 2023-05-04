@@ -106,16 +106,16 @@
                                     <div class="flex justify-between text-xs px-2 pb-1 mt-6 md:mt-0">
                                         <p class="opacity-40">Describe your image</p>
                                     </div>
-                                    <div class="relative"><textarea id="main-generate" autoComplete="off"
+                                    <div class="relative"><textarea id="main-generate" v-model="pmt" autoComplete="off"
                                             class="shadow overflow-y-hidden w-full bg-zinc-700 bg-opacity-60 border border-zinc-700 rounded-xl leading-relaxed text-sm px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-700 placeholder:opacity-50"
                                             placeholder="A steampunk teddy bear vending machine"></textarea></div>
                                     <p class="opacity-40 text-xs pl-2 pb-1 mt-2">Negative prompt</p><textarea
-                                        id="main-generate" autoComplete="off"
+                                        id="main-generate" v-model="npmt" autoComplete="off"
                                         class="shadow overflow-y-hidden w-full bg-zinc-700 bg-opacity-60 border border-zinc-700 rounded-xl leading-relaxed text-sm px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-700 placeholder:opacity-50"
                                         placeholder="text, blurry"></textarea>
                                     <div class="w-full flex items-center md:justify-end">
                                         <div class="transition-all" id="generate-button">
-                                            <button
+                                            <button @click="sdxl"
                                                 class="mt-2 text-sm bg-gradient-to-t from-indigo-900 via-indigo-900 to-indigo-800 rounded-full drop-shadow text-md px-8 py-2  transition-all  cursor-pointer active:scale-95 hover:brightness-110 shadow">Generate</button>
                                         </div>
                                     </div>
@@ -139,13 +139,13 @@
                                                             d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
                                                         </path>
                                                     </svg>
-                                                    <p>Dimensions</p>
+                                                    <p>Dimensions (w x h)</p>
                                                 </div>
                                                 <div class="">
                                                     <v-slider :ticks="dimLabels" :max="3" step="1" tick-size="4"
-                                                        v-model="dimValue"></v-slider>
+                                                        v-model="dimValue" hide-details ></v-slider>
                                                     <input style="display:none" value="4" />
-                                                    <div class="flex justify-between w-full  select-none mt-2 text-base">
+                                                    <div class="flex justify-between w-full  select-none mt-1 text-base">
                                                         <svg stroke="currentColor" fill="currentColor" stroke-width="0"
                                                             viewBox="0 0 16 16" class="opacity-40" height="1em" width="1em"
                                                             xmlns="http://www.w3.org/2000/svg">
@@ -173,7 +173,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="mt-4 flex flex-col">
+                                            <div class="mt-1 flex flex-col">
                                                 <div class="flex items-center justify-between text-sm">
                                                     <p
                                                         class="select-none opacity-40 text-xs flex items-center justify-center">
@@ -194,7 +194,30 @@
                                                         class="w-20 py-2 hover:ring-1 select-none hover:ring-zinc-700 cursor-text rounded flex justify-end pr-0.5 -mr-1">{{ cfgValue }}&nbsp;</button>
                                                 </div>
                                                 <v-slider ticks="always" :step="0.5" min="2" max="10"
-                                                    v-model="cfgValue"></v-slider>
+                                                    v-model="cfgValue" hide-details ></v-slider>
+                                            </div>
+                                            <div class="mt-1 flex flex-col">
+                                                <div class="flex items-center justify-between text-sm">
+                                                    <p
+                                                        class="select-none opacity-40 text-xs flex items-center justify-center">
+                                                        <svg stroke="currentColor" fill="none" stroke-width="2"
+                                                            viewBox="0 0 24 24" stroke-linecap="round"
+                                                            stroke-linejoin="round" class="mr-2 text-sm" height="1em"
+                                                            width="1em" xmlns="http://www.w3.org/2000/svg">
+                                                            <line x1="4" y1="21" x2="4" y2="14"></line>
+                                                            <line x1="4" y1="10" x2="4" y2="3"></line>
+                                                            <line x1="12" y1="21" x2="12" y2="12"></line>
+                                                            <line x1="12" y1="8" x2="12" y2="3"></line>
+                                                            <line x1="20" y1="21" x2="20" y2="16"></line>
+                                                            <line x1="20" y1="12" x2="20" y2="3"></line>
+                                                            <line x1="1" y1="14" x2="7" y2="14"></line>
+                                                            <line x1="9" y1="8" x2="15" y2="8"></line>
+                                                            <line x1="17" y1="16" x2="23" y2="16"></line>
+                                                        </svg>Image count</p><button
+                                                        class="w-20 py-2 hover:ring-1 select-none hover:ring-zinc-700 cursor-text rounded flex justify-end pr-0.5 -mr-1">{{ nValue }}&nbsp;</button>
+                                                </div>
+                                                <v-slider ticks="always" :step="1" min="1" max="4"
+                                                    v-model="nValue" hide-details ></v-slider>
                                             </div>
                                         </div>
                                     </div>
@@ -208,13 +231,30 @@
                     </div>
                 </div>
             </div>
+            <div w-full mt-4 px-1 relative>
+                <div role="grid" class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
+                style="position: relative; width: 100%; max-width: 100%; height: 6053px; max-height: 6053px;">
+                    <div class="image-row">
+                        <div class="image-container" v-for="(url, index) in urls" :key="index" style="">
+                            <img v-bind:src="url" v-on:click="showViewer(urls)" style="object-fit:contain;height:100%;max-height:50vh" />
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 </div></template>
 
 <script>
-export default {
+import axios from "axios";
+import { defineComponent } from 'vue'
+import 'viewerjs/dist/viewer.css'
+import { api as viewerApi } from 'v-viewer'
+
+export default defineComponent({
     data() {
         return {
+            pmt: "",
+            npmt: "",
             dimValue: 1,
             dimLabels: {
                 0: '256 x 256',
@@ -223,7 +263,65 @@ export default {
                 3: '640 x 512',
             },
             cfgValue: 7.0,
+            nValue: 1,
+            datas: [],
+            urls: []
         }
     },
-}
+    methods: {
+        async sdxl() {
+            const data = JSON.stringify({
+                prompt: this.pmt,
+                nprompt: this.npmt,
+                hw: this.dimValue,
+                n: this.nValue,
+                CFG: this.cfgValue,                
+            })
+            const response = await axios.post('http://192.168.3.16:8877/sdxl', data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            this.datas = response.data.data;
+            this.datas.forEach(item => {
+                this.urls.push(item.result);
+            });
+        },
+        showViewer(urls) {
+            viewerApi({
+                options: {
+                    toolbar: true,
+                },
+                images: urls
+            })
+        }
+    }
+})
 </script>
+
+<style>.image-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .image-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .image-container {
+    margin: 0px;
+    flex: 1;
+    max-width: 20%;
+    height: auto;
+    text-align: center;
+  }
+  
+  .img-responsive {
+    max-width: 100%;
+    height: auto;
+  }</style>
