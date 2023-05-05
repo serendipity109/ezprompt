@@ -3,7 +3,7 @@
       <div class="fixed bottom-0 sm:top-0 z-50 flex flex-row items-center justify-between  backdrop-blur bg-opacity-80 border-t  sm:border-t-0 sm:border-b border-opacity-50  text-sm select-none bg-zinc-900 border-t-zinc-700 sm:border-b-zinc-700"
             style="height:56px;width:100vw">
             <div class="hidden sm:flex items-center cursor-pointer px-4 pl-6 left-0 h-full w-32 ">
-                <div class="font-semibold text-3xl text-slate-50 justify-center items-center">SDXL</div>
+                <div class="font-semibold text-3xl text-slate-50 justify-center items-center">EZPrompt</div>
             </div>
             <div class="flex relative items-center h-full -mt-1 w-full sm:w-auto">
                 <div style="height:32px;top:15px;display:absolute" class="absolute  rounded bg-zinc-700"></div><a
@@ -98,7 +98,7 @@
         <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
           <div class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
             <div class="flex flex-col items-center py-4 mt-16"><a class="font-semibold text-3xl text-gray-100"
-                href="/">SDXL</a>
+                href="/">EZPrompt</a>
               <div class="flex items-center w-full max-w-[600px] md:ml-[48px] mt-8 px-4 pl-5 md:px-5">
                 <div class="w-full">
                   <div class="w-full flex items-center relative"><svg stroke="currentColor" fill="none" stroke-width="2"
@@ -148,7 +148,6 @@
               <div class="w-full mt-4 px-1 relative"></div>
             </div>
           </div>
-          <progress-bar ref="progressBar"></progress-bar>
           <div w-full mt-4 px-1 relative>
             <div role="grid" v-if="flag == 1" class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
               style="position: relative; width: 100%; max-width: 100%; height: 6053px; max-height: 6053px;">
@@ -221,8 +220,7 @@ import axios from "axios";
 import { defineComponent } from 'vue'
 import 'viewerjs/dist/viewer.css'
 import { api as viewerApi } from 'v-viewer'
-import ProgressBar from "@/components/ProgressBar.vue";
-  
+
 export default defineComponent({
   components: {
     ProgressBar,
@@ -262,8 +260,10 @@ export default defineComponent({
     },
     async ezprompt() {
       this.flag = 0;
+      this.urls = [];
       const data = JSON.stringify({
-          prompt: this.keyword,           
+          prompt: this.keyword,  
+          prefix: "realistic"         
       })
       const response = await axios.post('http://192.168.3.16:8877/ezpmt', data, {
           headers: {

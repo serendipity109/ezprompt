@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
+from typing import Literal
 import random
 from dotenv import load_dotenv
 import os
@@ -82,11 +83,12 @@ async def sdxl(inp: xlInput):
 
 class ezInput(BaseModel):
     prompt: str = ''
+    prefix: Literal["all", "realistic", "art"] = "all"
 
 @router.post("/ezpmt")
 async def ezpmt(inp: ezInput):    
     start = time.time()
-    f = open('routes/prefix.txt')
+    f = open(f'routes/prefix/{inp.prefix}.txt')
     prefix = {"role": "user", "content": f.read()}
     f.close()
     prefix["content"] += str("\n" + inp.prompt)
@@ -97,7 +99,7 @@ async def ezpmt(inp: ezInput):
         temperature=0,
     )
     prompt = completion.choices[0].message.content
-
+    print(prompt)
     stability_key = random.sample(keys, 1)[0]
     stability_api = client.StabilityInference(
         key=stability_key, # API Key reference.

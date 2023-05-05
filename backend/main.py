@@ -33,7 +33,7 @@ api_router.include_router(SDXL.router)
 
 @app.get("/")
 async def root():
-    return {"Model": "SDXL"}
+    return {"Model": "EZPrompt"}
 
 @app.get("/show")
 async def get_image(user_id, filename):
