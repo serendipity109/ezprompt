@@ -1,6 +1,7 @@
 apscheduler
 fastapi
 minio
+openai
 Pillow
 python-dotenv
 redis

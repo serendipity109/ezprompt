@@ -108,7 +108,7 @@
                       <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg><input id="main-search" autoComplete="off" v-model="keyword" type="text"
                       class="bg-zinc-700 flex-1 pl-12 pr-12 rounded-full text-sm px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-700"
-                      placeholder="Search for an image" />
+                      placeholder="Give me an EZprompt" />
                     <button
                       class="text-base absolute right-2 hover:bg-zinc-800 h-8 w-8 flex items-center justify-center rounded-full"
                       data-state="closed">
@@ -138,20 +138,19 @@
               <div class="flex w-full max-w-[600px] md:ml-[48px] px-4 pl-5 md:px-5"></div>
               <div class=" mb-8 flex flex-col items-center">
                 <div class="flex space-x-2">
+                  <button @click="ezprompt"
+                    class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 bg-gradient-to-t from-indigo-900 via-indigo-900 to-indigo-800">Generate</button>
                   <button @click="getImgs"
-                    class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 bg-gradient-to-t from-indigo-900 via-indigo-900 to-indigo-800">Search</button>
-                  <a href="/generate">
-                    <button
-                      class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 border border-gray-700 hover:bg-zinc-700">Generate</button>
-                  </a>
+                      class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 border border-gray-700 hover:bg-zinc-700">Search</button>
                 </div>
               </div>
               <div class="mt-2"> </div>
               <div class="w-full mt-4 px-1 relative"></div>
             </div>
           </div>
+          <progress-bar ref="progressBar"></progress-bar>
           <div w-full mt-4 px-1 relative>
-            <div role="grid" class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
+            <div role="grid" v-if="flag == 1" class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
               style="position: relative; width: 100%; max-width: 100%; height: 6053px; max-height: 6053px;">
               <div class="image-row" v-for="(row, index) in imageRows" :key="index">
                 <div class="image-container" v-for="(image, index) in row" :key="index">
@@ -203,71 +202,115 @@
                 </div>
               </div>
             </div>
+            <div role="grid" v-else-if="flag == 0" class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
+              style="position: relative; width: 100%; max-width: 100%; height: 6053px; max-height: 6053px;">
+                <div class="image-row">
+                    <div class="image-container" v-for="(url, index) in urls" :key="index" style="">
+                        <img v-bind:src="url" v-on:click="showViewer(urls)" style="object-fit:contain;height:100%;max-height:50vh" />
+                    </div>
+                </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </template>
   
-  <script>
-  import axios from "axios";
+<script>
+import axios from "axios";
+import { defineComponent } from 'vue'
+import 'viewerjs/dist/viewer.css'
+import { api as viewerApi } from 'v-viewer'
+import ProgressBar from "@/components/ProgressBar.vue";
   
-  export default {
-    data() {
-      return {
-        message: "",
-        keyword: "",
-        images: [],
-        imageRows: [],
-      };
+export default defineComponent({
+  components: {
+    ProgressBar,
+  },
+  data() {
+    return {
+      message: "",
+      keyword: "",
+      images: [],
+      imageRows: [],
+      datas: [],
+      urls: [],
+      flag: 0,
+    };
+  },
+  async created() {
+    fetch("http://192.168.3.16:8877/")
+      .then((response) => response.json())
+      .then((data) => {
+        this.message = data.Model;
+      });
+  },
+  methods: {
+    async getImgs() {
+      this.flag = 1;
+      const response = await axios.get('http://192.168.3.16:8877/get_images');
+      this.images = response.data;
+      console.log(response.data);
+      this.imageRows = this.chunkArray(this.images, 5);
     },
-    async created() {
-      fetch("http://192.168.3.16:8877/")
-        .then((response) => response.json())
-        .then((data) => {
-          this.message = data.Model;
-        });
-    },
-    methods: {
-      async getImgs() {
-        const response = await axios.get('http://192.168.3.16:8877/get_images');
-        this.images = response.data;
-        console.log(response.data);
-        this.imageRows = this.chunkArray(this.images, 5);
-      },
-      chunkArray(array, size) {
-        const chunkedArray = [];
-        for (let i = 0; i < array.length; i += size) {
-          chunkedArray.push(array.slice(i, i + size));
-        }
-        return chunkedArray;
+    chunkArray(array, size) {
+      const chunkedArray = [];
+      for (let i = 0; i < array.length; i += size) {
+        chunkedArray.push(array.slice(i, i + size));
       }
+      return chunkedArray;
     },
-  };
-  </script>
-  
-  <style>.image-gallery {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .image-row {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .image-container {
-    margin: 0px;
-    flex: 1;
-    max-width: 20%;
-    height: auto;
-    text-align: center;
-  }
-  
-  .img-responsive {
-    max-width: 100%;
-    height: auto;
-  }</style>
+    async ezprompt() {
+      this.flag = 0;
+      const data = JSON.stringify({
+          prompt: this.keyword,           
+      })
+      const response = await axios.post('http://192.168.3.16:8877/ezpmt', data, {
+          headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+          }
+      });
+      this.datas = response.data.data;
+      console.log(response.data);
+      this.datas.forEach(item => {
+          this.urls.push(item.result);
+      });
+    },
+    showViewer(urls) {
+      viewerApi({
+          options: {
+              toolbar: true,
+          },
+          images: urls
+      })
+    }
+  },
+});
+</script>
+
+<style>.image-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-container {
+  margin: 0px;
+  flex: 1;
+  max-width: 20%;
+  height: auto;
+  text-align: center;
+}
+
+.img-responsive {
+  max-width: 100%;
+  height: auto;
+}</style>

@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import random
 from dotenv import load_dotenv
 import os
+import openai
 from stability_sdk import client
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
 from PIL import Image
@@ -12,6 +13,7 @@ import time
 
 load_dotenv()
 keys = [os.getenv('KEY1'), os.getenv('KEY2')]
+openai.api_key = os.getenv('OPENAI_KEY')
 
 router = APIRouter()
 minio_client = minioTool.MinioClient()
@@ -57,6 +59,62 @@ async def sdxl(inp: xlInput):
                 file_path = os.path.join("output", filename)
                 if flag == 1:
                     img = img.resize((256, 256))
+                img.save(file_path)
+                minio_client.upload_file('test', filename, file_path)
+                urls.append(minio_client.share_url("test", filename).replace('172.17.0.1:9000', '192.168.3.16:8087'))
+    
+    waste_milliseconds = (time.time() - start)*1000
+    data = []
+    for url in urls:
+        data.append({
+            "result": url,
+            "candidates": [],
+            "waste_milliseconds": waste_milliseconds,
+            "extend_info": "",
+            "type": "image",
+            "recall_details": []
+        })
+    return {
+        "code": 200,
+        "message": "",
+        "data": data
+    }
+
+class ezInput(BaseModel):
+    prompt: str = ''
+
+@router.post("/ezpmt")
+async def ezpmt(inp: ezInput):    
+    start = time.time()
+    f = open('routes/prefix.txt')
+    prefix = {"role": "user", "content": f.read()}
+    f.close()
+    prefix["content"] += str("\n" + inp.prompt)
+    messages = [prefix]
+    completion = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=messages,
+        temperature=0,
+    )
+    prompt = completion.choices[0].message.content
+
+    stability_key = random.sample(keys, 1)[0]
+    stability_api = client.StabilityInference(
+        key=stability_key, # API Key reference.
+        verbose=True, # Print debug messages.
+        engine="stable-diffusion-xl-beta-v2-2-2", # Set the engine to use for generation.
+    )
+    nprompt = "tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, bad anatomy, watermark, signature, cut off, low contrast, underexposed, overexposed, bad art, beginner, amateur, distorted face"
+    answers = await generate(stability_api, prompt, nprompt, 512, 512, 4)
+    urls = []
+    for resp in answers:
+        if resp.artifacts[0].finish_reason == 4:
+            return {"code": 404, "message": "Invalid prompts detected"}
+        for artifact in resp.artifacts:
+           if artifact.type == generation.ARTIFACT_IMAGE:
+                img = Image.open(io.BytesIO(artifact.binary))
+                filename = str(artifact.seed)+ ".png"
+                file_path = os.path.join("output", filename)
                 img.save(file_path)
                 minio_client.upload_file('test', filename, file_path)
                 urls.append(minio_client.share_url("test", filename).replace('172.17.0.1:9000', '192.168.3.16:8087'))

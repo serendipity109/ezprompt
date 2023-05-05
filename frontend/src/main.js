@@ -28,7 +28,8 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-app.use(vuetify);
 app.use(router)
+
+app.use(vuetify);
 
 app.mount('#app')

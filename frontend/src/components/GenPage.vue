@@ -263,7 +263,7 @@ export default defineComponent({
                 3: '640 x 512',
             },
             cfgValue: 7.0,
-            nValue: 1,
+            nValue: 4,
             datas: [],
             urls: []
         }
