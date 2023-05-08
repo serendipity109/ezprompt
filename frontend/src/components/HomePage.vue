@@ -144,7 +144,7 @@
                       class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 border border-gray-700 hover:bg-zinc-700">Search</button>
                 </div>
               </div>
-              <el-progress v-if="showProgress" :text-inside="true" :stroke-width="20" :percentage="percentage" :color="'#5f005f'"/>
+              <el-progress v-if="showProgress" :text-inside="true" :stroke-width="20" :percentage="percentage" :color="'#5f00ff'"/>
             </div>
           </div>
           <div w-full mt-4 px-1 relative>
