@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '@/components/HomePage.vue'
-import Prompt from '@/components/PromptPage.vue'
-import Test from '@/components/TestPage.vue'
-import Gen from '@/components/GenPage.vue'
+import Home from '@/views/HomePage.vue'
+import Prompt from '@/views/PromptPage.vue'
+import Test from '@/views/TestPage.vue'
+import Gen from '@/views/GenPage.vue'
 
 
 const router = createRouter({

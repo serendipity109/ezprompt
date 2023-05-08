@@ -3,7 +3,7 @@
     <div class="fixed bottom-0 sm:top-0 z-50 flex flex-row items-center justify-between  backdrop-blur bg-opacity-80 border-t  sm:border-t-0 sm:border-b border-opacity-50  text-sm select-none bg-zinc-900 border-t-zinc-700 sm:border-b-zinc-700"
             style="height:56px;width:100vw">
             <div class="hidden sm:flex items-center cursor-pointer px-4 pl-6 left-0 h-full w-32 ">
-                <div class="font-semibold text-3xl text-slate-50 justify-center items-center">SDXL</div>
+                <div class="font-semibold text-3xl text-slate-50 justify-center items-center">EZPrompt</div>
             </div>
             <div class="flex relative items-center h-full -mt-1 w-full sm:w-auto">
                 <div style="height:32px;top:15px;display:absolute" class="absolute  rounded bg-zinc-700"></div><a

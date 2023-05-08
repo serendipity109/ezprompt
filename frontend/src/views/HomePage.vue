@@ -43,7 +43,7 @@
                     </div>
                 </a><a
                     class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
-                    style="width:80px;z-index:2;opacity:0.5" href="/history">
+                    style="width:80px;z-index:2;opacity:0.5" href="/">
                     <div class="relative sm:flex justify-center hidden w-full">
                         <div class="absolute w-full" style="border-bottom:2.5px solid transparent;bottom:-17px"></div><span
                             class="text-slate-50">History</span>
@@ -59,7 +59,7 @@
                     </div>
                 </a><a
                     class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
-                    style="width:80px;z-index:2;opacity:0.5" href="/likes">
+                    style="width:80px;z-index:2;opacity:0.5" href="/">
                     <div class="relative sm:flex justify-center hidden w-full">
                         <div class="absolute w-full" style="border-bottom:2.5px solid transparent;bottom:-17px"></div><span
                             class="text-slate-50">Likes</span>
@@ -75,7 +75,7 @@
                     </div>
                 </a><a
                     class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
-                    style="width:80px;z-index:2;opacity:0.5" href="/account">
+                    style="width:80px;z-index:2;opacity:0.5" href="/">
                     <div class="relative sm:flex justify-center hidden w-full">
                         <div class="absolute w-full" style="border-bottom:2.5px solid transparent;bottom:-17px"></div><span
                             class="text-slate-50">Account</span>

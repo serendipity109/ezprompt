@@ -3,7 +3,7 @@
         <div class="fixed bottom-0 sm:top-0 z-50 flex flex-row items-center justify-between  backdrop-blur bg-opacity-80 border-t  sm:border-t-0 sm:border-b border-opacity-50  text-sm select-none bg-zinc-900 border-t-zinc-700 sm:border-b-zinc-700"
             style="height:56px;width:100vw">
             <div class="hidden sm:flex items-center cursor-pointer px-4 pl-6 left-0 h-full w-32 ">
-                <div class="font-semibold text-3xl text-slate-50 justify-center items-center">SDXL</div>
+                <div class="font-semibold text-3xl text-slate-50 justify-center items-center">EZPrompt</div>
             </div>
             <div class="flex relative items-center h-full -mt-1 w-full sm:w-auto">
                 <div style="height:32px;top:15px;display:absolute" class="absolute  rounded bg-zinc-700"></div><a
@@ -118,6 +118,9 @@
                                             <button @click="sdxl"
                                                 class="mt-2 text-sm bg-gradient-to-t from-indigo-900 via-indigo-900 to-indigo-800 rounded-full drop-shadow text-md px-8 py-2  transition-all  cursor-pointer active:scale-95 hover:brightness-110 shadow">Generate</button>
                                         </div>
+                                    </div>
+                                    <div class="mt-8 flex flex-col">
+                                        <el-progress v-if="showProgress" :text-inside="true" :stroke-width="12" :percentage="percentage" :color="'#5f00ff'"/>
                                     </div>
                                 </div>
                                 <div class="w-full mt-[20px] ml-0 md:ml-8 md:max-w-[300px]">
@@ -245,83 +248,133 @@
 </div></template>
 
 <script>
-import axios from "axios";
-import { defineComponent } from 'vue'
-import 'viewerjs/dist/viewer.css'
-import { api as viewerApi } from 'v-viewer'
+import { ref, defineComponent, onUnmounted } from 'vue';
+import axios from 'axios';
+import 'viewerjs/dist/viewer.css';
+import { api as viewerApi } from 'v-viewer';
 
 export default defineComponent({
-    data() {
-        return {
-            pmt: "",
-            npmt: "",
-            dimValue: 1,
-            dimLabels: {
-                0: '256 x 256',
-                1: '512 x 512',
-                2: '512 x 640',
-                3: '640 x 512',
-            },
-            cfgValue: 7.0,
-            nValue: 4,
-            datas: [],
-            urls: []
-        }
-    },
-    methods: {
-        async sdxl() {
-            const data = JSON.stringify({
-                prompt: this.pmt,
-                nprompt: this.npmt,
-                hw: this.dimValue,
-                n: this.nValue,
-                CFG: this.cfgValue,                
-            })
-            const response = await axios.post('http://192.168.3.16:8877/sdxl', data, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                }
-            });
-            this.datas = response.data.data;
-            this.datas.forEach(item => {
-                this.urls.push(item.result);
-            });
-        },
-        showViewer(urls) {
-            viewerApi({
-                options: {
-                    toolbar: true,
+  setup() {
+    const pmt = ref('');
+    const npmt = ref('');
+    const dimValue = ref(1);
+    const dimLabels = {
+      0: '256 x 256',
+      1: '512 x 512',
+      2: '512 x 640',
+      3: '640 x 512',
+    };
+    const cfgValue = ref(7.0);
+    const nValue = ref(4);
+    const datas = ref([]);
+    const urls = ref([]);
+    const showProgress = ref(false);
+    const percentage = ref(0);
+    let intervalId;
+
+    
+    const sdxl = async () => {
+        showProgress.value = true;
+        const data = JSON.stringify({
+            prompt: pmt.value,
+            nprompt: npmt.value,
+            hw: dimValue.value,
+            n: nValue.value,
+            CFG: cfgValue.value,
+        });
+        const [increaseResult, response] = await Promise.all([
+            startIncreasing(),
+            await axios.post('http://192.168.3.16:8877/sdxl', data, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 },
-                images: urls
             })
-        }
-    }
-})
+            ]);
+            console.log('Increase percentage result:', increaseResult);
+            percentage.value = 100;
+            showProgress.value = false;
+            datas.value = response.data.data;
+            datas.value.forEach((item) => {
+            urls.value.push(item.result);
+            });
+        };
+
+    const increasePercentage = async () => {
+      if (percentage.value + 30 > 95) {
+        percentage.value = 95;
+      } else {
+        percentage.value += 30;
+      }
+    };
+
+    const startIncreasing = () => {
+      if (!intervalId) {
+        intervalId = setInterval(increasePercentage, 1000);
+      }
+    };
+
+    onUnmounted(() => {
+      clearInterval(intervalId);
+    });
+
+    const showViewer = (urls) => {
+      viewerApi({
+        options: {
+          toolbar: true,
+        },
+        images: urls,
+      });
+    };
+
+    return {
+      pmt,
+      npmt,
+      dimValue,
+      dimLabels,
+      cfgValue,
+      nValue,
+      datas,
+      urls,
+      sdxl,
+      showViewer,
+      showProgress,
+      percentage,
+      startIncreasing,
+    };
+  },
+});
 </script>
 
-<style>.image-gallery {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .image-row {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .image-container {
-    margin: 0px;
-    flex: 1;
-    max-width: 20%;
-    height: auto;
-    text-align: center;
-  }
-  
-  .img-responsive {
-    max-width: 100%;
-    height: auto;
-  }</style>
+<style>
+.image-gallery {
+display: flex;
+flex-wrap: wrap;
+justify-content: center;
+align-items: center;
+}
+
+.image-row {
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+.image-container {
+margin: 0px;
+flex: 1;
+max-width: 20%;
+height: auto;
+text-align: center;
+}
+
+.img-responsive {
+max-width: 100%;
+height: auto;
+}
+.el-progress--line {
+    width: 800px;
+    margin: 0 auto;
+    display: off;
+}
+</style>
