@@ -144,8 +144,7 @@
                       class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 border border-gray-700 hover:bg-zinc-700">Search</button>
                 </div>
               </div>
-              <div class="mt-2"> </div>
-              <div class="w-full mt-4 px-1 relative"></div>
+              <el-progress v-if="showProgress" :text-inside="true" :stroke-width="20" :percentage="percentage" :color="'#5f005f'"/>
             </div>
           </div>
           <div w-full mt-4 px-1 relative>
@@ -217,79 +216,121 @@
   
 <script>
 import axios from "axios";
-import { defineComponent } from 'vue'
+import { defineComponent, ref, onMounted, onUnmounted } from 'vue'
 import 'viewerjs/dist/viewer.css'
 import { api as viewerApi } from 'v-viewer'
 
 export default defineComponent({
-  components: {
-    ProgressBar,
-  },
-  data() {
-    return {
-      message: "",
-      keyword: "",
-      images: [],
-      imageRows: [],
-      datas: [],
-      urls: [],
-      flag: 0,
-    };
-  },
-  async created() {
-    fetch("http://192.168.3.16:8877/")
-      .then((response) => response.json())
-      .then((data) => {
-        this.message = data.Model;
-      });
-  },
-  methods: {
-    async getImgs() {
-      this.flag = 1;
+  setup() {
+    const message = ref('');
+    const keyword = ref('');
+    const images = ref([]);
+    const imageRows = ref([]);
+    const datas = ref([]);
+    const urls = ref([]);
+    const flag = ref(0);
+    const showProgress = ref(false);
+    const percentage = ref(0);
+    let intervalId;
+
+    onMounted(async () => {
+      const response = await fetch('http://192.168.3.16:8877/');
+      const data = await response.json();
+      message.value = data.Model;
+    });
+
+    const getImgs = async () => {
+      flag.value = 1;
       const response = await axios.get('http://192.168.3.16:8877/get_images');
-      this.images = response.data;
+      images.value = response.data;
       console.log(response.data);
-      this.imageRows = this.chunkArray(this.images, 5);
-    },
-    chunkArray(array, size) {
+      imageRows.value = chunkArray(images.value, 5);
+    };
+
+    const chunkArray = (array, size) => {
       const chunkedArray = [];
       for (let i = 0; i < array.length; i += size) {
         chunkedArray.push(array.slice(i, i + size));
       }
       return chunkedArray;
-    },
-    async ezprompt() {
-      this.flag = 0;
-      this.urls = [];
+    };
+
+    const ezprompt = async () => {
+      flag.value = 0;
+      urls.value = [];
+      showProgress.value = true;
       const data = JSON.stringify({
-          prompt: this.keyword,  
-          prefix: "realistic"         
-      })
-      const response = await axios.post('http://192.168.3.16:8877/ezpmt', data, {
+        prompt: keyword.value,
+        prefix: 'realistic',
+      });
+      const [increaseResult, response] = await Promise.all([
+        startIncreasing(),
+        await axios.post('http://192.168.3.16:8877/ezpmt', data, {
           headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-          }
-      });
-      this.datas = response.data.data;
-      console.log(response.data);
-      this.datas.forEach(item => {
-          this.urls.push(item.result);
-      });
-    },
-    showViewer(urls) {
-      viewerApi({
-          options: {
-              toolbar: true,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
-          images: urls
-      })
-    }
+        })
+      ]);
+      console.log('Increase percentage result:', increaseResult);
+      datas.value = response.data.data;
+      percentage.value = 100;
+      showProgress.value = false;
+      console.log(response.data);
+      datas.value.forEach((item) => {
+        urls.value.push(item.result);
+      });
+    };
+
+    const showViewer = (urls) => {
+      viewerApi({
+        options: {
+          toolbar: true,
+        },
+        images: urls,
+      });
+    };
+
+    const increasePercentage = async () => {
+      if (percentage.value + 5 > 95) {
+        percentage.value = 95;
+      } else {
+        percentage.value += 5;
+      }
+    };
+
+    const startIncreasing = () => {
+      if (!intervalId) {
+        intervalId = setInterval(increasePercentage, 1000);
+      }
+    };
+
+    onUnmounted(() => {
+      clearInterval(intervalId);
+    });
+
+    return {
+      message,
+      keyword,
+      images,
+      imageRows,
+      datas,
+      urls,
+      flag,
+      showProgress,
+      getImgs,
+      chunkArray,
+      ezprompt,
+      showViewer,
+      percentage,
+      startIncreasing,
+    };
   },
 });
 </script>
 
-<style>.image-gallery {
+<style>
+.image-gallery {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -313,4 +354,10 @@ export default defineComponent({
 .img-responsive {
   max-width: 100%;
   height: auto;
-}</style>
+}
+.el-progress--line {
+  width: 500px;
+  margin: 0 auto;
+  display: off;
+}
+</style>
