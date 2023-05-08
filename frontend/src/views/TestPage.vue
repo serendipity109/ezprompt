@@ -1,68 +1,29 @@
-<template>
+<!-- <template>
   <div>
-    <div class="demo-progress">
-      <el-progress :text-inside="true" :stroke-width="26" :percentage="percentages[0]" :color="'#5f00af'"/>
-      <el-progress
-        :text-inside="true"
-        :stroke-width="24"
-        :percentage="percentages[1]"
-        status="success"
-      />
-      <el-progress
-        :text-inside="true"
-        :stroke-width="22"
-        :percentage="percentages[2]"
-        status="warning"
-      />
-      <el-progress
-        :text-inside="true"
-        :stroke-width="20"
-        :percentage="percentages[3]"
-        status="exception"
-      />
-    </div>
-    <el-button @click="startIncreasing">开始增加</el-button>
+    <el-radio v-model="radio" label="1">Option A</el-radio>
+    <el-radio v-model="radio" label="2">Option B</el-radio>
   </div>
 </template>
 
 <script>
-import { ref, onUnmounted } from 'vue';
-
 export default {
-  setup() {
-    const percentages = ref([70, 100, 80, 50]);
-    let intervalId;
-
-    const increasePercentages = () => {
-      percentages.value = percentages.value.map((percentage) => {
-        if (percentage + 5 > 95) {
-          return 95;
-        }
-        return percentage + 5;
-      });
-    };
-
-    const startIncreasing = () => {
-      if (!intervalId) {
-        intervalId = setInterval(increasePercentages, 1000);
-      }
-    };
-
-    onUnmounted(() => {
-      clearInterval(intervalId);
-    });
-
+  data() {
     return {
-      percentages,
-      startIncreasing,
+      radio: '1',
     };
   },
 };
 </script>
 
-<style scoped>
-.demo-progress .el-progress--line {
-  margin-bottom: 15px;
-  width: 350px;
+<style>
+.el-radio__input.is-checked .el-radio__inner {
+    border-color: purple;
+    background: purple;
 }
-</style>
+.el-radio__input.is-checked+.el-radio__label {
+    color: purple;
+}
+.el-radio__label {
+  color: #00000070;
+}
+</style> -->

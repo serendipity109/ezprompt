@@ -27,7 +27,7 @@
                       </svg></button>
                   </div>
                 </div>
-                <div class="flex justify-center"><button
+                <div class="flex justify-center"><button @click="styleSwitch"
                     class="ml-2 h-10 w-10 rounded-full cursor-pointer flex items-center justify-center  bg-transparent hover:bg-zinc-900"><svg
                       stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
                       stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
@@ -43,6 +43,10 @@
                     </svg></button></div>
               </div>
               <div class="flex w-full max-w-[600px] md:ml-[48px] px-4 pl-5 md:px-5"></div>
+              <div v-if="showStyle">
+                <el-radio v-model="radio" label="1">random</el-radio>
+                <el-radio v-model="radio" label="2">realistic</el-radio>
+              </div>
               <div class=" mb-8 flex flex-col items-center">
                 <div class="flex space-x-2">
                   <button @click="ezprompt"
@@ -56,7 +60,7 @@
           </div>
           <div w-full mt-4 px-1 relative>
             <div role="grid" v-if="flag == 1" class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
-              style="position: relative; width: 100%; max-width: 100%; height: 6053px; max-height: 6053px;">
+              style="position: relative; width: 100%; max-width: 100%;">
               <div class="image-row" v-for="(row, index) in imageRows" :key="index">
                 <div class="image-container" v-for="(image, index) in row" :key="index">
                   <router-link :to="'/image/' + image.img" :key="index" class="block relative group select-none overflow-hidden m-0.5 border-indigo-600  rounded-xl"
@@ -108,7 +112,7 @@
               </div>
             </div>
             <div role="grid" v-else-if="flag == 0" class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
-              style="position: relative; width: 100%; max-width: 100%; height: 6053px; max-height: 6053px;">
+              style="position: relative; width: 100%; max-width: 100%; ">
                 <div class="image-row">
                     <div class="image-container" v-for="(url, index) in urls" :key="index" style="">
                         <img v-bind:src="url" v-on:click="showViewer(urls)" style="object-fit:contain;height:100%;max-height:50vh" />
@@ -142,6 +146,9 @@ export default defineComponent({
     const flag = ref(0);
     const showProgress = ref(false);
     const percentage = ref(0);
+    const showStyle = ref(false);
+    const radio = ref('1');
+    const type = ref('all');
     let intervalId;
 
     onMounted(async () => {
@@ -170,10 +177,16 @@ export default defineComponent({
       flag.value = 0;
       urls.value = [];
       showProgress.value = true;
+      if (radio.value === '1') {
+        type.value = 'all';
+      } else if (radio.value == '2') {
+        type.value = 'realistic';
+      }
       const data = JSON.stringify({
         prompt: keyword.value,
-        prefix: 'realistic',
+        prefix: type.value,
       });
+      percentage.value = 0;
       const [increaseResult, response] = await Promise.all([
         startIncreasing(),
         await axios.post('http://192.168.3.16:8877/ezpmt', data, {
@@ -220,6 +233,10 @@ export default defineComponent({
       clearInterval(intervalId);
     });
 
+    function styleSwitch () {
+      this.showStyle = !this.showStyle
+    }
+
     return {
       message,
       keyword,
@@ -235,6 +252,9 @@ export default defineComponent({
       showViewer,
       percentage,
       startIncreasing,
+      styleSwitch,
+      showStyle,
+      radio
     };
   },
 });
@@ -270,5 +290,18 @@ export default defineComponent({
   width: 500px;
   margin: 0 auto;
   display: off;
+}
+.el-radio__input.is-checked .el-radio__inner {
+    border-color: #5f00ff;
+    background: #5f00ff;
+}
+.el-radio__input.is-checked+.el-radio__label {
+    color: #8a00ff;
+}
+.el-radio__inner {
+  background-color: #ffffff12;
+};
+.el-radio__label {
+  color: #ffffff6e;
 }
 </style>

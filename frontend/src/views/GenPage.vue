@@ -143,7 +143,7 @@
             </div>
             <div w-full mt-4 px-1 relative>
                 <div role="grid" class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
-                style="position: relative; width: 100%; max-width: 100%; height: 6053px; max-height: 6053px;">
+                style="position: relative; width: 100%; max-width: 100%; ">
                     <div class="image-row">
                         <div class="image-container" v-for="(url, index) in urls" :key="index" style="">
                             <img v-bind:src="url" v-on:click="showViewer(urls)" style="object-fit:contain;height:100%;max-height:50vh" />
