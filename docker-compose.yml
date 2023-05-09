@@ -17,7 +17,6 @@ services:
     volumes:
       - ./backend:/workspace
     environment:
-      - WORKERS=2
       - MINIO_USER=minioadmin
       - MINIO_PASSWORD=minioadmin
       - REDIS_HOST=cache

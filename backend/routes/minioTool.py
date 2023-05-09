@@ -7,8 +7,8 @@ from minio import Minio
 
 class MinioClient:
     def __init__(self):
-        MINIO_USER = os.environ.get("MINIO_USER", "minioadmin")
-        MINIO_PASSWORD = os.environ.get("MINIO_PASSWORD", "minioadmin")
+        MINIO_USER = os.environ.get("MINIO_USER", "")
+        MINIO_PASSWORD = os.environ.get("MINIO_PASSWORD", "")
         MINIO_HOST = os.environ.get("MINIO_HOST", "172.17.0.1")
         MINIO_PORT = os.environ.get("MINIO_PORT", "9000")
         MINIO_SECURE = bool(strtobool(os.environ.get('IE_MINIO_SECURE', "False")))

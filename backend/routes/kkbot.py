@@ -4,17 +4,21 @@ from pydantic import BaseModel
 import random
 from dotenv import load_dotenv
 import os
-from stability_sdk import client
-import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
-from fastapi.responses import FileResponse
-from PIL import Image
-import io
+from routes import minioTool
+import requests
+import base64
+import openai
 import time
+from io import BytesIO
+from PIL import Image
+
 
 load_dotenv()
-keys = [os.getenv('SDXL_KEY1'), os.getenv('SDXL_KEY2')]
+sdxl_keys = [os.getenv('SDXL_KEY1'), os.getenv('SDXL_KEY2')]
+openai_keys = [os.getenv('OPENAI_KEY1'), os.getenv('OPENAI_KEY2'), os.getenv('OPENAI_KEY3')]
 
 router = APIRouter() # point!
+minio_client = minioTool.MinioClient()
 
 class kbInput(BaseModel):
     prompt: str = ''
@@ -37,34 +41,45 @@ async def kbot(inp: kbInput):
         case '640x512':
             type = 4
             h, w = 640, 512
-    stability_key = random.sample(keys, 1)[0]
-    stability_api = client.StabilityInference(
-        key=stability_key, # API Key reference.
-        verbose=True, # Print debug messages.
-        engine="stable-diffusion-xl-beta-v2-2-2", # Set the engine to use for generation.
+    f = open('routes/prefix/preset.txt')
+    prefix = {"role": "user", "content": f.read()}
+    prefix["content"] += str("\t" + inp.prompt + f"in photographic style")
+    f.close()
+    model = "gpt-4"
+    openai.api_key = random.sample(openai_keys, 1)[0]
+    messages = [prefix]
+    completion = openai.ChatCompletion.create(
+        model=model,
+        messages=messages,
+        temperature=0,
     )
-    answers = await generate(stability_api, inp.prompt, h, w)
-    for resp in answers:
-        if resp.artifacts[0].finish_reason == 4:
-            return {"code": 404, "message": "Invalid prompts detected"}
-        for artifact in resp.artifacts:
-           if artifact.type == generation.ARTIFACT_IMAGE:
-                img = Image.open(io.BytesIO(artifact.binary))
-                filename = str(artifact.seed)+ ".png"
-                file_path = os.path.join("output", filename)
-                if type == 1:
-                    img = img.resize((256, 256))
-                elif type == 2:
-                    img = img.resize((128, 128))
-                img.save(file_path)
-                break
+    prompt = completion.choices[0].message.content
+    prompt = prompt.replace('"', '')
+    prompt = prompt.replace("young girl", "girl")
     
+    data = await REST(prompt, h, w)
+
+    for artifact in data["artifacts"]:
+        image = artifact["base64"]
+        filename = str(artifact["seed"]) + ".png"
+        file_path = f"./output/{filename}"
+        im_bytes = base64.b64decode(image)
+        im_file = BytesIO(im_bytes) 
+        img = Image.open(im_file) 
+        if type == 1:
+            img = img.resize((256, 256))
+        elif type == 2:
+            img = img.resize((128, 128))
+        img.save(file_path)
+        minio_client.upload_file('ezrender', filename, file_path)
+        url = minio_client.share_url("ezrender", filename).replace('http://172.17.0.1:9000', 'https://voice-dev.emotibot.com/ezrender-minio')
+   
     waste_milliseconds = (time.time() - start)*1000
     return {
         "code": 200,
         "message": "",
         "data": {
-            "result": f"http://192.168.3.16/api/v1/download/image/{filename}",
+            "result": url,
             "candidates": [],
             "waste_milliseconds": waste_milliseconds,
             "extend_info": "",
@@ -73,20 +88,53 @@ async def kbot(inp: kbInput):
         }
     }
 
-async def generate(stability_api, pmt, h, w):
-    answers = stability_api.generate(
-        prompt= [generation.Prompt(text=pmt,parameters=generation.PromptParameters(weight=1.2)),
-                 generation.Prompt(text="ugly",parameters=generation.PromptParameters(weight=-2)),
-                 generation.Prompt(text="tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, bad anatomy, watermark, signature, cut off, low contrast, underexposed, overexposed, bad art, beginner, amateur, distorted face",parameters=generation.PromptParameters(weight=-1))], # Negative prompting is now possible via the API, simply assign a negative weight to a prompt.
-        steps=30, # Amount of inference steps performed on image generation. Defaults to 30.
-        cfg_scale=7, # Influences how strongly your generation is guided to match your prompt.
-                    # Setting this value higher increases the strength in which it tries to match your prompt.
-                    # Defaults to 7.0 if not specified.
-        width=w, # Generation width, defaults to 512 if not included.
-        height=h, # Generation height, defaults to 512 if not included.
-        samples=1, # Number of images to generate, defaults to 1 if not included.
-        sampler=generation.SAMPLER_K_DPMPP_2M # Choose which sampler we want to denoise our generation with.
-                                                    # Defaults to k_dpmpp_2m if not specified. Clip Guidance only supports ancestral samplers.
-                                                    # (Available Samplers: ddim, plms, k_euler, k_euler_ancestral, k_heun, k_dpm_2, k_dpm_2_ancestral, k_dpmpp_2s_ancestral, k_lms, k_dpmpp_2m)
+async def REST(prompt, h, w, style="photographic"):
+    stability_key = random.sample(sdxl_keys, 1)[0]
+    print(prompt + '\n' + style)        
+    if style:
+        payload = {
+                "text_prompts": [
+                    {
+                        "text": prompt
+                    }
+                ],
+                "cfg_scale": 7,
+                "clip_guidance_preset": "FAST_BLUE",
+                "height": h,
+                "width": w,
+                "samples": 1,
+                "steps": 30,
+                "style_preset": style,
+        }
+    else:
+        payload = {
+                "text_prompts": [
+                    {
+                        "text": prompt,
+                        "weight": 1.2
+                    },
+                    {
+                        "text": "tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, bad anatomy, watermark, signature, cut off, low contrast, underexposed, overexposed, bad art, beginner, amateur, distorted face",
+                        "weight": -1
+                    }
+                ],
+                "cfg_scale": 7,
+                "clip_guidance_preset": "FAST_BLUE",
+                "height": 512,
+                "width": 512,
+                "samples": 4,
+                "steps": 30,
+        }       
+    response = requests.post(
+        "https://api.stability.ai/v1/generation/stable-diffusion-xl-beta-v2-2-2/text-to-image",
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f"Bearer {stability_key}"
+        },
+        json=payload
     )
-    return answers
+    if response.status_code != 200:
+        raise Exception("Non-200 response: " + str(response.text))
+    
+    return response.json()
