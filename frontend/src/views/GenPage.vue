@@ -27,7 +27,7 @@
                                         </div>
                                     </div>
                                     <div class="mt-8 flex flex-col">
-                                        <el-progress v-if="showProgress" :text-inside="true" :stroke-width="12" :percentage="percentage" :color="'#5f00ff'"/>
+                                        <el-progress v-if="showProgress" :text-inside="true" :stroke-width="15" :percentage="percentage" :color="'#5f00ff'"/>
                                     </div>
                                 </div>
                                 <div class="w-full mt-[20px] ml-0 md:ml-8 md:max-w-[300px]">
