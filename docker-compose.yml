@@ -1,10 +1,19 @@
 version: '3'
 services:
-  app:
-    image: harbor.emotibot.com/image/sdxl:${IMAGE_TAG}
+  frontend:
+    image: harbor.emotibot.com/image/ezpmt-frontend:${IMAGE_TAG}
     build:
         context: ./
-        dockerfile: ./docker/Dockerfile
+        dockerfile: ./docker/frontend
+    volumes:
+      - ./frontend:/workspace
+    ports:
+        - 8080:8080
+  backend:
+    image: harbor.emotibot.com/image/ezpmt-backend:${IMAGE_TAG}
+    build:
+        context: ./
+        dockerfile: ./docker/backend
     volumes:
       - ./backend:/workspace
     environment:

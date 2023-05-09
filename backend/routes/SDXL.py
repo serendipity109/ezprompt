@@ -100,7 +100,7 @@ async def ezpmt(inp: ezInput):
         style = ""
         model = "gpt-4"
     elif inp.style == "fantasy-art":
-        prefix = {"role": "user", "content": f"Translate {inp.prompt} into English, the translation is ordered by small objects to big objects."}
+        prefix = {"role": "user", "content": f"Translate {inp.prompt} into English. If there are more than three objects, the translation must be ordered from small objects to big objects."}
         style = inp.style
         model = "gpt-3.5-turbo"
     else:
