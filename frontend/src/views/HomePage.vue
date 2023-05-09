@@ -44,8 +44,18 @@
               </div>
               <div class="flex w-full max-w-[600px] md:ml-[48px] px-4 pl-5 md:px-5"></div>
               <div v-if="showStyle">
-                <el-radio v-model="radio" label="1">random</el-radio>
-                <el-radio v-model="radio" label="2">realistic</el-radio>
+                <div class=" mt-2 flex flex-col items-center">Style Selection</div>
+                <div class=" radioRow">
+                  <el-radio v-model="radio" label="1">creative</el-radio>
+                  <el-radio v-model="radio" label="2">realistic</el-radio>
+                  <el-radio v-model="radio" label="3">anime</el-radio>
+                </div>
+                <div class=" radioRow">
+                  <el-radio v-model="radio" label="4">3D model</el-radio>
+                  <el-radio v-model="radio" label="5">cinematic</el-radio>
+                  <el-radio v-model="radio" label="6">film</el-radio>
+                  <el-radio v-model="radio" label="7">fantasy art</el-radio>
+                </div>
               </div>
               <div class=" mb-8 flex flex-col items-center">
                 <div class="flex space-x-2">
@@ -178,13 +188,23 @@ export default defineComponent({
       urls.value = [];
       showProgress.value = true;
       if (radio.value === '1') {
-        type.value = 'all';
+        type.value = 'creative';
       } else if (radio.value == '2') {
-        type.value = 'realistic';
-      }
+        type.value = 'photographic';
+      } else if (radio.value == '3') {
+        type.value = 'anime';
+      } else if (radio.value == '4') {
+        type.value = '3d-model';
+      } else if (radio.value == '5') {
+        type.value = 'cinematic';
+      } else if (radio.value == '6') {
+        type.value = 'analog-film';
+      } else if (radio.value == '7') {
+        type.value = 'fantasy-art';
+      } 
       const data = JSON.stringify({
         prompt: keyword.value,
-        prefix: type.value,
+        style: type.value,
       });
       percentage.value = 0;
       const [increaseResult, response] = await Promise.all([
@@ -303,5 +323,9 @@ export default defineComponent({
 };
 .el-radio__label {
   color: #ffffff6e;
+}
+.radioRow{
+  display: flex;
+  justify-content: center;
 }
 </style>

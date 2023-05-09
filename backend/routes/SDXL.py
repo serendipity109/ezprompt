@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
+import base64
 from typing import Literal
+import requests
 import random
 from dotenv import load_dotenv
 import os
@@ -12,9 +14,11 @@ from routes import minioTool
 import io
 import time
 
+
 load_dotenv()
-keys = [os.getenv('KEY1'), os.getenv('KEY2')]
-openai.api_key = os.getenv('OPENAI_KEY')
+sdxl_keys = [os.getenv('SDXL_KEY1'), os.getenv('SDXL_KEY2')]
+openai_keys = [os.getenv('OPENAI_KEY1'), os.getenv('OPENAI_KEY2'), os.getenv('OPENAI_KEY3')]
+
 
 router = APIRouter()
 minio_client = minioTool.MinioClient()
@@ -42,13 +46,13 @@ async def sdxl(inp: xlInput):
         case 3:
             h, w = 512, 640
 
-    stability_key = random.sample(keys, 1)[0]
+    stability_key = random.sample(sdxl_keys, 1)[0]
     stability_api = client.StabilityInference(
         key=stability_key, # API Key reference.
         verbose=True, # Print debug messages.
         engine="stable-diffusion-xl-beta-v2-2-2", # Set the engine to use for generation.
     )
-    answers = await generate(stability_api, inp.prompt, inp.nprompt, h, w, inp.n)
+    answers = await gRPC(stability_api, inp.prompt, inp.nprompt, h, w, inp.n)
     urls = []
     for resp in answers:
         if resp.artifacts[0].finish_reason == 4:
@@ -83,43 +87,50 @@ async def sdxl(inp: xlInput):
 
 class ezInput(BaseModel):
     prompt: str = ''
-    prefix: Literal["all", "realistic", "art"] = "all"
+    style: str = "creative"
 
 @router.post("/ezpmt")
 async def ezpmt(inp: ezInput):    
     start = time.time()
-    f = open(f'routes/prefix/{inp.prefix}.txt')
-    prefix = {"role": "user", "content": f.read()}
-    f.close()
-    prefix["content"] += str("\n" + inp.prompt)
+    if inp.style == "creative":
+        f = open('routes/prefix/creative.txt')
+        prefix = {"role": "user", "content": f.read()}
+        prefix["content"] += str("\n" + inp.prompt)
+        f.close()
+        style = ""
+        model = "gpt-4"
+    elif inp.style == "fantasy-art":
+        prefix = {"role": "user", "content": f"Translate {inp.prompt} into English, the translation is ordered by small objects to big objects."}
+        style = inp.style
+        model = "gpt-3.5-turbo"
+    else:
+        f = open('routes/prefix/preset.txt')
+        prefix = {"role": "user", "content": f.read()}
+        prefix["content"] += str("\t" + inp.prompt + f"in {inp.style} style")
+        f.close()
+        style = inp.style
+        model = "gpt-4"
+    openai.api_key = random.sample(openai_keys, 1)[0]
     messages = [prefix]
     completion = openai.ChatCompletion.create(
-        model="gpt-4",
+        model=model,
         messages=messages,
         temperature=0,
     )
     prompt = completion.choices[0].message.content
-    print(prompt)
-    stability_key = random.sample(keys, 1)[0]
-    stability_api = client.StabilityInference(
-        key=stability_key, # API Key reference.
-        verbose=True, # Print debug messages.
-        engine="stable-diffusion-xl-beta-v2-2-2", # Set the engine to use for generation.
-    )
-    nprompt = "tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, bad anatomy, watermark, signature, cut off, low contrast, underexposed, overexposed, bad art, beginner, amateur, distorted face"
-    answers = await generate(stability_api, prompt, nprompt, 512, 512, 4)
+    prompt = prompt.replace('"', '')
+    prompt = prompt.replace("young girl", "girl")
+    
+    data = await REST(prompt, style)
     urls = []
-    for resp in answers:
-        if resp.artifacts[0].finish_reason == 4:
-            return {"code": 404, "message": "Invalid prompts detected"}
-        for artifact in resp.artifacts:
-           if artifact.type == generation.ARTIFACT_IMAGE:
-                img = Image.open(io.BytesIO(artifact.binary))
-                filename = str(artifact.seed)+ ".png"
-                file_path = os.path.join("output", filename)
-                img.save(file_path)
-                minio_client.upload_file('test', filename, file_path)
-                urls.append(minio_client.share_url("test", filename).replace('172.17.0.1:9000', '192.168.3.16:8087'))
+    for artifact in data["artifacts"]:
+        image = artifact["base64"]
+        filename = str(artifact["seed"]) + ".png"
+        file_path = f"./output/{filename}"
+        with open(file_path, "wb") as f:
+            f.write(base64.b64decode(image))
+            minio_client.upload_file('test', filename, file_path)
+            urls.append(minio_client.share_url("test", filename).replace('172.17.0.1:9000', '192.168.3.16:8087'))
     
     waste_milliseconds = (time.time() - start)*1000
     data = []
@@ -138,7 +149,7 @@ async def ezpmt(inp: ezInput):
         "data": data
     }
 
-async def generate(stability_api, pmt, npmt, h, w, n):
+async def gRPC(stability_api, pmt, npmt, h, w, n):
     answers = stability_api.generate(
         prompt= [generation.Prompt(text=pmt,parameters=generation.PromptParameters(weight=1.2)),
                  generation.Prompt(text="ugly",parameters=generation.PromptParameters(weight=-2)),
@@ -155,3 +166,54 @@ async def generate(stability_api, pmt, npmt, h, w, n):
                                                     # (Available Samplers: ddim, plms, k_euler, k_euler_ancestral, k_heun, k_dpm_2, k_dpm_2_ancestral, k_dpmpp_2s_ancestral, k_lms, k_dpmpp_2m)
     )
     return answers
+
+async def REST(prompt, style):
+    stability_key = random.sample(sdxl_keys, 1)[0]
+    print(prompt + '\n' + style)        
+    if style:
+        payload = {
+                "text_prompts": [
+                    {
+                        "text": prompt
+                    }
+                ],
+                "cfg_scale": 7,
+                "clip_guidance_preset": "FAST_BLUE",
+                "height": 512,
+                "width": 512,
+                "samples": 4,
+                "steps": 30,
+                "style_preset": style,
+        }
+    else:
+        payload = {
+                "text_prompts": [
+                    {
+                        "text": prompt,
+                        "weight": 1.2
+                    },
+                    {
+                        "text": "tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, bad anatomy, watermark, signature, cut off, low contrast, underexposed, overexposed, bad art, beginner, amateur, distorted face",
+                        "weight": -1
+                    }
+                ],
+                "cfg_scale": 7,
+                "clip_guidance_preset": "FAST_BLUE",
+                "height": 512,
+                "width": 512,
+                "samples": 4,
+                "steps": 30,
+        }       
+    response = requests.post(
+        "https://api.stability.ai/v1/generation/stable-diffusion-xl-beta-v2-2-2/text-to-image",
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f"Bearer {stability_key}"
+        },
+        json=payload
+    )
+    if response.status_code != 200:
+        raise Exception("Non-200 response: " + str(response.text))
+    
+    return response.json()

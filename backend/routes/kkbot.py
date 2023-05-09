@@ -12,7 +12,7 @@ import io
 import time
 
 load_dotenv()
-keys = [os.getenv('KEY1'), os.getenv('KEY2')]
+keys = [os.getenv('SDXL_KEY1'), os.getenv('SDXL_KEY2')]
 
 router = APIRouter() # point!
 
