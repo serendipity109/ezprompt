@@ -14,6 +14,7 @@ from PIL import Image
 
 
 load_dotenv()
+MINIO_OUTPUT_URL = os.environ.get("MINIO_OUTPUT_URL", "")
 sdxl_keys = [os.getenv('SDXL_KEY1'), os.getenv('SDXL_KEY2')]
 openai_keys = [os.getenv('OPENAI_KEY1'), os.getenv('OPENAI_KEY2'), os.getenv('OPENAI_KEY3')]
 
@@ -72,7 +73,7 @@ async def kbot(inp: kbInput):
             img = img.resize((128, 128))
         img.save(file_path)
         minio_client.upload_file('ezrender', filename, file_path)
-        url = minio_client.share_url("ezrender", filename).replace('http://172.17.0.1:9000', 'https://voice-dev.emotibot.com/ezrender-minio')
+        url = minio_client.share_url("ezrender", filename).replace('http://172.17.0.1:9000', MINIO_OUTPUT_URL)
    
     waste_milliseconds = (time.time() - start)*1000
     return {
