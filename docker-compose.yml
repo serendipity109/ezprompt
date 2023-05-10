@@ -1,7 +1,7 @@
 version: '3'
 services:
   frontend:
-    image: harbor.emotibot.com/image/ezpmt-frontend:${IMAGE_TAG}
+    image: harbor.emotibot.com/emotimage/ezpmt-frontend:${IMAGE_TAG}
     build:
         context: ./
         dockerfile: ./docker/frontend
@@ -10,15 +10,17 @@ services:
     ports:
         - 8080:8080
   backend:
-    image: harbor.emotibot.com/image/ezpmt-backend:${IMAGE_TAG}
+    image: harbor.emotibot.com/emotimage/ezpmt-backend:${IMAGE_TAG}
     build:
         context: ./
         dockerfile: ./docker/backend
     volumes:
       - ./backend:/workspace
     environment:
-      - MINIO_USER=minioadmin
-      - MINIO_PASSWORD=minioadmin
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_URL=172.17.0.1:9000
+      - MINIO_SECURE=false
       - REDIS_HOST=cache
       - REDIS_PORT=6379
       - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81

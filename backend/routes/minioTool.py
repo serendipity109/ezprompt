@@ -7,20 +7,15 @@ from minio import Minio
 
 class MinioClient:
     def __init__(self):
-        MINIO_USER = os.environ.get("MINIO_USER", "")
-        MINIO_PASSWORD = os.environ.get("MINIO_PASSWORD", "")
-        MINIO_HOST = os.environ.get("MINIO_HOST", "172.17.0.1")
-        MINIO_PORT = os.environ.get("MINIO_PORT", "9000")
-        MINIO_SECURE = bool(strtobool(os.environ.get('IE_MINIO_SECURE', "False")))
+        MINIO_ACCESS_KEY = os.environ.get("MINIO_ACCESS_KEY", "")
+        MINIO_SECRET_KEY = os.environ.get("MINIO_SECRET_KEY", "")
+        MINIO_URL = os.environ.get("MINIO_URL", "")
+        MINIO_SECURE = bool(strtobool(os.environ.get('MINIO_SECURE', "")))
 
-        minio_username = MINIO_USER
-        minio_password = MINIO_PASSWORD
-        minio_hostname = MINIO_HOST
-        minio_port = MINIO_PORT
         self.client = Minio(
-            f"{minio_hostname}:{minio_port}",
-            access_key=minio_username,
-            secret_key=minio_password,
+            MINIO_URL,
+            access_key=MINIO_ACCESS_KEY,
+            secret_key=MINIO_SECRET_KEY,
             secure=MINIO_SECURE,
         )
 
