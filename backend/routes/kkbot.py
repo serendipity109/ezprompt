@@ -25,7 +25,7 @@ class kbInput(BaseModel):
     prompt: str = ''
     size: Literal['512x512', '256x256', '128x128', '512x640', '640x512'] = '512x512'
 
-@router.post("/kkbot")
+@router.post("/ezrender/kkbot")
 async def kbot(inp: kbInput):    
     start = time.time()
     h, w = 512, 512
