@@ -6,7 +6,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from routes import kkbot, magicwriter, SDXL, t2i, minioTool, redisTool
+from routes import kkbot, magicwriter, SDXL, t2i
+from utils import minioTool, redisTool
 
 
 app = FastAPI()

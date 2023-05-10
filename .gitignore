@@ -1,3 +1,5 @@
 backend/output
 minio
+mysql
+cache
 *.pyc

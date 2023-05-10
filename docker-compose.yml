@@ -48,3 +48,11 @@ services:
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes: 
       - ./backend/cache:/data
+  mysql:
+    container_name: mysql
+    image: mysql
+    volumes:
+      - ./backend/mysql:/var/lib/mysql
+    environment: 
+      MYSQL_ROOT_PASSWORD: mysqladmin
+      MYSQL_DATABASE: ezprompt
