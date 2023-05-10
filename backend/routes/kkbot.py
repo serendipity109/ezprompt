@@ -72,8 +72,8 @@ async def kbot(inp: kbInput):
         elif type == 2:
             img = img.resize((128, 128))
         img.save(file_path)
-        minio_client.upload_file('ezrender', filename, file_path)
-        url = minio_client.share_url("ezrender", filename).replace('http://172.17.0.1:9000', MINIO_OUTPUT_URL)
+        minio_client.upload_file('ezrender-minio', filename, file_path)
+        url = minio_client.share_url("ezrender-minio", filename).replace('http://172.17.0.1:9000', MINIO_OUTPUT_URL)
    
     waste_milliseconds = (time.time() - start)*1000
     return {
