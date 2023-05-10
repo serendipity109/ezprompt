@@ -18,8 +18,10 @@ services:
       - ./backend:/workspace
     environment:
       - WORKERS=2
-      - MINIO_USER=minioadmin
-      - MINIO_PASSWORD=minioadmin
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_URL=172.17.0.1:9000
+      - MINIO_SECURE=false
       - REDIS_HOST=cache
       - REDIS_PORT=6379
       - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
