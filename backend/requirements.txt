@@ -3,6 +3,7 @@ fastapi
 minio
 openai
 Pillow
+PyMySQL
 python-dotenv
 redis
 stability-sdk
