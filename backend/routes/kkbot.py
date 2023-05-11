@@ -73,7 +73,7 @@ async def kbot(inp: kbInput):
             img = img.resize((128, 128))
         img.save(file_path)
         minio_client.upload_file('ezrender-minio', filename, file_path)
-        url = minio_client.share_url("ezrender-minio", filename).replace('http://172.17.0.1:9000', MINIO_OUTPUT_URL)
+        url = minio_client.share_url("ezrender-minio", filename).replace('http://172.17.0.1:9000', 'https://voice-dev.emotibot.com')
    
     waste_milliseconds = (time.time() - start)*1000
     return {
