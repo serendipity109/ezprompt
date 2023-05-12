@@ -1,8 +1,10 @@
 apscheduler
+cryptography
 fastapi
 minio
 openai
 Pillow
+pymysql
 python-dotenv
 redis
 stability-sdk
