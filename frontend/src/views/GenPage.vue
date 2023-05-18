@@ -52,7 +52,7 @@
                                                     <p>Dimensions (w x h)</p>
                                                 </div>
                                                 <div class="">
-                                                    <v-slider :ticks="dimLabels" :max="3" step="1" tick-size="4"
+                                                    <v-slider :ticks="dimLabels" :max="2" step="1" tick-size="3"
                                                         v-model="dimValue" hide-details ></v-slider>
                                                     <input style="display:none" value="4" />
                                                     <div class="flex justify-between w-full  select-none mt-1 text-base">
@@ -170,10 +170,9 @@ export default defineComponent({
     const npmt = ref('');
     const dimValue = ref(1);
     const dimLabels = {
-        0: '256 x 256',
+        0: '640 x 512',
         1: '512 x 512',
         2: '512 x 640',
-        3: '640 x 512',
     };
     const cfgValue = ref(7.0);
     const nValue = ref(4);
@@ -186,6 +185,7 @@ export default defineComponent({
 
     const sdxl = async () => {
         showProgress.value = true;
+        urls.value = [];
         const data = JSON.stringify({
             prompt: pmt.value,
             nprompt: npmt.value,
@@ -193,6 +193,7 @@ export default defineComponent({
             n: nValue.value,
             CFG: cfgValue.value,
         });
+        percentage.value = 0;
         const [increaseResult, response] = await Promise.all([
             startIncreasing(),
             await axios.post('http://192.168.3.16:8877/sdxl', data, {

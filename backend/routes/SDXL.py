@@ -34,18 +34,14 @@ class xlInput(BaseModel):
 async def sdxl(inp: xlInput):    
     print(inp)
     start = time.time()
-    flag = 0
     match inp.hw:
         case 0:
-            h, w = 512, 512
-            flag = 1
+            h, w = 512, 640
         case 1:
             h, w = 512, 512
         case 2:
             h, w = 640, 512
-        case 3:
-            h, w = 512, 640
-
+            
     stability_key = random.sample(sdxl_keys, 1)[0]
     stability_api = client.StabilityInference(
         key=stability_key, # API Key reference.
@@ -62,8 +58,6 @@ async def sdxl(inp: xlInput):
                 img = Image.open(io.BytesIO(artifact.binary))
                 filename = str(artifact.seed)+ ".png"
                 file_path = os.path.join("output", filename)
-                if flag == 1:
-                    img = img.resize((256, 256))
                 img.save(file_path)
                 minio_client.upload_file('test', filename, file_path)
                 urls.append(minio_client.share_url("test", filename).replace('172.17.0.1:9000', '192.168.3.16:8087'))

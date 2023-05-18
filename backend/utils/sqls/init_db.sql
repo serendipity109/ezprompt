@@ -18,12 +18,26 @@ CREATE TABLE `trans` (
   `_id` varchar(24) NOT NULL DEFAULT '',
   `username` varchar(100) DEFAULT NULL,
   `status` varchar(20) DEFAULT NULL,
-  `img1` varchar(100) DEFAULT NULL,
-  `img2` varchar(100) DEFAULT NULL,
-  `img3` varchar(100) DEFAULT NULL,
-  `img4` varchar(100) DEFAULT NULL,
+  `prompt_id` varchar(100) DEFAULT NULL,
+  `img1` varchar(1000) DEFAULT NULL,
+  `img2` varchar(1000) DEFAULT NULL,
+  `img3` varchar(1000) DEFAULT NULL,
+  `img4` varchar(1000) DEFAULT NULL,
   `elapsed_time` float(50) DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
   PRIMARY KEY (`_id`),
   FOREIGN KEY (`username`) REFERENCES users(`username`) 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `imgs` (
+  `_id` varchar(24) NOT NULL DEFAULT '',
+  `trans_id` varchar(24) NOT NULL DEFAULT '',
+  `username` varchar(100) DEFAULT NULL,
+  `prompt_id` varchar(100) DEFAULT NULL,
+  `img` varchar(1000) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`_id`),
+  FOREIGN KEY (`trans_id`) REFERENCES trans(`_id`),
+  FOREIGN KEY (`prompt_id`) REFERENCES trans(`prompt_id`),
+  FOREIGN KEY (`username`) REFERENCES trans(`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
