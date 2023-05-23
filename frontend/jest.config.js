@@ -1,10 +1,3 @@
 module.exports = {
-  preset: '@vue/cli-plugin-unit-jest',
-  testMatch: [
-    '**/tests/unit/**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)'
-  ],
-  transform: {
-    '^.+\\.(js|jsx)?$': 'babel-jest',
-    '.*\\.(vue)$': 'vue-jest'
-  }
+  preset: '@vue/cli-plugin-unit-jest'
 }
