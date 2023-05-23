@@ -8,7 +8,7 @@ services:
     volumes:
       - ./frontend:/workspace
     ports:
-        - 8087:80
+        - 8080:8080
   backend:
     image: harbor.emotibot.com/emotimage/ezpmt-backend:${IMAGE_TAG}
     build:
@@ -64,3 +64,18 @@ services:
     environment: 
       MYSQL_ROOT_PASSWORD: password
       TZ: UTC
+  nginx:
+    container_name: nginx
+    build:
+        context: ./
+        dockerfile: ./docker/nginx
+    ports:
+      - 8087:80
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html
+    depends_on:
+      - frontend
+      - backend
+      - minio
+      - cache
+      - mysql
