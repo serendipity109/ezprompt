@@ -7,7 +7,7 @@
     <div class="flex relative items-center h-full -mt-1 w-full sm:w-auto">
         <div style="height:32px;top:15px;display:absolute" class="absolute  rounded bg-zinc-700"></div><a
             class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
-            :style="{ opacity: getNavOpa('home') }" style="width:80px;z-index:2;" href="/home">
+            :style="{ opacity: getNavOpa('home') }" style="width:80px;z-index:2;" v-on:click="goToPage('/home')">
             <div class="relative sm:flex justify-center hidden w-full">
                 <div class="absolute w-full" :style="{ borderBottom: '2.5px ' + getNavStyle('home') }" style="bottom:-17px"></div><span
                     class="text-slate-50">Home</span>
@@ -22,7 +22,7 @@
             </div>
         </a><a
             class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
-            :style="{ opacity: getNavOpa('generate') }" style="width:80px;z-index:2;" href="/generate">
+            :style="{ opacity: getNavOpa('generate') }" style="width:80px;z-index:2;" v-on:click="goToPage('/generate')">
             <div class="relative sm:flex justify-center hidden w-full">
                 <div class="absolute w-full" :style="{ borderBottom: '2.5px ' + getNavStyle('generate') }" style="bottom:-17px"></div><span
                     class="text-slate-50">Generate</span>
@@ -96,12 +96,17 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
+import { useRouter } from 'vue-router'
 export default defineComponent({
     name: 'NavBar',
     props: {
         page: String,
     },
     setup(props) {
+        const router = useRouter()
+        const goToPage = (page) => {
+            router.push(page)
+        }
         function getNavStyle(pagnition) {
             return props.page === pagnition ? 'solid #6366f1' : 'solid transparent';
         }
@@ -110,7 +115,8 @@ export default defineComponent({
         }
         return {
             getNavStyle,
-            getNavOpa
+            getNavOpa,
+            goToPage
         };
     },
 });

@@ -1,14 +1,33 @@
-FROM node:lts-alpine
+# FROM node:lts-alpine
 
-RUN npm install @vue/cli@5.0.8 -g
+# RUN npm install @vue/cli@5.0.8 -g
 
-COPY ./frontend /workspace
+# COPY ./frontend /workspace
 
-WORKDIR /workspace
+# WORKDIR /workspace
 
-RUN npm install
+# RUN npm install
 
-HEALTHCHECK --start-period=10m --interval=10m --timeout=10m --retries=3 \
-    CMD curl http://127.0.0.1:8080
+# HEALTHCHECK --start-period=10m --interval=10m --timeout=10m --retries=3 \
+#     CMD curl http://127.0.0.1:8080
 
-CMD ["sh", "-c", "npm run build && npm run serve"]
+# CMD ["sh", "-c", "npm run build && npm run serve"]
+
+# Stage-A
+# 用一個有 node 環境的 Image，來
+FROM node:lts-alpine as build-stage
+
+# 建置 dist/
+WORKDIR /app
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/. .
+RUN npm run build
+
+# Stage-B: 
+# 使用 NGINX image
+FROM nginx
+
+WORKDIR /app
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+COPY nginx/vue.conf /etc/nginx/conf.d/default.conf
