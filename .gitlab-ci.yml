@@ -3,7 +3,7 @@ stages:
 
 frontend_test:
   stage: test
-  image: node:lts-alpine
+  image: harbor.emotibot.com/image-base/node:10.9.0-jessie
   script:
     - cd frontend
     - npm ci
