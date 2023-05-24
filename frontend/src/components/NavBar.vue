@@ -104,8 +104,8 @@ export default defineComponent({
     },
     setup(props) {
         const router = useRouter()
-        const goToPage = (page) => {
-            router.push(page)
+        const goToPage = (pagnition) => {
+            router.push(pagnition)
         }
         function getNavStyle(pagnition) {
             return props.page === pagnition ? 'solid #6366f1' : 'solid transparent';
