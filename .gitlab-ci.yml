@@ -1,0 +1,6 @@
+unit test:
+  image: node:lts-alpine
+  stage: test
+  script:
+    - npm ci
+    - npm run test:unit

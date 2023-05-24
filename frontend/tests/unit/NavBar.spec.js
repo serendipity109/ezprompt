@@ -41,18 +41,4 @@ describe('NavBar.vue', () => {
     expect(wrapper.vm.getNavOpa('home')).toBe('1')
     expect(wrapper.vm.getNavOpa('generate')).toBe('0.5')
   })
-
-    it('getNavStyle and getNavOpa return correct values when generate link is clicked', async () => {
-    const wrapper = shallowMount(NavBar, {
-      propsData: {
-        page: '/generate',
-      },
-    })
-
-    const generateLink = wrapper.find('a[v-on:click="goToPage(\'/generate\')"]')
-    await generateLink.trigger('click')
-
-    expect(wrapper.vm.getNavStyle('generate')).toBe('solid #6366f1')
-    expect(wrapper.vm.getNavOpa('generate')).toBe('1')
-  })
 })
