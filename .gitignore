@@ -3,3 +3,4 @@ minio
 mysql
 cache
 *.pyc
+backend/cache/dump.rdb

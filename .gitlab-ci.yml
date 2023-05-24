@@ -1,6 +1,5 @@
-unit test:
-  image: node:lts-alpine
+unit-test:
+  image: harbor.emotibot.com/emotimage/ezpmt-frontend
   stage: test
   script:
-    - npm ci
     - npm run test:unit
