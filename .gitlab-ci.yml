@@ -4,9 +4,11 @@ stages:
 frontend_test:
   stage: test
   image: harbor.emotibot.com/emotimage/node:lts-alpine
-  script:
+  before_script:
     - cd frontend
     - npm ci
+  script:
     - npm run test:unit
+    - echo "Unit Test DONE..."
   only:
     - master
