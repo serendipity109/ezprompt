@@ -1,4 +1,4 @@
-FROM node:lts-alpine
+FROM harbor.emotibot.com/emotimage/node:lts-alpine
 
 WORKDIR /workspace
 
