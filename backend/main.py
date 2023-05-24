@@ -70,7 +70,7 @@ async def get_image(img='s0.png'):
     return {"img_res": img_res, "pmt_res": pmt_res}
 
 # 定期刪檔案
-FOLDER_PATH = '/home/adamwang/stabilityaixl/output'  
+FOLDER_PATH = '/workspace/output'  
 DELETE_INTERVAL = timedelta(days=1)
 
 def delete_old_files(folder_path: str, max_age: timedelta):

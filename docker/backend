@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM harbor.emotibot.com/emotimage/python:3.10
 
 ENV PYTHONIOENCODING=utf-8
 
