@@ -48,7 +48,6 @@ build:
   image: docker:20.10.2
   stage: build
   before_script:
-      - apk add --update make git py-pip curl
       - pip install docker-compose==1.23.2
       - docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
   script:
