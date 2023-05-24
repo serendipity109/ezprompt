@@ -1,5 +1,12 @@
-unit-test:
-  image: harbor.emotibot.com/emotimage/ezpmt-frontend
+stages:
+  - test
+
+frontend_test:
   stage: test
+  image: node:lts-alpine
   script:
+    - cd frontend
+    - npm ci
     - npm run test:unit
+  only:
+    - master
