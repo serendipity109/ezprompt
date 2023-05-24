@@ -12,3 +12,5 @@ frontend_test:
     - echo "Unit Test DONE..."
   only:
     - master
+  tags:
+    - adamwang
