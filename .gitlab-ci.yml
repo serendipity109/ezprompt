@@ -6,7 +6,8 @@ frontend-unit-test:
   stage: test
   image: harbor.emotibot.com/emotimage/node:lts-alpine
   before_script:
-    - ./.gitlab-ci/install.sh
+    - cd frontend
+    - npm ci
   script:
     - npm run test:unit
     - echo "Unit Test DONE..."
