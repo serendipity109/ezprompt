@@ -11,7 +11,6 @@ variables:
   PYTHONPATH: $CI_PROJECT_DIR/backend:$PYTHONPATH
 
 stages:
-stages:
   - lint
   - unittest
   - integration
@@ -28,8 +27,8 @@ frontend-unit-test:
     - echo "Unit Test DONE..."
   only:
     - master
-    changes:
-      - frontend/* 
+  changes:
+    - frontend/* 
   tags:
     - adamwang
 
@@ -42,8 +41,8 @@ backend-lint-test:
     - flake8 $CI_PROJECT_DIR/backend
   only:
     - master
-    changes:
-      - backend/* 
+  changes:
+    - backend/* 
   tags:
     - adamwang
 
@@ -57,8 +56,8 @@ backend-unit-test:
     - pytest backend/tests/test_unit.py 
   only:
     - master
-    changes:
-      - backend/* 
+  changes:
+    - backend/* 
   tags:
     - adamwang
 
@@ -72,8 +71,8 @@ backend-integration-test:
     - pytest backend/tests/test_integration.py 
   only:
     - master
-    changes:
-      - backend/* 
+  changes:
+    - backend/* 
   tags:
     - adamwang
 
