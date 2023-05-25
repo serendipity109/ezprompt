@@ -73,8 +73,16 @@ build:
       - apk add --update make git py-pip
       - pip install docker-compose
   script:
-      - make build
-      - make push
+      - cd docker
+      - DOCKERFILE_DIR=$(cd `dirname $0`; pwd)
+      - REPO_DIR=$(dirname "$DOCKERFILE_DIR")
+      - DOCKERFILE_NAME='frontend'
+      - tag=`git rev-parse --short HEAD`-$(date "+%Y%m%d-%H%M")
+      - docker build -t harbor.emotibot.com/emotimage/ezpmt-frontend:$tag -f $DOCKERFILE_DIR/$DOCKERFILE_NAME $REPO_DIR
+      - docker push harbor.emotibot.com/emotimage/ezpmt-frontend:$tag
+      - DOCKERFILE_NAME='backend'
+      - docker build -t harbor.emotibot.com/emotimage/ezpmt-backend:$tag -f $DOCKERFILE_DIR/$DOCKERFILE_NAME $REPO_DIR
+      - docker push harbor.emotibot.com/emotimage/ezpmt-backend:$tag
   only:
       - master
   tags:
