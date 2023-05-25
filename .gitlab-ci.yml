@@ -72,11 +72,8 @@ build:
   before_script:
       - apk add --update make git py-pip
       - pip install docker-compose
-      - docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
   script:
       - make build
       - make push
   only:
       - master
-  tags:
-    - adamwang

@@ -37,8 +37,7 @@ services:
       - 9090:9090
     restart: always
     volumes:
-      - ./backend/minio/data:/data
-    restart: always    
+      - ./backend/minio/data:/data  
     environment:
         MINIO_USER: minioadmin
         MINIO_PASSWORD: minioadmin
