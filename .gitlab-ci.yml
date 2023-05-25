@@ -11,13 +11,11 @@ variables:
   PYTHONPATH: '$CI_PROJECT_DIR/backend:$PYTHONPATH'
 
 stages:
-  - lint
-  - unittest
-  - integration
+  - test
   - build
 
 frontend-unit-test:
-  stage: unittest
+  stage: test
   image: harbor.emotibot.com/emotimage/node:lts-alpine
   before_script:
     - cd frontend
@@ -26,57 +24,45 @@ frontend-unit-test:
     - npm run test:unit
     - echo "Unit Test DONE..."
   only:
-    refs:
-      - master
-    changes:
-      - frontend/* 
+    - master
   tags:
     - adamwang
 
 backend-lint-test:
-  stage: lint
+  stage: test
   image: harbor.emotibot.com/emotimage/python:3.10
   before_script:
     - pip3 install flake8
   script:
     - flake8 $CI_PROJECT_DIR/backend
   only:
-    refs:
-      - master
-    changes:
-      - backend/* 
+    - master
   tags:
     - adamwang
 
 backend-unit-test:
-  stage: unittest
+  stage: test
   image: harbor.emotibot.com/emotimage/python:3.10
   before_script:
-    - ./.gitlab-ci/install.sh
+    - .gitlab-ci/install.sh
   script:
     - sleep 1
     - pytest backend/tests/test_unit.py 
   only:
-    refs:
-      - master
-    changes:
-      - backend/* 
+    - master
   tags:
     - adamwang
 
 backend-integration-test:
-  stage: integration
+  stage: test
   image: harbor.emotibot.com/emotimage/python:3.10
   before_script:
-    - ./.gitlab-ci/install.sh
+    - .gitlab-ci/install.sh
   script:
     - sleep 1
     - pytest backend/tests/test_integration.py 
   only:
-    refs:
-      - master
-    changes:
-      - backend/* 
+    - master
   tags:
     - adamwang
 
