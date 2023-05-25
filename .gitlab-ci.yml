@@ -48,7 +48,7 @@ build:
   image: docker:20.10.2
   stage: build
   before_script:
-      - pip install docker-compose==1.23.2
+      - pip3 install docker-compose
       - docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
   script:
       - make build
