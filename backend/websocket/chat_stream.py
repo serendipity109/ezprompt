@@ -38,7 +38,13 @@ print(answer)
 # print(answer)
 
 # messages = [prefix]
-# messages.append({"role": "assistant", "content": "Photorealistic Image: A cute, chubby cat lounging on a soft, plush pillow in a cozy, sunlit living room, with a warm color palette and soft shadows, inspired by professional pet photography, using a 35mm lens, medium shot, with natural sunlight streaming through the windows, and a soft bokeh effect in the background."})
+# messages.append({"role": "assistant", "content": \
+# "Photorealistic Image: A cute, chubby cat lounging on a soft,\
+#  plush pillow in a cozy, sunlit living room,\
+#  with a warm color palette and soft shadows,\
+#  inspired by professional pet photography,\
+#  using a 35mm lens, medium shot, with natural sunlight streaming\
+#  through the windows, and a soft bokeh effect in the background."})
 # messages.append({"role": "user", "content": "一隻憂鬱的海獅"})
 # start = time.time()
 # completion = openai.ChatCompletion.create(

@@ -2,9 +2,9 @@ import os
 import json
 import redis
 
-REDIS_HOST = os.environ.get("REDIS_HOST", "cache")
-REDIS_PORT = os.environ.get("REDIS_PORT", "6379")
-REDIS_PASS = os.environ.get("REDIS_PASS", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81")
+REDIS_HOST = os.environ.get("REDIS_HOST", "")
+REDIS_PORT = os.environ.get("REDIS_PORT", "")
+REDIS_PASS = os.environ.get("REDIS_PASS", "")
 # 設定在 1，比較不會有衝突
 REDIS_DB = int(os.environ.get("REDIS_DB", "1"))
 
@@ -16,6 +16,7 @@ s0.png:{
     CFG: {cfg},
 }
 '''
+
 
 class RedisClient:
     def __init__(self):
@@ -41,7 +42,7 @@ class RedisClient:
     def set(self, key, value, expire=None):
         if expire is None:
             self._client.set(key, json.dumps(value))
-            self._client.persist(key) # 永不過期
+            self._client.persist(key)  # 永不過期
         else:
             self._client.set(key, json.dumps(value), ex=expire)
 

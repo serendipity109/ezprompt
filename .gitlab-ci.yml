@@ -1,9 +1,24 @@
+variables:
+  MINIO_ACCESS_KEY: minioadmin
+  MINIO_SECRET_KEY: minioadmin
+  MINIO_URL: 172.17.0.1:9000
+  MINIO_SECURE: false
+  REDIS_HOST: cache
+  REDIS_PORT: 6379
+  REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+  MYSQL_URI: mysqldb://root:password@mysql:3306
+  MYSQL_DATABASE: ezprompt
+  PYTHONPATH: $CI_PROJECT_DIR/backend:$PYTHONPATH
+
 stages:
-  - test
+stages:
+  - lint
+  - unittest
+  - integration
   - build
 
 frontend-unit-test:
-  stage: test
+  stage: unittest
   image: harbor.emotibot.com/emotimage/node:lts-alpine
   before_script:
     - cd frontend
@@ -13,34 +28,52 @@ frontend-unit-test:
     - echo "Unit Test DONE..."
   only:
     - master
+    changes:
+      - frontend/* 
+  tags:
+    - adamwang
+
+backend-lint-test:
+  stage: lint
+  image: harbor.emotibot.com/emotimage/python:3.10
+  before_script:
+    - pip3 install flake8
+  script:
+    - flake8 $CI_PROJECT_DIR/backend
+  only:
+    - master
+    changes:
+      - backend/* 
   tags:
     - adamwang
 
 backend-unit-test:
-  stage: test
+  stage: unittest
   image: harbor.emotibot.com/emotimage/python:3.10
   before_script:
     - ./.gitlab-ci/install.sh
   script:
     - sleep 1
-    - export PYTHONPATH=$CI_PROJECT_DIR/backend:$PYTHONPATH
     - pytest backend/tests/test_unit.py 
   only:
     - master
+    changes:
+      - backend/* 
   tags:
     - adamwang
 
 backend-integration-test:
-  stage: test
+  stage: integration
   image: harbor.emotibot.com/emotimage/python:3.10
   before_script:
     - ./.gitlab-ci/install.sh
   script:
     - sleep 1
-    - export PYTHONPATH=$CI_PROJECT_DIR/backend:$PYTHONPATH
     - pytest backend/tests/test_integration.py 
   only:
     - master
+    changes:
+      - backend/* 
   tags:
     - adamwang
 
@@ -48,6 +81,8 @@ build:
   image: docker:20.10.2
   stage: build
   before_script:
+      - sudo apt update
+      - sudo apt install python3-pip
       - pip3 install docker-compose
       - docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
   script:
@@ -55,3 +90,4 @@ build:
       - make push
   only:
       - master
+  needs: ["frontend-unit-test", "backend-integration-test"]

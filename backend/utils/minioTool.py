@@ -7,17 +7,17 @@ from minio import Minio
 
 class MinioClient:
     def __init__(self):
-       MINIO_ACCESS_KEY = os.environ.get("MINIO_ACCESS_KEY", "")
-       MINIO_SECRET_KEY = os.environ.get("MINIO_SECRET_KEY", "")
-       MINIO_URL = os.environ.get("MINIO_URL", "")
-       MINIO_SECURE = bool(strtobool(os.environ.get('MINIO_SECURE', "")))
+        MINIO_ACCESS_KEY = os.environ.get("MINIO_ACCESS_KEY", "")
+        MINIO_SECRET_KEY = os.environ.get("MINIO_SECRET_KEY", "")
+        MINIO_URL = os.environ.get("MINIO_URL", "")
+        MINIO_SECURE = bool(strtobool(os.environ.get('MINIO_SECURE', "")))
 
-       self.client = Minio(
-           MINIO_URL,
-           access_key=MINIO_ACCESS_KEY,
-           secret_key=MINIO_SECRET_KEY,
-           secure=MINIO_SECURE,
-       )
+        self.client = Minio(
+            MINIO_URL,
+            access_key=MINIO_ACCESS_KEY,
+            secret_key=MINIO_SECRET_KEY,
+            secure=MINIO_SECURE,
+        )
 
     def upload_file(self, bucket, file_name, file_path):
         found = self.client.bucket_exists(bucket)
@@ -27,7 +27,7 @@ class MinioClient:
         self.client.fput_object(
             bucket, file_name, file_path,
         )
-    
+
     def download_file(self, bucket, file_name):
         if not self.client.bucket_exists(bucket):
             return None

@@ -25,53 +25,86 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-api_router = APIRouter() 
+api_router = APIRouter()
 
 api_router.include_router(kkbot.router)
 api_router.include_router(magicwriter.router)
 api_router.include_router(t2i.router)
 api_router.include_router(SDXL.router)
 
+
 @app.get("/")
 async def root():
     return {"Model": "EZPrompt"}
 
+
 @app.get("/show")
-async def get_image(user_id, filename):
+async def show_image(user_id, filename):
     image_path = os.path.join("images", user_id, filename)
     return FileResponse(image_path, media_type="image/jpeg")
 
+
 @app.get("/get_images")
 async def get_images():
-    imgs = ["s0", "s1","s2","s3","s4","s5","s6","s7","s8","s9","s10","s11", "s12", "s13", "s14"]
+    imgs = [
+        "s0",
+        "s1",
+        "s2",
+        "s3",
+        "s4",
+        "s5",
+        "s6",
+        "s7",
+        "s8",
+        "s9",
+        "s10",
+        "s11",
+        "s12",
+        "s13",
+        "s14",
+    ]
     imgs = [img + ".png" for img in imgs]
     res = []
     for img in imgs:
-        preview = redis_client.get(img)['prompt']
-        view1 = preview.split(',')[0]
-        view2 = preview.replace(view1+',', '')
-        res.append({
-            "img": img,
-            "url": minio_client.share_url("test", img).replace('172.17.0.1:9000', '192.168.3.16:8087'),
-            "view1": view1,
-            "view2": view2
-        })
-        # res.append(minio_client.share_url("test", img))
+        preview = redis_client.get(img)["prompt"]
+        view1 = preview.split(",")[0]
+        view2 = preview.replace(view1 + ",", "")
+        res.append(
+            {
+                "img": img,
+                "url": minio_client.share_url("test", img).replace(
+                    "172.17.0.1:9000", "192.168.3.16:8087"
+                ),
+                "view1": view1,
+                "view2": view2,
+            }
+        )
     return res
 
+
 @app.get("/get_image")
-async def get_image(img='s0.png'):
+async def get_image(img="s0.png"):
     img_res = []
     pmt_res = redis_client.get(img)
-    img_res.append(minio_client.share_url("test", img).replace('172.17.0.1:9000', '192.168.3.16:8087'))
-    if 'batch' in pmt_res.keys():
-        for img in pmt_res['batch']:
-            img_res.append(minio_client.share_url("test", img).replace('172.17.0.1:9000', '192.168.3.16:8087'))
+    img_res.append(
+        minio_client.share_url("test", img).replace(
+            "172.17.0.1:9000", "192.168.3.16:8087"
+        )
+    )
+    if "batch" in pmt_res.keys():
+        for img in pmt_res["batch"]:
+            img_res.append(
+                minio_client.share_url("test", img).replace(
+                    "172.17.0.1:9000", "192.168.3.16:8087"
+                )
+            )
     return {"img_res": img_res, "pmt_res": pmt_res}
 
+
 # 定期刪檔案
-FOLDER_PATH = '/workspace/output'  
+FOLDER_PATH = "/workspace/output"
 DELETE_INTERVAL = timedelta(days=1)
+
 
 def delete_old_files(folder_path: str, max_age: timedelta):
     current_time = time.time()
@@ -84,10 +117,14 @@ def delete_old_files(folder_path: str, max_age: timedelta):
                 os.remove(file_path)
                 print(f"Deleted file: {file_path}")
 
+
 @app.on_event("startup")
 async def start_scheduler():
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(delete_old_files, 'interval', days=1, args=[FOLDER_PATH, DELETE_INTERVAL])
+    scheduler.add_job(
+        delete_old_files, "interval", days=1, args=[FOLDER_PATH, DELETE_INTERVAL]
+    )
     scheduler.start()
 
-app.include_router(api_router)   
+
+app.include_router(api_router)

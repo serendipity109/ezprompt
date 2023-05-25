@@ -15,8 +15,11 @@ f = open('prefix.txt')
 prefix = {"role": "user", "content": f.read()}
 f.close()
 
-answer = {"role": "system", "content": "Yes, I'm ready. Please provide me with a keyword, and I will generate a detailed prompt based on the given structure and guidelines."}
+answer = {"role": "system", "content": "Yes, I'm ready.\
+           Please provide me with a keyword, and I will generate a detailed\
+           prompt based on the given structure and guidelines."}
 messages = [prefix, answer]
+
 
 async def chatgpt(websocket):
     async for message in websocket:

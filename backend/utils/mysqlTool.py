@@ -13,6 +13,7 @@ MYSQL_DATABASE = os.environ.get("MYSQL_DATABASE", "")
 
 logger = logging.getLogger(__name__)
 
+
 class MySQLClient:
     def __init__(self):
         url_config = urlparse(MYSQL_URI)
@@ -29,10 +30,10 @@ class MySQLClient:
             charset="utf8mb4",
             database=MYSQL_DATABASE,
         )
-        
+
     def ping(self, reconnect=True):
         return self.client.ping(reconnect)
-        
+
     def query(self, sql, params=(), commit=True):
         self.client.ping(reconnect=True)
         try:
@@ -44,7 +45,7 @@ class MySQLClient:
                     self.client.close()
                 return result
         except:
-            logger.exception("Query error") 
+            logger.exception("Query error")
             raise
 
     def create_table(self, table, sql, commit=True, recreate=False):
@@ -57,7 +58,7 @@ class MySQLClient:
             self.query(sql, commit)
             logger.info(f"Successively created table {table}")
         except:
-            logger.exception("Query error") 
+            logger.exception("Query error")
             raise
 
     def get_columns(self, table_name) -> set:
@@ -69,15 +70,15 @@ class MySQLClient:
             result = self.query(sql)
             columns = set([r[0] for r in result])
         except:
-            logger.exception("Get table columms error") 
+            logger.exception("Get table columms error")
             raise
         return columns
-    
+
     def insert_tran(self, inp, commit=True):
         try:
             inp = transInput(**inp).dict()
         except:
-            logger.exception("Trans input is invalid") 
+            logger.exception("Trans input is invalid")
             raise
         rule_keys = list(inp.keys())
         rule_vals = [inp[key] for key in rule_keys]
@@ -107,14 +108,14 @@ class MySQLClient:
                            "img": inp[img],
                            "create_time": inp['create_time']}
                 self.insert_img(img_inp)
-        logger.info(f"Successively insert transaction!")
-    
+        logger.info("Successively insert transaction!")
+
     def insert_img(self, inp, commit=True):
         try:
             inp = imgInput(**inp).dict()
         except:
             logger.exception("Img input is invalid")
-            raise 
+            raise
         rule_keys = list(inp.keys())
         rule_vals = [inp[key] for key in rule_keys]
         rule_keys.insert(0, "_id")
@@ -129,19 +130,24 @@ class MySQLClient:
         except:
             logger.exception("Get insert image error")
             raise
-        logger.info(f"Successively insert image!")      
+        logger.info("Successively insert image!")
+
 
 def generate_random_id():
     letters_and_digits = string.digits
     random_id = ''.join(random.choice(letters_and_digits) for _ in range(10))
     return random_id
 
+
 '''
 from mysqlTool import MySQLClient
 client = MySQLClient()
-inp = {'username':'admin', 'status':'200', 'img1':'http://127.0.0.1:9000/ezrender-minio/1312949843.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=27S88D3E1LX71Z0NN215%2F20230515%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230515T095648Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiIyN1M4OEQzRTFMWDcxWjBOTjIxNSIsImV4cCI6MTY4NDE4Nzc5OCwicGFyZW50IjoibWluaW9hZG1pbiJ9.6ufGMmFLosK14b30sCh9wCvAJRzxCbFptTH9jQICrX3ENIaKCnW54b-IPa3kwcFc8F-PzrbDi_KHIeMpFkb5-Q&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=c968d29e4c553d8e2b2362011c1d28dd32765f041cd7e224838391e0bfb16d4e', 'elapsed_time':'10.0'}
+inp = {'username':'admin', 'status':'200', 'img1':
+    'http://127.0.0.1:9000/ezrender-minio/...', 'elapsed_time':'10.0'}
 client.insert_tran(inp)
 '''
+
+
 class transInput(BaseModel):
     username: str
     status: str
@@ -151,6 +157,7 @@ class transInput(BaseModel):
     img4: str = ""
     elapsed_time: str = "10.0"
     create_time: str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
 
 class imgInput(BaseModel):
     _id: str
