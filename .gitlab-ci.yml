@@ -26,9 +26,10 @@ frontend-unit-test:
     - npm run test:unit
     - echo "Unit Test DONE..."
   only:
-    - master
-  changes:
-    - frontend/* 
+    refs:
+      - master
+    changes:
+      - frontend/* 
   tags:
     - adamwang
 
@@ -40,9 +41,10 @@ backend-lint-test:
   script:
     - flake8 $CI_PROJECT_DIR/backend
   only:
-    - master
-  changes:
-    - backend/* 
+    refs:
+      - master
+    changes:
+      - backend/* 
   tags:
     - adamwang
 
@@ -55,9 +57,10 @@ backend-unit-test:
     - sleep 1
     - pytest backend/tests/test_unit.py 
   only:
-    - master
-  changes:
-    - backend/* 
+    refs:
+      - master
+    changes:
+      - backend/* 
   tags:
     - adamwang
 
@@ -70,9 +73,10 @@ backend-integration-test:
     - sleep 1
     - pytest backend/tests/test_integration.py 
   only:
-    - master
-  changes:
-    - backend/* 
+    refs:
+      - master
+    changes:
+      - backend/* 
   tags:
     - adamwang
 
