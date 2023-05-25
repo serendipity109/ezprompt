@@ -93,4 +93,3 @@ build:
       - make push
   only:
       - master
-  needs: ["frontend-unit-test", "backend-integration-test"]
