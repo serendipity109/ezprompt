@@ -74,11 +74,11 @@ build:
       - REPO_DIR=$(dirname "$DOCKERFILE_DIR")
       - DOCKERFILE_NAME='frontend'
       - tag=`git rev-parse --short HEAD`-$(date "+%Y%m%d-%H%M")
-      - docker build -t harbor.emotibot.com/emotimage/ezpmt-frontend:$tag -f $DOCKERFILE_DIR/$DOCKERFILE_NAME $REPO_DIR
-      - docker push harbor.emotibot.com/emotimage/ezpmt-frontend:$tag
+      - sudo docker build -t harbor.emotibot.com/emotimage/ezpmt-frontend:$tag -f $DOCKERFILE_DIR/$DOCKERFILE_NAME $REPO_DIR
+      - sudo docker push harbor.emotibot.com/emotimage/ezpmt-frontend:$tag
       - DOCKERFILE_NAME='backend'
-      - docker build -t harbor.emotibot.com/emotimage/ezpmt-backend:$tag -f $DOCKERFILE_DIR/$DOCKERFILE_NAME $REPO_DIR
-      - docker push harbor.emotibot.com/emotimage/ezpmt-backend:$tag
+      - sudo docker build -t harbor.emotibot.com/emotimage/ezpmt-backend:$tag -f $DOCKERFILE_DIR/$DOCKERFILE_NAME $REPO_DIR
+      - sudo docker push harbor.emotibot.com/emotimage/ezpmt-backend:$tag
   only:
       - master
   tags:
