@@ -86,4 +86,4 @@ build:
   only:
       - master
   tags:
-    - adamwang
+    - adamwang_shell
