@@ -68,10 +68,6 @@ backend-integration-test:
 
 build:
   stage: build
-  image: docker:latest
-  before_script:
-      - apk add --update make git py-pip
-      - pip install docker-compose
   script:
       - cd docker
       - DOCKERFILE_DIR=$(cd `dirname $0`; pwd)
