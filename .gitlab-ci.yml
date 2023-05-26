@@ -46,8 +46,8 @@ backend-unit-test:
   before_script:
     - .gitlab-ci/install.sh
   script:
-    - sleep 1
-    - pytest backend/tests/test_unit.py 
+    - cd backend
+    - pytest tests/test_unit.py 
   only:
     - master
   tags:
@@ -59,8 +59,8 @@ backend-integration-test:
   before_script:
     - .gitlab-ci/install.sh
   script:
-    - sleep 1
-    - pytest backend/tests/test_integration.py 
+    - cd backend
+    - pytest tests/test_integration.py 
   only:
     - master
   tags:
