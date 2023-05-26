@@ -2,24 +2,24 @@ import os
 import json
 import redis
 
-REDIS_HOST = os.environ.get("REDIS_HOST", "")
-REDIS_PORT = os.environ.get("REDIS_PORT", "")
-REDIS_PASS = os.environ.get("REDIS_PASS", "")
-# 設定在 1，比較不會有衝突
-REDIS_DB = int(os.environ.get("REDIS_DB", "1"))
-
-'''
+"""
 s0.png:{
     prompt: {pmt},
     nprompt: {npmt},
     dims: {dims},
     CFG: {cfg},
 }
-'''
+"""
 
 
 class RedisClient:
     def __init__(self):
+        REDIS_HOST = os.environ.get("REDIS_HOST", "")
+        REDIS_PORT = os.environ.get("REDIS_PORT", "")
+        REDIS_PASS = os.environ.get("REDIS_PASSWORD", "")
+        # 設定在 1，比較不會有衝突
+        REDIS_DB = int(os.environ.get("REDIS_DB", "1"))
+
         self._client = redis.Redis(
             host=REDIS_HOST,
             port=REDIS_PORT,
@@ -33,7 +33,7 @@ class RedisClient:
 
     def inspect(self):
         keys = self._client.keys()
-        keys = [key.decode('utf-8') for key in keys]
+        keys = [key.decode("utf-8") for key in keys]
         return keys
 
     def exists(self, key):
@@ -47,13 +47,10 @@ class RedisClient:
             self._client.set(key, json.dumps(value), ex=expire)
 
     def append(self, image_name, pmt, npmt, dims, CFG):
-        self._client.set(image_name, json.dumps(
-            {'prompt': pmt,
-             'nprompt': npmt,
-             'dims': dims,
-             'CFG': CFG
-             }
-        ))
+        self._client.set(
+            image_name,
+            json.dumps({"prompt": pmt, "nprompt": npmt, "dims": dims, "CFG": CFG}),
+        )
 
     def get(self, key):
         res = self._client.get(key)

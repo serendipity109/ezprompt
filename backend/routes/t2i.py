@@ -11,7 +11,7 @@ import io
 
 
 load_dotenv()
-keys = [os.getenv("KEY1"), os.getenv("KEY2")]
+keys = [os.getenv("SDXL_KEY1"), os.getenv("SDXL_KEY2")]
 
 router = APIRouter()  # point!
 
@@ -21,7 +21,6 @@ class t2iInput(BaseModel):
     nprompt: str = "tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, bad anatomy, watermark, signature, cut off, low contrast, underexposed, overexposed, bad art, beginner, amateur, distorted face"
     height: int = "512"
     width: int = "512"
-    n: int = 1
     steps: int = 30
     CFG: float = 7.0
 
@@ -57,10 +56,9 @@ async def t2i(inp: t2iInput):
         # Defaults to 7.0 if not specified.
         width=inp.width,  # Generation width, defaults to 512 if not included.
         height=inp.height,  # Generation height, defaults to 512 if not included.
-        samples=inp.n,  # Number of images to generate, defaults to 1 if not included.
-        sampler=generation.SAMPLER_K_DPMPP_2M  # Choose which sampler we want to denoise our generation with.
-        # Defaults to k_dpmpp_2m if not specified. Clip Guidance only supports ancestral samplers.
-        # (Available Samplers: ddim, plms, k_euler, k_euler_ancestral, k_heun, k_dpm_2, k_dpm_2_ancestral, k_dpmpp_2s_ancestral, k_lms, k_dpmpp_2m)
+        samples=1,  # Number of images to generate, defaults to 1 if not included.
+        sampler=generation.SAMPLER_K_DPMPP_2M,  # Choose which sampler we want to denoise our generation with.
+        extras={"$IPC": {"style_preset": "photographic"}}
     )
     print(f"Prompt: {inp.prompt} \nnPrompt: {inp.nprompt}")
 
