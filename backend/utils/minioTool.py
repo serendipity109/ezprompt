@@ -1,7 +1,6 @@
 import os
 from datetime import timedelta
 from distutils.util import strtobool
-
 from minio import Minio
 
 
@@ -10,7 +9,7 @@ class MinioClient:
         MINIO_ACCESS_KEY = os.environ.get("MINIO_ACCESS_KEY", "")
         MINIO_SECRET_KEY = os.environ.get("MINIO_SECRET_KEY", "")
         MINIO_URL = os.environ.get("MINIO_URL", "")
-        MINIO_SECURE = bool(strtobool(os.environ.get('MINIO_SECURE', "")))
+        MINIO_SECURE = bool(strtobool(os.environ.get("MINIO_SECURE", "")))
 
         self.client = Minio(
             MINIO_URL,
@@ -25,7 +24,9 @@ class MinioClient:
             self.client.make_bucket(bucket)
 
         self.client.fput_object(
-            bucket, file_name, file_path,
+            bucket,
+            file_name,
+            file_path,
         )
 
     def download_file(self, bucket, file_name):
@@ -52,7 +53,10 @@ class MinioClient:
         objects = self.client.list_objects(bucket)
         return [obj.object_name for obj in objects]
 
-    def check(self, bucket, filename):
+    def bucket_exist(self, bucket):
+        return self.client.bucket_exists(bucket)
+
+    def file_in_bucket(self, bucket, filename):
         if filename in self.inspect(bucket):
             return True
         else:
@@ -60,14 +64,21 @@ class MinioClient:
 
     def share_url(self, bucket, file_name):
         url = self.client.get_presigned_url(
-            "GET",
-            bucket,
-            file_name,
-            expires=timedelta(days=7)
+            "GET", bucket, file_name, expires=timedelta(days=7)
         )
         # url = url.replace('http://172.17.0.1:9000/', '/minio/')
         return url
 
     def delete_file(self, bucket, file_name):
-        self.client.remove_object(bucket, file_name)
-        print(f"Finish deleting {bucket}/{file_name}")
+        try:
+            self.client.remove_object(bucket, file_name)
+            return "Object removed successfully."
+        except:
+            return "Failed to remove object."
+
+    def remove_bucket(self, bucket):
+        try:
+            self.client.remove_bucket(bucket)
+            return "Bucket removed successfully."
+        except:
+            return "Failed to remove bucket."
