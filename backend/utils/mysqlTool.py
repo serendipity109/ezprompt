@@ -100,13 +100,15 @@ class MySQLClient:
         except:
             logger.exception("Get insert transaction error")
             raise
-        imgs = ['img1', 'img2', 'img3', 'img4']
+        imgs = ["img1", "img2", "img3", "img4"]
         for img in imgs:
             if inp[img]:
-                img_inp = {"trans_id": trans_id,
-                           "username": inp['username'],
-                           "img": inp[img],
-                           "create_time": inp['create_time']}
+                img_inp = {
+                    "trans_id": trans_id,
+                    "username": inp["username"],
+                    "img": inp[img],
+                    "create_time": inp["create_time"],
+                }
                 self.insert_img(img_inp)
         logger.info("Successively insert transaction!")
 
@@ -125,27 +127,35 @@ class MySQLClient:
             ", ".join(["%s"] * len(rule_vals)),
         )
         try:
-            breakpoint()
             self.query(sql, rule_vals, commit)
         except:
             logger.exception("Get insert image error")
             raise
         logger.info("Successively insert image!")
 
+    def delete_expire_imgs(self, commit=True):
+        for table in ["imgs", "trans"]:
+            sql = f"DELETE FROM {table} WHERE create_time < DATE_SUB(NOW(), INTERVAL 7 DAY);"
+            try:
+                self.query(sql, params=(), commit=commit)
+            except:
+                logger.exception("Get delete expire error")
+                raise
+            logger.info("Successively delete expire trans, imgs!")            
 
 def generate_random_id():
     letters_and_digits = string.digits
-    random_id = ''.join(random.choice(letters_and_digits) for _ in range(10))
+    random_id = "".join(random.choice(letters_and_digits) for _ in range(10))
     return random_id
 
 
-'''
+"""
 from mysqlTool import MySQLClient
 client = MySQLClient()
 inp = {'username':'admin', 'status':'200', 'img1':
     'http://127.0.0.1:9000/ezrender-minio/...', 'elapsed_time':'10.0'}
 client.insert_tran(inp)
-'''
+"""
 
 
 class transInput(BaseModel):
@@ -156,7 +166,7 @@ class transInput(BaseModel):
     img3: str = ""
     img4: str = ""
     elapsed_time: str = "10.0"
-    create_time: str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    create_time: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 class imgInput(BaseModel):
@@ -164,4 +174,4 @@ class imgInput(BaseModel):
     trans_id: str
     username: str
     img: str = ""
-    create_time: str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    create_time: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
