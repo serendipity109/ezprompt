@@ -141,7 +141,8 @@ class MySQLClient:
             except:
                 logger.exception("Get delete expire error")
                 raise
-            logger.info("Successively delete expire trans, imgs!")            
+            logger.info("Successively delete expire trans, imgs!")
+
 
 def generate_random_id():
     letters_and_digits = string.digits
