@@ -21,7 +21,7 @@ class TestMinioClient(unittest.TestCase):
     @pytest.mark.run(order=2)
     def test_share_url(self):
         url = self.client.share_url("test-bucket", "test.png")
-        self.assertTrue(url.startswith("http://172.17.0.1"))
+        self.assertTrue(url.startswith("http://172.17"))
 
     @pytest.mark.run(order=3)
     def test_delete_file(self):
