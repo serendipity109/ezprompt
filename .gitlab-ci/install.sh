@@ -1,1 +1,2 @@
-pip3 install httpx pytest pytest-ordering redis minio pymysql fastapi apscheduler
+pip3 install -r backend/requirements.txt
+pip3 install httpx pytest pytest-ordering
