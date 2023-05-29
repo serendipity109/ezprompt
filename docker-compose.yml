@@ -51,9 +51,6 @@ services:
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes: 
       - ./backend/cache:/data
-    networks:
-      ezpmt:
-        ipv4_address: 172.18.0.1
   mysql:
     image: harbor.emotibot.com/emotimage/mysql:latest
     container_name: mysql
@@ -83,6 +80,3 @@ services:
       - minio
       - cache
       - mysql
-networks:
-  ezpmt:
-    external: true
