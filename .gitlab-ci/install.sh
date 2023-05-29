@@ -1,2 +1,1 @@
-pip3 install -r backend/requirements.txt
-pip3 install httpx pytest pytest-ordering
+pip3 install docker-compose httpx pytest pytest-ordering redis minio pymysql

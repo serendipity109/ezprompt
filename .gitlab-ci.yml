@@ -3,7 +3,7 @@ variables:
   MINIO_SECRET_KEY: 'minioadmin'
   MINIO_URL: '172.17.0.1:9000'
   MINIO_SECURE: 'false'
-  REDIS_HOST: 'cache'
+  REDIS_HOST: '172.18.0.1'
   REDIS_PORT: '6379'
   REDIS_PASSWORD: 'eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81'
   MYSQL_URI: 'mysqldb://root:password@mysql:3306'
@@ -34,7 +34,8 @@ backend-lint-test:
   before_script:
     - pip3 install flake8
   script:
-    - flake8 $CI_PROJECT_DIR/backend
+    - cd backend
+    - flake8
   only:
     - master
   tags:
@@ -59,12 +60,13 @@ backend-integration-test:
   before_script:
     - .gitlab-ci/install.sh
   script:
+    - docker-compose up cache minio mysql &
     - cd backend
-    - pytest tests/test_integration.py 
+    - pytest tests/test_integration
   only:
     - master
   tags:
-    - adamwang
+    - adamwang_shell
 
 build:
   stage: build

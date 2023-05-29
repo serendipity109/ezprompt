@@ -29,7 +29,7 @@ class RedisClient:
         )
 
     def ping(self):
-        self._client.ping()
+        return self._client.ping()
 
     def inspect(self):
         keys = self._client.keys()
@@ -59,4 +59,4 @@ class RedisClient:
         return json.loads(res)
 
     def delete(self, key):
-        self._client.delete(key)
+        return self._client.delete(key)
