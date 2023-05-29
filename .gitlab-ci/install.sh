@@ -1,1 +1,1 @@
-pip3 install docker-compose httpx pytest pytest-ordering redis minio pymysql
+pip3 install httpx pytest pytest-ordering redis minio pymysql fastapi

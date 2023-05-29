@@ -1,9 +1,9 @@
 variables:
   MINIO_ACCESS_KEY: 'minioadmin'
   MINIO_SECRET_KEY: 'minioadmin'
-  MINIO_URL: '172.17.0.1:9000'
+  MINIO_URL: '0.0.0.0:9000'
   MINIO_SECURE: 'false'
-  REDIS_HOST: '172.18.0.1'
+  REDIS_HOST: 'cache'
   REDIS_PORT: '6379'
   REDIS_PASSWORD: 'eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81'
   MYSQL_URI: 'mysqldb://root:password@mysql:3306'
@@ -57,16 +57,24 @@ backend-unit-test:
 backend-integration-test:
   stage: test
   image: harbor.emotibot.com/emotimage/python:3.10
+  services:
+    - name: harbor.emotibot.com/emotimage/minio:RELEASE.2023-02-17T17-52-43Z
+      alias: minio
+      command: ["server", "/data", "--console-address", ":9090"]
+    - name: harbor.emotibot.com/emotimage/redis:latest
+      alias: cache
+      command: ["redis-server", "--save 20 1", "--loglevel", "warning", "--requirepass", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"]
+    - name: harbor.emotibot.com/emotimage/mysql:latest
+      alias: mysql
   before_script:
     - .gitlab-ci/install.sh
   script:
-    - docker-compose up cache minio mysql &
     - cd backend
     - pytest tests/test_integration
   only:
     - master
   tags:
-    - adamwang_shell
+    - adamwang
 
 build:
   stage: build
