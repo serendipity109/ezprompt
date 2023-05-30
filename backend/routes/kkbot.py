@@ -18,29 +18,23 @@ MINIO_OUTPUT_URL = os.environ.get("MINIO_OUTPUT_URL", "")
 sdxl_keys = [os.getenv('SDXL_KEY1'), os.getenv('SDXL_KEY2')]
 openai_keys = [os.getenv('OPENAI_KEY1'), os.getenv('OPENAI_KEY2'), os.getenv('OPENAI_KEY3')]
 
-router = APIRouter() # point!
+router = APIRouter()
 minio_client = minioTool.MinioClient()
 
 class kbInput(BaseModel):
     prompt: str = ''
-    size: Literal['512x512', '256x256', '128x128', '512x640', '640x512'] = '512x512'
+    size: Literal['512x512', '512x640', '640x512'] = '512x512'
+    upscale: bool = False
 
 @router.post("/ezrender/kkbot")
 async def kbot(inp: kbInput):    
     start = time.time()
-    h, w = 512, 512
     match inp.size:
         case '512x512':
-            type = -1
-        case '256x256':
-            type = 1
-        case '128x128':
-            type = 2
+            h, w = 512, 512
         case '512x640':
-            type = 3
             h, w = 512, 640
         case '640x512':
-            type = 4
             h, w = 640, 512
     f = open('routes/prefix/preset.txt')
     prefix = {"role": "user", "content": f.read()}
@@ -67,14 +61,19 @@ async def kbot(inp: kbInput):
         im_bytes = base64.b64decode(image)
         im_file = BytesIO(im_bytes) 
         img = Image.open(im_file) 
-        if type == 1:
-            img = img.resize((256, 256))
-        elif type == 2:
-            img = img.resize((128, 128))
         img.save(file_path)
         minio_client.upload_file('ezrender-minio', filename, file_path)
         url = minio_client.share_url("ezrender-minio", filename).replace('http://172.17.0.1:9000', MINIO_OUTPUT_URL)
-   
+    
+    if file_path and inp.upscale:
+        data = await upscale(file_path, h)
+        file_path = file_path.replace(".png", "_u.png")
+        filename = filename.replace(".png", "_u.png")
+        with open(file_path, "wb") as f:
+            f.write(data)
+        minio_client.upload_file('ezrender-minio', filename, file_path)
+        url = minio_client.share_url("ezrender-minio", filename).replace('http://172.17.0.1:9000', MINIO_OUTPUT_URL)
+
     waste_milliseconds = (time.time() - start)*1000
     return {
         "code": 200,
@@ -139,3 +138,22 @@ async def REST(prompt, h, w, style="photographic"):
         raise Exception("Non-200 response: " + str(response.text))
     
     return response.json()
+
+async def upscale(file_path, h):
+    stability_key = random.sample(sdxl_keys, 1)[0]
+    response = requests.post(
+        "https://api.stability.ai/v1/generation/stable-diffusion-x4-latent-upscaler/image-to-image/upscale",
+        headers={
+            "Accept": "image/png",
+            "Authorization": f"Bearer {stability_key}"
+        },
+        files={
+            "image": open(file_path, "rb")
+        },
+        data={
+            "height": h*2,
+        }
+    )
+    if response.status_code != 200:
+        raise Exception("Non-200 response: " + str(response.text))
+    return response.content
