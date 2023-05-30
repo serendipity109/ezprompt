@@ -30,13 +30,11 @@ CREATE TABLE `trans` (
 
 CREATE TABLE `imgs` (
   `_id` varchar(24) NOT NULL DEFAULT '',
-  `trans_id` varchar(24) NOT NULL DEFAULT '',
   `username` varchar(24) DEFAULT NULL,
   `prompt_id` varchar(100) DEFAULT NULL,
   `img` varchar(1000) DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
   PRIMARY KEY (`_id`),
-  FOREIGN KEY (`trans_id`) REFERENCES trans(`_id`),
   FOREIGN KEY (`username`) REFERENCES users(`username`),
   FOREIGN KEY (`prompt_id`) REFERENCES trans(`prompt_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

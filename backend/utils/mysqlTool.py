@@ -99,18 +99,20 @@ class MySQLClient:
             self.query(sql, rv, commit)
         except:
             logger.exception("Get insert transaction error")
+            print("Get insert transaction error")
             raise
         imgs = ["img1", "img2", "img3", "img4"]
         for img in imgs:
             if inp[img]:
                 img_inp = {
-                    "trans_id": trans_id,
                     "username": inp["username"],
+                    "prompt_id": inp["prompt_id"],
                     "img": inp[img],
                     "create_time": inp["create_time"],
                 }
                 self.insert_img(img_inp)
         logger.info("Successively insert transaction!")
+        print("Successively insert transaction!")
 
     def insert_img(self, inp, commit=True):
         try:
@@ -121,7 +123,8 @@ class MySQLClient:
         rule_keys = list(inp.keys())
         rule_vals = [inp[key] for key in rule_keys]
         rule_keys.insert(0, "_id")
-        rule_vals.insert(0, generate_random_id())
+        img_id = generate_random_id()
+        rule_vals.insert(0, img_id)
         sql = "INSERT INTO `imgs` ({}) VALUES ({})".format(
             ", ".join(rule_keys),
             ", ".join(["%s"] * len(rule_vals)),
@@ -130,18 +133,33 @@ class MySQLClient:
             self.query(sql, rule_vals, commit)
         except:
             logger.exception("Get insert image error")
+            print("Get insert image error")
             raise
         logger.info("Successively insert image!")
+        print("Successively insert image!")
 
     def delete_expire_imgs(self, commit=True):
-        for table in ["imgs", "trans"]:
-            sql = f"DELETE FROM {table} WHERE create_time < DATE_SUB(NOW(), INTERVAL 7 DAY);"
+        sql_select = "SELECT prompt_id FROM trans WHERE create_time < DATE_SUB(NOW(), INTERVAL 1 MINUTE);"
+        try:
+            prompt_ids = self.query(sql_select, params=(), commit=commit)
+        except:
+            logger.exception("Get prompt_id error")
+            print("Get prompt_id error")
+            raise
+        breakpoint()
+        for prompt_id in prompt_ids:
+            sql_delete_imgs = f"DELETE FROM imgs WHERE prompt_id = {prompt_id[0]}"
+            sql_delete_trans = f"DELETE FROM imgs WHERE prompt_id = {prompt_id[0]}"
             try:
-                self.query(sql, params=(), commit=commit)
+                self.query(sql_delete_imgs, params=(), commit=commit)
+                self.query(sql_delete_trans, params=(), commit=commit)
             except:
-                logger.exception("Get delete expire error")
+                logger.exception("Get delete prompt_id error")
+                print("Get delete prompt_id error")
                 raise
-            logger.info("Successively delete expire trans, imgs!")
+
+        logger.info("Successively delete expire trans, imgs!")
+        print("Successively delete expire trans, imgs!")
 
 
 def generate_random_id():
@@ -153,26 +171,24 @@ def generate_random_id():
 """
 from mysqlTool import MySQLClient
 client = MySQLClient()
-inp = {'username':'admin', 'status':'200', 'img1':
-    'http://127.0.0.1:9000/ezrender-minio/...', 'elapsed_time':'10.0'}
+inp = {'username':'admin', 'prompt_id':'400', 'img1':
+    'http://127.0.0.1:9000/ezrender-minio/...'}
 client.insert_tran(inp)
 """
 
 
 class transInput(BaseModel):
     username: str
-    status: str
+    prompt_id: str
     img1: str = ""
     img2: str = ""
     img3: str = ""
     img4: str = ""
-    elapsed_time: str = "10.0"
     create_time: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 class imgInput(BaseModel):
-    _id: str
-    trans_id: str
     username: str
+    prompt_id: str
     img: str = ""
     create_time: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
