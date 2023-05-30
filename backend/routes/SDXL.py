@@ -77,6 +77,7 @@ async def sdxl(inp: xlInput):
         data.append(
             {
                 "result": url,
+                "file_path": file_path,
                 "candidates": [],
                 "waste_milliseconds": waste_milliseconds,
                 "extend_info": "",
@@ -90,6 +91,7 @@ async def sdxl(inp: xlInput):
 class ezInput(BaseModel):
     prompt: str = ""
     style: str = "creative"
+    upscale: bool = False
 
 
 @router.post("/ezpmt")
@@ -148,6 +150,7 @@ async def ezpmt(inp: ezInput):
         data.append(
             {
                 "result": url,
+                "file_path": file_path,
                 "candidates": [],
                 "waste_milliseconds": waste_milliseconds,
                 "extend_info": "",
@@ -155,6 +158,35 @@ async def ezpmt(inp: ezInput):
                 "recall_details": [],
             }
         )
+    return {"code": 200, "message": "", "data": data}
+
+
+@router.post("/upscale")
+async def upscale(file_path: str):
+    start = time.time()
+    data = await UPscale(file_path)
+    file_path = file_path.replace(".png", "_u.png")
+    filename = file_path.split("/")[-1]
+    with open(file_path, "wb") as f:
+        f.write(data)
+    minio_client.upload_file("test", filename, file_path)
+    url = minio_client.share_url("test", filename).replace(
+        "172.17.0.1:9000", "192.168.3.16:8087"
+    )
+
+    waste_milliseconds = (time.time() - start) * 1000
+    data = [
+        {
+            "result": url,
+            "file_path": file_path,
+            "candidates": [],
+            "waste_milliseconds": waste_milliseconds,
+            "extend_info": "",
+            "type": "image",
+            "recall_details": [],
+        }
+    ]
+
     return {"code": 200, "message": "", "data": data}
 
 
@@ -228,3 +260,20 @@ async def REST(prompt, style):
         raise Exception("Non-200 response: " + str(response.text))
 
     return response.json()
+
+
+async def UPscale(file_path):
+    img = Image.open(file_path)
+    h = img.size[1]
+    stability_key = random.sample(sdxl_keys, 1)[0]
+    response = requests.post(
+        "https://api.stability.ai/v1/generation/stable-diffusion-x4-latent-upscaler/image-to-image/upscale",
+        headers={"Accept": "image/png", "Authorization": f"Bearer {stability_key}"},
+        files={"image": open(file_path, "rb")},
+        data={
+            "height": h * 2,
+        },
+    )
+    if response.status_code != 200:
+        raise Exception("Non-200 response: " + str(response.text))
+    return response.content
