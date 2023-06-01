@@ -4,8 +4,7 @@ import os
 import pymysql
 from pydantic import BaseModel
 from urllib.parse import urlparse
-import random
-import string
+from utils.utils import generate_random_id
 
 
 MYSQL_URI = os.environ.get("MYSQL_URI", "")
@@ -146,26 +145,23 @@ class MySQLClient:
             logger.exception("Get prompt_id error")
             print("Get prompt_id error")
             raise
-        breakpoint()
-        for prompt_id in prompt_ids:
-            sql_delete_imgs = f"DELETE FROM imgs WHERE prompt_id = {prompt_id[0]}"
-            sql_delete_trans = f"DELETE FROM imgs WHERE prompt_id = {prompt_id[0]}"
-            try:
-                self.query(sql_delete_imgs, params=(), commit=commit)
-                self.query(sql_delete_trans, params=(), commit=commit)
-            except:
-                logger.exception("Get delete prompt_id error")
-                print("Get delete prompt_id error")
-                raise
+        if len(prompt_ids) > 0:
+            for prompt_id in prompt_ids:
+                sql_delete_imgs = f"DELETE FROM imgs WHERE prompt_id = {prompt_id[0]}"
+                sql_delete_trans = f"DELETE FROM trans WHERE prompt_id = {prompt_id[0]}"
+                try:
+                    self.query(sql_delete_imgs, params=(), commit=commit)
+                    self.query(sql_delete_trans, params=(), commit=commit)
+                except:
+                    logger.exception("Get delete prompt_id error")
+                    print("Get delete prompt_id error")
+                    raise
 
-        logger.info("Successively delete expire trans, imgs!")
-        print("Successively delete expire trans, imgs!")
-
-
-def generate_random_id():
-    letters_and_digits = string.digits
-    random_id = "".join(random.choice(letters_and_digits) for _ in range(10))
-    return random_id
+            logger.info("Successively delete expired trans, imgs!")
+            print("Successively delete expired trans, imgs!")
+        else:
+            logger.info("There's no expired trans, imgs!")
+            print("There's no expired trans, imgs!")
 
 
 """
