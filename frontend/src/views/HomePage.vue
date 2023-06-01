@@ -131,9 +131,16 @@
             style="position: relative; width: 100%; max-width: 100%; ">
             <div class="image-row">
               <div class="image-container" v-for="(url, index) in urls" :key="index"
-                :style="{ 'margin-right': index < urls.length - 1 ? '10px' : '0' }">
-                <img v-bind:src="url" v-on:click="showViewer([url])"
-                  style="object-fit: contain; height: 100%; max-height: 50vh" />
+                :style="{ 'margin-right': index < urls.length - 1 ? '10px' : '0' }" @click="selectedImage = index">
+                <div :class="{ 'selected-container': true, 'selected': selectedImage === index }">
+                  <img :src="url" style="object-fit: contain; height: 100%; max-height: 50vh"
+                    :class="{ 'selected': selectedImage === index }" />
+                  <div v-if="selectedImage === index" class="image-overlay">
+                    <button class="overlay-button">Share</button>
+                    <button class="overlay-button" v-on:click="showViewer([url])">Preview</button>
+                    <button class="overlay-button">Upscale</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -167,6 +174,7 @@ export default defineComponent({
     const showStyle = ref(false);
     const radio = ref('1');
     const type = ref('all');
+    const selectedImage = ref(null);
     let intervalId;
 
     onMounted(async () => {
@@ -237,9 +245,6 @@ export default defineComponent({
 
     const showViewer = (urls) => {
       viewerApi({
-        options: {
-          toolbar: false,
-        },
         images: urls,
       });
     };
@@ -283,7 +288,8 @@ export default defineComponent({
       startIncreasing,
       styleSwitch,
       showStyle,
-      radio
+      radio,
+      selectedImage
     };
   },
 });
@@ -301,19 +307,46 @@ export default defineComponent({
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-bottom: 30px;
 }
 
 .image-container {
-  margin: 0px;
+  margin-top: 0px;
   flex: 1;
   max-width: 20%;
-  height: auto;
   text-align: center;
 }
 
 .img-responsive {
   max-width: 100%;
   height: auto;
+}
+
+.selected-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.overlay-button {
+  margin: 5px;
+}
+
+.overlay-button:hover {
+  color: rgb(100, 69, 130);
+}
+
+.selected-container.selected {
+  padding: 3px;
+  background-color: rgb(89, 62, 157);
+}
+
+.image-overlay {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  height: 0;
+  overflow: visible;
 }
 
 .el-progress--line {
@@ -323,12 +356,12 @@ export default defineComponent({
 }
 
 .el-radio__input.is-checked .el-radio__inner {
-  border-color: #5f00ff;
-  background: #5f00ff;
+  border-color: #a153e6;
+  background: #a153e6;
 }
 
 .el-radio__input.is-checked+.el-radio__label {
-  color: #8a00ff;
+  color: #a153e6;
 }
 
 .el-radio__inner {
@@ -344,4 +377,5 @@ export default defineComponent({
 .radioRow {
   display: flex;
   justify-content: center;
-}</style>
+}
+</style>
