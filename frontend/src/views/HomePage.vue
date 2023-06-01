@@ -137,7 +137,7 @@
                     :class="{ 'selected': selectedImage === index }" />
                   <div v-if="selectedImage === index" class="image-overlay">
                     <button class="overlay-button">Share</button>
-                    <button class="overlay-button" v-on:click="showViewer([url])">Preview</button>
+                    <button class="overlay-button" v-on:click="showViewer(urls, index)">Preview</button>
                     <button class="overlay-button">Upscale</button>
                   </div>
                 </div>
@@ -224,7 +224,8 @@ export default defineComponent({
         mock: true
       });
       percentage.value = 0;
-      const [increaseResult, response] = await Promise.all([
+      // eslint-disable-next-line no-unused-vars
+      const [_, response] = await Promise.all([
         startIncreasing(),
         await axios.post('http://192.168.3.16:8877/ezpmt', data, {
           headers: {
@@ -233,7 +234,6 @@ export default defineComponent({
           },
         })
       ]);
-      console.log('Increase percentage result:', increaseResult);
       datas.value = response.data.data;
       percentage.value = 100;
       showProgress.value = false;
@@ -243,8 +243,12 @@ export default defineComponent({
       });
     };
 
-    const showViewer = (urls) => {
+    const showViewer = (urls, index) => {
       viewerApi({
+        options: {
+            toolbar: true,
+            initialViewIndex: index
+          },
         images: urls,
       });
     };
