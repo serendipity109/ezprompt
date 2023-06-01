@@ -33,11 +33,38 @@ class xlInput(BaseModel):
     hw: int = 1
     n: int = 1
     CFG: float = 7.0
+    mock: bool = False
 
 
 @router.post("/sdxl")
 async def sdxl(inp: xlInput):
-    print(inp)
+    if inp.mock:
+        urls = [
+            "http://192.168.3.16:8087/test/4066560120_u.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20230601%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230601T074816Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=432c665b100a6a591f47d935a5fa64e0d7b3c9d40705006bf482d73c6b109ab5",
+            "http://127.0.0.1:9000/test/288715164.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=HB2R8ZEGJ22ZGLCDXQIQ%2F20230601%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230601T084241Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJIQjJSOFpFR0oyMlpHTENEWFFJUSIsImV4cCI6MTY4NTY1MjEyMiwicGFyZW50IjoibWluaW9hZG1pbiJ9.TuRXaJMEGhlD7LAlyD68HdGA09B4JEwkuWV_sWnuuq166siuNnaqgDiztt08JUtpkOr8h-kyhxOMCND-kLCryw&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=5356aa8911790b31903a90491bf6579c6c25799b09fd9abcc7320c5bafd94552",
+            "http://127.0.0.1:9000/test/2506940560.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=HB2R8ZEGJ22ZGLCDXQIQ%2F20230601%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230601T084334Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJIQjJSOFpFR0oyMlpHTENEWFFJUSIsImV4cCI6MTY4NTY1MjEyMiwicGFyZW50IjoibWluaW9hZG1pbiJ9.TuRXaJMEGhlD7LAlyD68HdGA09B4JEwkuWV_sWnuuq166siuNnaqgDiztt08JUtpkOr8h-kyhxOMCND-kLCryw&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=4ec9a0580104f85170e706e1250ecb56984f99e3ed816697dfbfe139c86a032d",
+            "http://127.0.0.1:9000/test/4210377865.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=HB2R8ZEGJ22ZGLCDXQIQ%2F20230601%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230601T084522Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJIQjJSOFpFR0oyMlpHTENEWFFJUSIsImV4cCI6MTY4NTY1MjEyMiwicGFyZW50IjoibWluaW9hZG1pbiJ9.TuRXaJMEGhlD7LAlyD68HdGA09B4JEwkuWV_sWnuuq166siuNnaqgDiztt08JUtpkOr8h-kyhxOMCND-kLCryw&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=023ab4907bc6546276bae329cf7f83c0857bf89a0aa620f5ded90e363120825b",
+        ]
+        fps = [
+            "./output/4066560120_u.png",
+            "./output/288715164.png",
+            "./output/2506940560.png",
+            "./output/4210377865.png",
+        ]
+        data = []
+        for url, file_path in zip(urls, fps):
+            data.append(
+                {
+                    "result": url,
+                    "file_path": file_path,
+                    "candidates": [],
+                    "waste_milliseconds": 666666,
+                    "extend_info": "",
+                    "type": "image",
+                    "recall_details": [],
+                }
+            )
+        return {"code": 200, "message": "", "data": data}
     start = time.time()
     match inp.hw:
         case 0:
@@ -92,10 +119,38 @@ class ezInput(BaseModel):
     prompt: str = ""
     style: str = "creative"
     upscale: bool = False
+    mock: bool = False
 
 
 @router.post("/ezpmt")
 async def ezpmt(inp: ezInput):
+    if inp.mock:
+        urls = [
+            "http://192.168.3.16:8087/test/4066560120_u.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20230601%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230601T074816Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=432c665b100a6a591f47d935a5fa64e0d7b3c9d40705006bf482d73c6b109ab5",
+            "http://127.0.0.1:9000/test/288715164.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=HB2R8ZEGJ22ZGLCDXQIQ%2F20230601%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230601T084241Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJIQjJSOFpFR0oyMlpHTENEWFFJUSIsImV4cCI6MTY4NTY1MjEyMiwicGFyZW50IjoibWluaW9hZG1pbiJ9.TuRXaJMEGhlD7LAlyD68HdGA09B4JEwkuWV_sWnuuq166siuNnaqgDiztt08JUtpkOr8h-kyhxOMCND-kLCryw&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=5356aa8911790b31903a90491bf6579c6c25799b09fd9abcc7320c5bafd94552",
+            "http://127.0.0.1:9000/test/2506940560.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=HB2R8ZEGJ22ZGLCDXQIQ%2F20230601%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230601T084334Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJIQjJSOFpFR0oyMlpHTENEWFFJUSIsImV4cCI6MTY4NTY1MjEyMiwicGFyZW50IjoibWluaW9hZG1pbiJ9.TuRXaJMEGhlD7LAlyD68HdGA09B4JEwkuWV_sWnuuq166siuNnaqgDiztt08JUtpkOr8h-kyhxOMCND-kLCryw&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=4ec9a0580104f85170e706e1250ecb56984f99e3ed816697dfbfe139c86a032d",
+            "http://127.0.0.1:9000/test/4210377865.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=HB2R8ZEGJ22ZGLCDXQIQ%2F20230601%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230601T084522Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJIQjJSOFpFR0oyMlpHTENEWFFJUSIsImV4cCI6MTY4NTY1MjEyMiwicGFyZW50IjoibWluaW9hZG1pbiJ9.TuRXaJMEGhlD7LAlyD68HdGA09B4JEwkuWV_sWnuuq166siuNnaqgDiztt08JUtpkOr8h-kyhxOMCND-kLCryw&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=023ab4907bc6546276bae329cf7f83c0857bf89a0aa620f5ded90e363120825b",
+        ]
+        fps = [
+            "./output/4066560120_u.png",
+            "./output/288715164.png",
+            "./output/2506940560.png",
+            "./output/4210377865.png",
+        ]
+        data = []
+        for url, file_path in zip(urls, fps):
+            data.append(
+                {
+                    "result": url,
+                    "file_path": file_path,
+                    "candidates": [],
+                    "waste_milliseconds": 666666,
+                    "extend_info": "",
+                    "type": "image",
+                    "recall_details": [],
+                }
+            )
+        return {"code": 200, "message": "", "data": data}
     start = time.time()
     if inp.style == "creative":
         f = open("routes/prefix/creative.txt")
@@ -131,10 +186,12 @@ async def ezpmt(inp: ezInput):
 
     data = await REST(prompt, style)
     urls = []
+    fps = []
     for artifact in data["artifacts"]:
         image = artifact["base64"]
         filename = str(artifact["seed"]) + ".png"
         file_path = f"./output/{filename}"
+        fps.append(file_path)
         with open(file_path, "wb") as f:
             f.write(base64.b64decode(image))
             minio_client.upload_file("test", filename, file_path)
@@ -146,7 +203,7 @@ async def ezpmt(inp: ezInput):
 
     waste_milliseconds = (time.time() - start) * 1000
     data = []
-    for url in urls:
+    for url, file_path in zip(urls, fps):
         data.append(
             {
                 "result": url,
