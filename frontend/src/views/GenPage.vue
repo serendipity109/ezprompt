@@ -1,6 +1,6 @@
 <template>
     <div>
-        <nav-bar page="generate"/>
+        <nav-bar page="generate" />
         <div
             class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
             <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
@@ -27,7 +27,8 @@
                                         </div>
                                     </div>
                                     <div class="mt-8 flex flex-col">
-                                        <el-progress v-if="showProgress" :text-inside="true" :stroke-width="15" :percentage="percentage" :color="'#5f00ff'"/>
+                                        <el-progress v-if="showProgress" :text-inside="true" :stroke-width="15"
+                                            :percentage="percentage" :color="'#5f00ff'" />
                                     </div>
                                 </div>
                                 <div class="w-full mt-[20px] ml-0 md:ml-8 md:max-w-[300px]">
@@ -53,7 +54,7 @@
                                                 </div>
                                                 <div class="">
                                                     <v-slider :ticks="dimLabels" :max="2" step="1" tick-size="3"
-                                                        v-model="dimValue" hide-details ></v-slider>
+                                                        v-model="dimValue" hide-details></v-slider>
                                                     <input style="display:none" value="4" />
                                                     <div class="flex justify-between w-full  select-none mt-1 text-base">
                                                         <svg stroke="currentColor" fill="currentColor" stroke-width="0"
@@ -100,11 +101,13 @@
                                                             <line x1="1" y1="14" x2="7" y2="14"></line>
                                                             <line x1="9" y1="8" x2="15" y2="8"></line>
                                                             <line x1="17" y1="16" x2="23" y2="16"></line>
-                                                        </svg>Guidance scale</p><button
-                                                        class="w-20 py-2 hover:ring-1 select-none hover:ring-zinc-700 cursor-text rounded flex justify-end pr-0.5 -mr-1">{{ cfgValue }}&nbsp;</button>
+                                                        </svg>Guidance scale
+                                                    </p><button
+                                                        class="w-20 py-2 hover:ring-1 select-none hover:ring-zinc-700 cursor-text rounded flex justify-end pr-0.5 -mr-1">{{
+                                                            cfgValue }}&nbsp;</button>
                                                 </div>
-                                                <v-slider ticks="always" :step="0.5" min="2" max="10"
-                                                    v-model="cfgValue" hide-details ></v-slider>
+                                                <v-slider ticks="always" :step="0.5" min="2" max="10" v-model="cfgValue"
+                                                    hide-details></v-slider>
                                             </div>
                                             <div class="mt-1 flex flex-col">
                                                 <div class="flex items-center justify-between text-sm">
@@ -123,11 +126,13 @@
                                                             <line x1="1" y1="14" x2="7" y2="14"></line>
                                                             <line x1="9" y1="8" x2="15" y2="8"></line>
                                                             <line x1="17" y1="16" x2="23" y2="16"></line>
-                                                        </svg>Image count</p><button
-                                                        class="w-20 py-2 hover:ring-1 select-none hover:ring-zinc-700 cursor-text rounded flex justify-end pr-0.5 -mr-1">{{ nValue }}&nbsp;</button>
+                                                        </svg>Image count
+                                                    </p><button
+                                                        class="w-20 py-2 hover:ring-1 select-none hover:ring-zinc-700 cursor-text rounded flex justify-end pr-0.5 -mr-1">{{
+                                                            nValue }}&nbsp;</button>
                                                 </div>
-                                                <v-slider ticks="always" :step="1" min="1" max="4"
-                                                    v-model="nValue" hide-details ></v-slider>
+                                                <v-slider ticks="always" :step="1" min="1" max="4" v-model="nValue"
+                                                    hide-details></v-slider>
                                             </div>
                                         </div>
                                     </div>
@@ -142,17 +147,20 @@
                 </div>
             </div>
             <div w-full mt-4 px-1 relative>
-                <div role="grid" class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
-                style="position: relative; width: 100%; max-width: 100%; ">
+                <div role="grid" class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm"
+                    tabindex="0" style="position: relative; width: 100%; max-width: 100%; ">
                     <div class="image-row">
-                        <div class="image-container" v-for="(url, index) in urls" :key="index" style="">
-                            <img v-bind:src="url" v-on:click="showViewer(urls)" style="object-fit:contain;height:100%;max-height:50vh" />
+                        <div class="image-container" v-for="(url, index) in urls" :key="index"
+                            :style="{ 'margin-right': index < urls.length - 1 ? '10px' : '0' }">
+                            <img v-bind:src="url" v-on:click="showViewer([url])"
+                                style="object-fit: contain; height: 100%; max-height: 50vh" />
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-</div></template>
+    </div>
+</template>
 
 <script>
 import { ref, defineComponent, onUnmounted } from 'vue';
@@ -166,127 +174,128 @@ export default defineComponent({
         NavBar
     },
     setup() {
-    const pmt = ref('');
-    const npmt = ref('');
-    const dimValue = ref(1);
-    const dimLabels = {
-        0: '640 x 512',
-        1: '512 x 512',
-        2: '512 x 640',
-    };
-    const cfgValue = ref(7.0);
-    const nValue = ref(4);
-    const datas = ref([]);
-    const urls = ref([]);
-    const showProgress = ref(false);
-    const percentage = ref(0);
-    let intervalId;
+        const pmt = ref('');
+        const npmt = ref('');
+        const dimValue = ref(1);
+        const dimLabels = {
+            0: '640 x 512',
+            1: '512 x 512',
+            2: '512 x 640',
+        };
+        const cfgValue = ref(7.0);
+        const nValue = ref(4);
+        const datas = ref([]);
+        const urls = ref([]);
+        const showProgress = ref(false);
+        const percentage = ref(0);
+        let intervalId;
 
 
-    const sdxl = async () => {
-        showProgress.value = true;
-        urls.value = [];
-        const data = JSON.stringify({
-            prompt: pmt.value,
-            nprompt: npmt.value,
-            hw: dimValue.value,
-            n: nValue.value,
-            CFG: cfgValue.value,
-        });
-        percentage.value = 0;
-        const [increaseResult, response] = await Promise.all([
-            startIncreasing(),
-            await axios.post('http://192.168.3.16:8877/sdxl', data, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                },
-            })
+        const sdxl = async () => {
+            showProgress.value = true;
+            urls.value = [];
+            const data = JSON.stringify({
+                prompt: pmt.value,
+                nprompt: npmt.value,
+                hw: dimValue.value,
+                n: nValue.value,
+                CFG: cfgValue.value,
+                mock: true
+            });
+            percentage.value = 0;
+            const [increaseResult, response] = await Promise.all([
+                startIncreasing(),
+                await axios.post('http://192.168.3.16:8877/sdxl', data, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                })
             ]);
             console.log('Increase percentage result:', increaseResult);
             percentage.value = 100;
             showProgress.value = false;
             datas.value = response.data.data;
             datas.value.forEach((item) => {
-            urls.value.push(item.result);
+                urls.value.push(item.result);
             });
         };
 
-    const increasePercentage = async () => {
-        if (percentage.value + 30 > 95) {
-        percentage.value = 95;
-        } else {
-        percentage.value += 30;
-        }
-    };
+        const increasePercentage = async () => {
+            if (percentage.value + 30 > 95) {
+                percentage.value = 95;
+            } else {
+                percentage.value += 30;
+            }
+        };
 
-    const startIncreasing = () => {
-        if (!intervalId) {
-        intervalId = setInterval(increasePercentage, 1000);
-        }
-    };
+        const startIncreasing = () => {
+            if (!intervalId) {
+                intervalId = setInterval(increasePercentage, 1000);
+            }
+        };
 
-    onUnmounted(() => {
-        clearInterval(intervalId);
-    });
-
-    const showViewer = (urls) => {
-        viewerApi({
-        options: {
-            toolbar: true,
-        },
-        images: urls,
+        onUnmounted(() => {
+            clearInterval(intervalId);
         });
-    };
 
-    return {
-        pmt,
-        npmt,
-        dimValue,
-        dimLabels,
-        cfgValue,
-        nValue,
-        datas,
-        urls,
-        sdxl,
-        showViewer,
-        showProgress,
-        percentage,
-        startIncreasing,
-    };
-  },
+        const showViewer = (urls) => {
+            viewerApi({
+                options: {
+                    toolbar: true,
+                },
+                images: urls,
+            });
+        };
+
+        return {
+            pmt,
+            npmt,
+            dimValue,
+            dimLabels,
+            cfgValue,
+            nValue,
+            datas,
+            urls,
+            sdxl,
+            showViewer,
+            showProgress,
+            percentage,
+            startIncreasing,
+        };
+    },
 });
 </script>
 
 <style>
 .image-gallery {
-display: flex;
-flex-wrap: wrap;
-justify-content: center;
-align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
 }
 
 .image-row {
-display: flex;
-justify-content: center;
-align-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .image-container {
-margin: 0px;
-flex: 1;
-max-width: 20%;
-height: auto;
-text-align: center;
+    margin: 0px;
+    flex: 1;
+    max-width: 20%;
+    height: auto;
+    text-align: center;
 }
 
 .img-responsive {
-max-width: 100%;
-height: auto;
+    max-width: 100%;
+    height: auto;
 }
+
 .el-progress--line {
     width: 800px;
     margin: 0 auto;
     display: off;
-}
-</style>
+}</style>
