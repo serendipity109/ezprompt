@@ -138,7 +138,7 @@
                   <div v-if="selectedImage === index" class="image-overlay">
                     <button class="overlay-button">Share</button>
                     <button class="overlay-button" v-on:click="showViewer(urls, index)">Preview</button>
-                    <button class="overlay-button">Upscale</button>
+                    <button class="overlay-button" v-on:click="upscale(urls, index)">Upscale</button>
                   </div>
                 </div>
               </div>
@@ -246,12 +246,35 @@ export default defineComponent({
     const showViewer = (urls, index) => {
       viewerApi({
         options: {
-            toolbar: true,
-            initialViewIndex: index
-          },
+          toolbar: true,
+          initialViewIndex: index
+        },
         images: urls,
       });
     };
+
+    const upscale = async (urls, index) => {
+      let url = urls[index];
+      let fileName = url.split('/').pop().split('?')[0];
+      let filePath = './output/' + fileName;
+      showProgress.value = true;
+      percentage.value = 0;
+      // eslint-disable-next-line no-unused-vars
+      const [_, response] = await Promise.all([
+        startIncreasing(),
+        await axios.post(`http://192.168.3.16:8877/upscale?file_path=${encodeURIComponent(filePath)}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        })
+      ]);
+      percentage.value = 100;
+      showProgress.value = false;
+      console.log(response.data);
+      urls[index] = response.data.data[0].result;
+      showViewer(urls, index);
+    }
 
     const increasePercentage = async () => {
       if (percentage.value + 5 > 95) {
@@ -293,7 +316,8 @@ export default defineComponent({
       styleSwitch,
       showStyle,
       radio,
-      selectedImage
+      selectedImage,
+      upscale
     };
   },
 });
