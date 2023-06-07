@@ -40,16 +40,16 @@ class xlInput(BaseModel):
 async def sdxl(inp: xlInput):
     if inp.mock:
         urls = [
-            "http://127.0.0.1:8877/media/2447423919.png",
-            "http://127.0.0.1:8877/media/3050595030.png",
-            "http://127.0.0.1:8877/media/3259536455.png",
-            "http://127.0.0.1:8877/media/3335749772.png",
+            "http://127.0.0.1:8877/media/mock/2447423919.png",
+            "http://127.0.0.1:8877/media/mock/3050595030.png",
+            "http://127.0.0.1:8877/media/mock/3259536455.png",
+            "http://127.0.0.1:8877/media/mock/3335749772.png",
         ]
         fps = [
-            "./output/2447423919.png",
-            "./output/3050595030.png",
-            "./output/3259536455.png",
-            "./output/3335749772.png",
+            "./mock/2447423919.png",
+            "./mock/3050595030.png",
+            "./mock/3259536455.png",
+            "./mock/3335749772.png",
         ]
         data = []
         for url, file_path in zip(urls, fps):
@@ -126,16 +126,16 @@ class ezInput(BaseModel):
 async def ezpmt(inp: ezInput):
     if inp.mock:
         urls = [
-            "http://127.0.0.1:8877/media/2447423919.png",
-            "http://127.0.0.1:8877/media/3050595030.png",
-            "http://127.0.0.1:8877/media/3259536455.png",
-            "http://127.0.0.1:8877/media/3335749772.png",
+            "http://127.0.0.1:8877/media/mock/2447423919.png",
+            "http://127.0.0.1:8877/media/mock/3050595030.png",
+            "http://127.0.0.1:8877/media/mock/3259536455.png",
+            "http://127.0.0.1:8877/media/mock/3335749772.png",
         ]
         fps = [
-            "./output/2447423919.png",
-            "./output/3050595030.png",
-            "./output/3259536455.png",
-            "./output/3335749772.png",
+            "./mock/2447423919.png",
+            "./mock/3050595030.png",
+            "./mock/3259536455.png",
+            "./mock/3335749772.png",
         ]
         data = []
         for url, file_path in zip(urls, fps):

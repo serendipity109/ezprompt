@@ -101,11 +101,9 @@ async def get_image(img="s0.png"):
     return {"img_res": img_res, "pmt_res": pmt_res}
 
 
-@app.get("/media/{image_name}")
-async def show_image(image_name: str):
-    image_folder = "/workspace/output"
-    image_path = os.path.join(image_folder, image_name)
-    print(image_path)
+@app.get("/media/{folder}/{image_name}")
+async def show_image(folder: str, image_name: str):
+    image_path = os.path.join("/workspace", folder, image_name)
     if os.path.isfile(image_path):
         return FileResponse(image_path)
     else:
