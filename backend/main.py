@@ -101,6 +101,17 @@ async def get_image(img="s0.png"):
     return {"img_res": img_res, "pmt_res": pmt_res}
 
 
+@app.get("/media/{image_name}")
+async def show_image(image_name: str):
+    image_folder = "/workspace/output"
+    image_path = os.path.join(image_folder, image_name)
+    print(image_path)
+    if os.path.isfile(image_path):
+        return FileResponse(image_path)
+    else:
+        return {"error": "Image not found"}
+
+
 # 定期刪檔案
 FOLDER_PATH = "/workspace/output"
 DELETE_INTERVAL = timedelta(days=7)

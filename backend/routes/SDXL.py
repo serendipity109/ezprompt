@@ -40,16 +40,16 @@ class xlInput(BaseModel):
 async def sdxl(inp: xlInput):
     if inp.mock:
         urls = [
-            "http://192.168.3.16:8087/test/4066560120_u.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20230601%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230601T074816Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=432c665b100a6a591f47d935a5fa64e0d7b3c9d40705006bf482d73c6b109ab5",
-            "http://127.0.0.1:9000/test/288715164.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=HB2R8ZEGJ22ZGLCDXQIQ%2F20230601%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230601T084241Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJIQjJSOFpFR0oyMlpHTENEWFFJUSIsImV4cCI6MTY4NTY1MjEyMiwicGFyZW50IjoibWluaW9hZG1pbiJ9.TuRXaJMEGhlD7LAlyD68HdGA09B4JEwkuWV_sWnuuq166siuNnaqgDiztt08JUtpkOr8h-kyhxOMCND-kLCryw&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=5356aa8911790b31903a90491bf6579c6c25799b09fd9abcc7320c5bafd94552",
-            "http://127.0.0.1:9000/test/2506940560.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=HB2R8ZEGJ22ZGLCDXQIQ%2F20230601%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230601T084334Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJIQjJSOFpFR0oyMlpHTENEWFFJUSIsImV4cCI6MTY4NTY1MjEyMiwicGFyZW50IjoibWluaW9hZG1pbiJ9.TuRXaJMEGhlD7LAlyD68HdGA09B4JEwkuWV_sWnuuq166siuNnaqgDiztt08JUtpkOr8h-kyhxOMCND-kLCryw&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=4ec9a0580104f85170e706e1250ecb56984f99e3ed816697dfbfe139c86a032d",
-            "http://127.0.0.1:9000/test/4210377865.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=HB2R8ZEGJ22ZGLCDXQIQ%2F20230601%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230601T084522Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJIQjJSOFpFR0oyMlpHTENEWFFJUSIsImV4cCI6MTY4NTY1MjEyMiwicGFyZW50IjoibWluaW9hZG1pbiJ9.TuRXaJMEGhlD7LAlyD68HdGA09B4JEwkuWV_sWnuuq166siuNnaqgDiztt08JUtpkOr8h-kyhxOMCND-kLCryw&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=023ab4907bc6546276bae329cf7f83c0857bf89a0aa620f5ded90e363120825b",
+            "http://127.0.0.1:8877/media/2447423919.png",
+            "http://127.0.0.1:8877/media/3050595030.png",
+            "http://127.0.0.1:8877/media/3259536455.png",
+            "http://127.0.0.1:8877/media/3335749772.png",
         ]
         fps = [
-            "./output/4066560120_u.png",
-            "./output/288715164.png",
-            "./output/2506940560.png",
-            "./output/4210377865.png",
+            "./output/2447423919.png",
+            "./output/3050595030.png",
+            "./output/3259536455.png",
+            "./output/3335749772.png",
         ]
         data = []
         for url, file_path in zip(urls, fps):
@@ -126,16 +126,16 @@ class ezInput(BaseModel):
 async def ezpmt(inp: ezInput):
     if inp.mock:
         urls = [
-            "http://192.168.3.16:8087/test/4066560120_u.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20230601%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230601T074816Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=432c665b100a6a591f47d935a5fa64e0d7b3c9d40705006bf482d73c6b109ab5",
-            "http://127.0.0.1:9000/test/288715164.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=B5I6CHW10043IA797Y2P%2F20230605%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230605T035236Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJCNUk2Q0hXMTAwNDNJQTc5N1kyUCIsImV4cCI6MTY4NTk4MDMzNywicGFyZW50IjoibWluaW9hZG1pbiJ9.ypw6d-QbhJmO0TEXsLC7Q0Wg88gVR5Xb2B3mGYTGAVnRNVGdvy_F_NwsBECSRrgbn08KgyELISOPmB1Pxfv0Vw&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=066625a501115ac6311e45fa735f0598c81c2793a804f24cadd80170248bba58",
-            "http://127.0.0.1:9000/test/2506940560.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=B5I6CHW10043IA797Y2P%2F20230605%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230605T035611Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJCNUk2Q0hXMTAwNDNJQTc5N1kyUCIsImV4cCI6MTY4NTk4MDMzNywicGFyZW50IjoibWluaW9hZG1pbiJ9.ypw6d-QbhJmO0TEXsLC7Q0Wg88gVR5Xb2B3mGYTGAVnRNVGdvy_F_NwsBECSRrgbn08KgyELISOPmB1Pxfv0Vw&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=ee18560735235ba068e0ca8a1c98684648867d43813a9517b2069a787d716d03",
-            "http://127.0.0.1:9000/test/4210377865.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=B5I6CHW10043IA797Y2P%2F20230605%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230605T035628Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJCNUk2Q0hXMTAwNDNJQTc5N1kyUCIsImV4cCI6MTY4NTk4MDMzNywicGFyZW50IjoibWluaW9hZG1pbiJ9.ypw6d-QbhJmO0TEXsLC7Q0Wg88gVR5Xb2B3mGYTGAVnRNVGdvy_F_NwsBECSRrgbn08KgyELISOPmB1Pxfv0Vw&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=8b690c542e5028859956033607dc32f7812f75e326d579ad5296c6129f5335be",
+            "http://127.0.0.1:8877/media/2447423919.png",
+            "http://127.0.0.1:8877/media/3050595030.png",
+            "http://127.0.0.1:8877/media/3259536455.png",
+            "http://127.0.0.1:8877/media/3335749772.png",
         ]
         fps = [
-            "./output/4066560120_u.png",
-            "./output/288715164.png",
-            "./output/2506940560.png",
-            "./output/4210377865.png",
+            "./output/2447423919.png",
+            "./output/3050595030.png",
+            "./output/3259536455.png",
+            "./output/3335749772.png",
         ]
         data = []
         for url, file_path in zip(urls, fps):
