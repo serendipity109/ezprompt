@@ -61,7 +61,7 @@
             style="width:80px;z-index:2;opacity:0.5" href="/">
             <div class="relative sm:flex justify-center hidden w-full">
                 <div class="absolute w-full" style="border-bottom:2.5px solid transparent;bottom:-17px"></div><span
-                    class="text-slate-50">Likes</span>
+                    class="text-slate-50">Showcase</span>
             </div>
             <div class="relative flex items-center justify-center text-xl sm:hidden w-full">
                 <div class="absolute w-full" style="border-bottom:2.5px solid transparent;bottom:-17px"></div><svg
@@ -91,7 +91,9 @@
             </div>
         </a>
     </div>
-    <div class="hidden w-32 h-full  sm:flex items-center justify-end mr-4"></div>
+    <div class="hidden w-32 h-full  sm:flex items-center justify-end mr-4">
+        <button class="login-button h-6 rounded-md ml-2 opacity-90 hover:brightness-110 px-3 text-xs bg-gradient-to-t from-indigo-800 via-indigo-800 to-indigo-600 drop-shadow mr-2 font-medium" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="radix-:r0:" data-state="closed">Get started</button>
+    </div>
 </div>
 </template>
 <script>
@@ -121,3 +123,8 @@ export default defineComponent({
     },
 });
 </script>
+<style scoped>
+.login-button {
+  color: white;
+}
+</style>

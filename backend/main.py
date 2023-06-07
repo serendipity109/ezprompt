@@ -103,7 +103,7 @@ async def get_image(img="s0.png"):
 
 # 定期刪檔案
 FOLDER_PATH = "/workspace/output"
-DELETE_INTERVAL = timedelta(days=1)
+DELETE_INTERVAL = timedelta(days=7)
 
 
 def delete_old_files(folder_path: str, max_age: timedelta):
