@@ -157,3 +157,50 @@ async def upscale(file_path, h):
     if response.status_code != 200:
         raise Exception("Non-200 response: " + str(response.text))
     return response.content
+
+@router.post("/ezrender/upscale")
+async def ups(url: str):    
+    response = requests.get(url, stream=True)
+    file_path = './output/input.png'
+    with open(file_path, 'wb') as out_file:
+        out_file.write(response.content)
+    start = time.time()
+    data = await UPs(file_path)
+    filename = 'upscaled.png'
+    file_path = f"./output/{filename}"
+    with open(file_path, "wb") as f:
+        f.write(data)
+    minio_client.upload_file('ezrender-minio', filename, file_path)
+    url = minio_client.share_url("ezrender-minio", filename).replace('http://172.17.0.1:9000', MINIO_OUTPUT_URL)
+
+    waste_milliseconds = (time.time() - start) * 1000
+    data = [
+        {
+            "result": url,
+            "file_path": file_path,
+            "candidates": [],
+            "waste_milliseconds": waste_milliseconds,
+            "extend_info": "",
+            "type": "image",
+            "recall_details": [],
+        }
+    ]
+
+    return {"code": 200, "message": "", "data": data}
+
+
+async def UPs(file_path):
+    img = Image.open(file_path)
+    h = img.size[1]
+    stability_key = "sk-siOrUlzTOTGDmeAM3UFF5H6XWUQKiAR3ZPc7LdKvSAEX6sbX"
+    response = requests.post(
+        "https://api.stability.ai/v1/generation/stable-diffusion-x4-latent-upscaler/image-to-image/upscale",
+        headers={"Accept": "image/png", "Authorization": f"Bearer {stability_key}"},
+        files={"image": open(file_path, "rb")},
+        data={
+            "height": h * 2,
+        },
+    )
+    if response.status_code != 200:
+        raise Exception("Non-200 response: " + str(response.text))
+    return response.content
