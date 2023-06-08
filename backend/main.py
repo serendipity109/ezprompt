@@ -38,12 +38,6 @@ async def root():
     return {"Model": "EZPrompt"}
 
 
-@app.get("/show")
-async def show_image(user_id, filename):
-    image_path = os.path.join("images", user_id, filename)
-    return FileResponse(image_path, media_type="image/jpeg")
-
-
 @app.get("/get_images")
 async def get_images():
     imgs = [

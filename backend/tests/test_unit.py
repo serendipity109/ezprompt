@@ -1,4 +1,5 @@
-from unittest import mock
+import unittest
+import os
 from fastapi.testclient import TestClient
 from main import app
 
@@ -14,22 +15,27 @@ def test_root():
     assert response.json() == {"Model": "EZPrompt"}
 
 
-# 測試 GET /show 路由
-@mock.patch("main.os.path.join")
-@mock.patch("main.FileResponse")
-def test_show_image(mock_file_response, mock_os_path_join):
-    # 模擬 os.path.join 和 FileResponse 的行為
-    mock_os_path_join.return_value = "/path/to/image"
-    mock_file_response.return_value = "file_response"
+class TestShowImage(unittest.TestCase):
+    def setUp(self):
+        # 建立一個測試用的檔案
+        self.test_folder = "/workspace/test_folder"
+        self.test_image_name = "test_image.jpg"
+        self.test_image_path = os.path.join(self.test_folder, self.test_image_name)
+        os.makedirs(self.test_folder, exist_ok=True)
+        with open(self.test_image_path, "w") as f:
+            f.write("test")
 
-    response = client.get("/show", params={"user_id": "user", "filename": "image.jpg"})
+    def tearDown(self):
+        # 測試結束後，刪除測試用的檔案和目錄
+        os.remove(self.test_image_path)
+        os.rmdir(self.test_folder)
 
-    # 驗證 os.path.join 被正確呼叫
-    mock_os_path_join.assert_called_with("images", "user", "image.jpg")
+    def test_show_image_exists(self):
+        response = client.get(f"/media/test_folder/{self.test_image_name}")
+        self.assertEqual(response.status_code, 200)
+        # 你可能需要根據實際情況，驗證返回的內容
 
-    # 驗證 FileResponse 被正確呼叫
-    mock_file_response.assert_called_with("/path/to/image", media_type="image/jpeg")
-
-    # 驗證 HTTP 響應的狀態碼和內容
-    assert response.status_code == 200
-    assert response.content.decode() == '"file_response"'
+    def test_show_image_not_exists(self):
+        response = client.get("/media/test_folder/non_existent_image.jpg")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"error": "Image not found"})
