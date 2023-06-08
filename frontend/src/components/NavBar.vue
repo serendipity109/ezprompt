@@ -92,15 +92,22 @@
         </a>
     </div>
     <div class="hidden w-32 h-full  sm:flex items-center justify-end mr-4">
-        <button class="login-button h-6 rounded-md ml-2 opacity-90 hover:brightness-110 px-3 text-xs bg-gradient-to-t from-indigo-800 via-indigo-800 to-indigo-600 drop-shadow mr-2 font-medium" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="radix-:r0:" data-state="closed">Get started</button>
+        <button class="login-button h-6 rounded-md ml-2 opacity-90 hover:brightness-110 px-3 text-xs bg-gradient-to-t from-indigo-800 via-indigo-800 to-indigo-600 drop-shadow mr-2 font-medium" type="button" @click="toggleModal">Get started</button>
+        <div v-if="showModal" class="modal">
+            <login />
+        </div>
     </div>
 </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import Login from '@/components/LogIn.vue';
 export default defineComponent({
     name: 'NavBar',
+    components: {
+        Login
+    },
     props: {
         page: String,
     },
@@ -115,10 +122,19 @@ export default defineComponent({
         function getNavOpa(pagnition) {
             return props.page === pagnition ? '1' : '0.5';
         }
+        // 創建一個 reactive 的變數來追蹤彈跳視窗的顯示狀態
+        const showModal = ref(false);
+
+        // 切換彈跳視窗的顯示狀態
+        const toggleModal = () => {
+            showModal.value = !showModal.value;
+        };
         return {
             getNavStyle,
             getNavOpa,
-            goToPage
+            goToPage,
+            showModal,
+            toggleModal,
         };
     },
 });
@@ -126,5 +142,11 @@ export default defineComponent({
 <style scoped>
 .login-button {
   color: white;
+}
+
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
