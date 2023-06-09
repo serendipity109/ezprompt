@@ -9,6 +9,7 @@ import requests
 import base64
 import openai
 import time
+import string
 from io import BytesIO
 from PIL import Image
 
@@ -166,7 +167,9 @@ async def ups(url: str):
         out_file.write(response.content)
     start = time.time()
     data = await UPs(file_path)
-    filename = 'upscaled.png'
+    letters_and_digits = string.digits
+    random_id = "".join(random.choice(letters_and_digits) for _ in range(10))
+    filename = f'{random_id}.png'
     file_path = f"./output/{filename}"
     with open(file_path, "wb") as f:
         f.write(data)
@@ -194,7 +197,7 @@ async def UPs(file_path):
     h = img.size[1]
     stability_key = "sk-siOrUlzTOTGDmeAM3UFF5H6XWUQKiAR3ZPc7LdKvSAEX6sbX"
     response = requests.post(
-        "https://api.stability.ai/v1/generation/stable-diffusion-x4-latent-upscaler/image-to-image/upscale",
+        "https://api.stability.ai/v1/generation/esrgan-v1-x2plus/image-to-image/upscale",
         headers={"Accept": "image/png", "Authorization": f"Bearer {stability_key}"},
         files={"image": open(file_path, "rb")},
         data={
