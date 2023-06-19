@@ -1,44 +1,35 @@
-import { shallowMount } from '@vue/test-utils'
-import { createRouter, createMemoryHistory } from 'vue-router'
-import NavBar from '@/components/NavBar.vue'
+import { shallowMount } from "@vue/test-utils";
+import NavBar from "@/components/NavBar.vue";
 
-describe('NavBar.vue', () => {
-  it('should navigate correctly when goToPage is called', async () => {
-    const router = createRouter({
-      history: createMemoryHistory(),
-      routes: [], // provide your routes here
-    })
+describe("NavBar.vue", () => {
+  let wrapper;
 
-    const wrapper = shallowMount(NavBar, {
-      global: {
-        plugins: [router],
-      },
-      props: {
-        page: 'home',
-      },
-    })
-
-    // Mock the router.push function
-    jest.spyOn(router, 'push')
-
-    // Call the goToPage method
-    await wrapper.vm.goToPage('/generate')
-
-    // Assert that router.push was called with the right parameter
-    expect(router.push).toHaveBeenCalledWith('/generate')
-  })
-
-  it('should correctly get navigation style and opacity based on page', () => {
-    const wrapper = shallowMount(NavBar, {
+  beforeEach(() => {
+    wrapper = shallowMount(NavBar, {
       propsData: {
-        page: 'home',
+        page: "home",
       },
-    })
+    });
+  });
 
-    expect(wrapper.vm.getNavStyle('home')).toBe('solid #6366f1')
-    expect(wrapper.vm.getNavStyle('generate')).toBe('solid transparent')
+  it("應該顯示正確的導覽欄標籤", () => {
+    expect(wrapper.find("#homepage").text()).toBe("Home");
+    expect(wrapper.find("#genpage").text()).toBe("Generate");
+  });
 
-    expect(wrapper.vm.getNavOpa('home')).toBe('1')
-    expect(wrapper.vm.getNavOpa('generate')).toBe('0.5')
-  })
-})
+  it("當當前頁面為首頁時，首頁標籤的透明度應為1", () => {
+    expect(wrapper.vm.getNavOpa("home")).toBe("1");
+  });
+
+  it("當當前頁面不為首頁時，首頁標籤的透明度應為0.5", () => {
+    wrapper.setProps({ page: "other" });
+    expect(wrapper.vm.getNavOpa("home")).toBe("0.5");
+  });
+
+  it("當點擊 Get started 按鈕時，應該顯示登入視窗", async () => {
+    expect(wrapper.vm.showModal).toBe(false);
+    const button = wrapper.find(".login-button");
+    await button.trigger("click");
+    expect(wrapper.vm.showModal).toBe(true);
+  });
+});

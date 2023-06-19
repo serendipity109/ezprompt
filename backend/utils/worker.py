@@ -27,7 +27,7 @@ async def post_imagine(websocket, prompt, callback=False):
         }
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "http://192.168.3.16:9999/mj/submit/imagine", json=payload, headers=header
+            f"http://{PROXY_IP}/mj/submit/imagine", json=payload, headers=header
         )
     id = response.json()["result"]
     progress = 0

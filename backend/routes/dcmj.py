@@ -6,7 +6,14 @@ import os
 import queue
 import time
 
-from fastapi import APIRouter, Request, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import (
+    APIRouter,
+    Request,
+    HTTPException,
+    UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.responses import FileResponse
 from PIL import Image
 
@@ -26,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 INTERNAL_IP = os.environ.get("INTERNAL_IP", "192.168.3.16:9527")
 EXTERNAL_IP = os.environ.get("EXTERNAL_IP", "61.216.75.236:9528")
+
 
 @router.websocket("/dcmj/imagine")
 async def imagine(websocket: WebSocket):
