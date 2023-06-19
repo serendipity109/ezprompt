@@ -1,11 +1,14 @@
 apscheduler
 cryptography
 fastapi
+httpx
 minio
 openai
+opencc-python-reimplemented
 Pillow
 pymysql
 python-dotenv
+python-multipart
 redis
 stability-sdk
 uvicorn[standard]

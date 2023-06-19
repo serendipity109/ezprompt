@@ -178,14 +178,14 @@ export default defineComponent({
     let intervalId;
 
     onMounted(async () => {
-      const response = await fetch('http://192.168.3.16:8877/');
+      const response = await fetch('http://192.168.3.16:9527/');
       const data = await response.json();
       message.value = data.Model;
     });
 
     const getImgs = async () => {
       flag.value = 1;
-      const response = await axios.get('http://192.168.3.16:8877/get_images');
+      const response = await axios.get('http://192.168.3.16:9527/get_images');
       images.value = response.data;
       console.log(response.data);
       imageRows.value = chunkArray(images.value, 5);
@@ -227,7 +227,7 @@ export default defineComponent({
       // eslint-disable-next-line no-unused-vars
       const [_, response] = await Promise.all([
         startIncreasing(),
-        await axios.post('http://192.168.3.16:8877/ezpmt', data, {
+        await axios.post('http://192.168.3.16:9527/ezpmt', data, {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -262,7 +262,7 @@ export default defineComponent({
       // eslint-disable-next-line no-unused-vars
       const [_, response] = await Promise.all([
         startIncreasing(),
-        await axios.post(`http://192.168.3.16:8877/upscale?file_path=${encodeURIComponent(filePath)}`, {
+        await axios.post(`http://192.168.3.16:9527/upscale?file_path=${encodeURIComponent(filePath)}`, {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',

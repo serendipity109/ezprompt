@@ -3,6 +3,7 @@ import Home from '@/views/HomePage.vue'
 import Prompt from '@/views/PromptPage.vue'
 import Test from '@/views/TestPage.vue'
 import Gen from '@/views/GenPage.vue'
+import Show from '@/views/ShowPage.vue'
 
 
 const router = createRouter({
@@ -10,6 +11,7 @@ const router = createRouter({
     routes: [
         {path: '/', redirect: '/home'},
         {path: '/test', component: Test},
+        {path: '/show', component: Show},
         {path: '/home', component: Home, meta: {title: 'EZPrompt'}},
         {
             path: '/image/:img',

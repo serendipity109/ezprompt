@@ -1,18 +1,19 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
 import base64
-import requests
-import random
-from dotenv import load_dotenv
-import os
-import openai
-from stability_sdk import client
-import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
-from PIL import Image
-from utils import minioTool
 import io
+import os
+import random
+import shutil
 import time
 
+import openai
+import requests
+import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
+from dotenv import load_dotenv
+from fastapi import APIRouter
+from PIL import Image
+from pydantic import BaseModel
+from stability_sdk import client
+from utils import minioTool
 
 load_dotenv()
 sdxl_keys = [os.getenv("SDXL_KEY1"), os.getenv("SDXL_KEY2")]
@@ -21,7 +22,7 @@ openai_keys = [
     os.getenv("OPENAI_KEY2"),
     os.getenv("OPENAI_KEY3"),
 ]
-
+INTERNAL_IP = os.environ.get("INTERNAL_IP", "192.168.3.16:9527")
 
 router = APIRouter()
 minio_client = minioTool.MinioClient()
@@ -40,10 +41,10 @@ class xlInput(BaseModel):
 async def sdxl(inp: xlInput):
     if inp.mock:
         urls = [
-            "http://127.0.0.1:8877/media/mock/2447423919.png",
-            "http://127.0.0.1:8877/media/mock/3050595030.png",
-            "http://127.0.0.1:8877/media/mock/3259536455.png",
-            "http://127.0.0.1:8877/media/mock/3335749772.png",
+            f"http://{INTERNAL_IP}/media/mock/2447423919.png",
+            f"http://{INTERNAL_IP}/media/mock/3050595030.png",
+            f"http://{INTERNAL_IP}/media/mock/3259536455.png",
+            f"http://{INTERNAL_IP}/media/mock/3335749772.png",
         ]
         fps = [
             "./mock/2447423919.png",
@@ -51,6 +52,8 @@ async def sdxl(inp: xlInput):
             "./mock/3259536455.png",
             "./mock/3335749772.png",
         ]
+        for path in fps:
+            shutil.copy(path, path.replace("./mock", "./output"))
         data = []
         for url, file_path in zip(urls, fps):
             data.append(
@@ -126,10 +129,10 @@ class ezInput(BaseModel):
 async def ezpmt(inp: ezInput):
     if inp.mock:
         urls = [
-            "http://127.0.0.1:8877/media/mock/2447423919.png",
-            "http://127.0.0.1:8877/media/mock/3050595030.png",
-            "http://127.0.0.1:8877/media/mock/3259536455.png",
-            "http://127.0.0.1:8877/media/mock/3335749772.png",
+            f"http://{INTERNAL_IP}/media/mock/2447423919.png",
+            f"http://{INTERNAL_IP}/media/mock/3050595030.png",
+            f"http://{INTERNAL_IP}/media/mock/3259536455.png",
+            f"http://{INTERNAL_IP}/media/mock/3335749772.png",
         ]
         fps = [
             "./mock/2447423919.png",
@@ -137,6 +140,8 @@ async def ezpmt(inp: ezInput):
             "./mock/3259536455.png",
             "./mock/3335749772.png",
         ]
+        for path in fps:
+            shutil.copy(path, path.replace("./mock", "./output"))
         data = []
         for url, file_path in zip(urls, fps):
             data.append(
