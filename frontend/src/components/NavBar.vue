@@ -94,7 +94,7 @@
     <div class="hidden w-32 h-full  sm:flex items-center justify-end mr-4">
         <v-dialog v-model="dialog" width="auto">
             <template v-slot:activator="{ props }">
-                <v-btn size="small" color="primary" v-bind="props">
+                <v-btn size="x-small" color="primary" v-bind="props">
                     Get started
                 </v-btn>
             </template>

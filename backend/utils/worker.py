@@ -40,8 +40,8 @@ async def post_imagine(websocket, prompt, callback=False):
                     continue
                 progress = msg["result"]["progress"].replace("%", "")
                 progress = int(progress)
-                if progress > 60:
-                    await asyncio.sleep(3)
+                if progress > 0:
+                    await asyncio.sleep(5)
                     continue
                 await asyncio.sleep(10)
             elif msg["result"]["status"] == "NOT_START":

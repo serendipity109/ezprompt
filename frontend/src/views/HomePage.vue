@@ -48,15 +48,15 @@
             <div v-if="showStyle">
               <div class=" mt-2 flex flex-col items-center">Style Selection</div>
               <div class=" radioRow">
-                <el-radio v-model="radio" label="1">creative</el-radio>
-                <el-radio v-model="radio" label="2">realistic</el-radio>
-                <el-radio v-model="radio" label="3">anime</el-radio>
+                <el-radio v-model="radio" label="1">漫畫</el-radio>
+                <el-radio v-model="radio" label="2">電影</el-radio>
+                <el-radio v-model="radio" label="3">水墨畫</el-radio>
               </div>
               <div class=" radioRow">
-                <el-radio v-model="radio" label="4">3D model</el-radio>
-                <el-radio v-model="radio" label="5">cinematic</el-radio>
-                <el-radio v-model="radio" label="6">film</el-radio>
-                <el-radio v-model="radio" label="7">fantasy art</el-radio>
+                <el-radio v-model="radio" label="4">油畫</el-radio>
+                <el-radio v-model="radio" label="5">水彩畫</el-radio>
+                <el-radio v-model="radio" label="6">鉛筆畫</el-radio>
+                <el-radio v-model="radio" label="7">寫實</el-radio>
               </div>
             </div>
             <div class=" mb-8 flex flex-col items-center">
@@ -172,9 +172,10 @@ export default defineComponent({
     const showProgress = ref(false);
     const percentage = ref(0);
     const showStyle = ref(false);
-    const radio = ref('1');
-    const type = ref('all');
+    const radio = ref(null);
     const selectedImage = ref(null);
+    const type = ref(null);
+    const socket = ref(null);
     let intervalId;
 
     onMounted(async () => {
@@ -199,50 +200,6 @@ export default defineComponent({
       return chunkedArray;
     };
 
-    const ezprompt = async () => {
-      flag.value = 0;
-      urls.value = [];
-      showProgress.value = true;
-      if (radio.value === '1') {
-        type.value = 'creative';
-      } else if (radio.value == '2') {
-        type.value = 'photographic';
-      } else if (radio.value == '3') {
-        type.value = 'anime';
-      } else if (radio.value == '4') {
-        type.value = '3d-model';
-      } else if (radio.value == '5') {
-        type.value = 'cinematic';
-      } else if (radio.value == '6') {
-        type.value = 'analog-film';
-      } else if (radio.value == '7') {
-        type.value = 'fantasy-art';
-      }
-      const data = JSON.stringify({
-        prompt: keyword.value,
-        style: type.value,
-        mock: true
-      });
-      percentage.value = 0;
-      // eslint-disable-next-line no-unused-vars
-      const [_, response] = await Promise.all([
-        startIncreasing(),
-        await axios.post('http://192.168.3.16:9527/ezpmt', data, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-        })
-      ]);
-      datas.value = response.data.data;
-      percentage.value = 100;
-      showProgress.value = false;
-      console.log(response.data);
-      datas.value.forEach((item) => {
-        urls.value.push(item.result);
-      });
-    };
-
     const showViewer = (urls, index) => {
       viewerApi({
         options: {
@@ -251,6 +208,66 @@ export default defineComponent({
         },
         images: urls,
       });
+    };
+
+    const ezprompt = async () => {
+      flag.value = 0;
+      urls.value = [];
+      showProgress.value = true;
+      percentage.value = 0;
+
+      if (radio.value === '1') {
+        type.value = '漫畫';
+      } else if (radio.value == '2') {
+        type.value = '電影';
+      } else if (radio.value == '3') {
+        type.value = '水墨畫';
+      } else if (radio.value == '4') {
+        type.value = '油畫';
+      } else if (radio.value == '5') {
+        type.value = '水彩畫';
+      } else if (radio.value == '6') {
+        type.value = '鉛筆畫';
+      } else if (radio.value == '7') {
+        type.value = '寫實';
+      }
+
+      socket.value = new WebSocket("ws://192.168.3.16:9527/dcmj/imagine");
+
+      socket.value.onopen = () => {
+        console.log("Connection opened");
+        // 在连接打开后发送消息
+        const message = {
+          "user_id": "adam",
+          "prompt": keyword.value,
+          ...(type.value ? { "preset": type.value } : {})
+        };
+        socket.value.send(JSON.stringify(message));
+      };
+
+      socket.value.onmessage = (event) => {
+        console.log("Received message: ", event.data);
+        const data = JSON.parse(event.data);
+        if (data.result && data.result.progress) {
+          percentage.value = parseInt(data.result.progress);
+        }
+        if (data.code === 201 && data.data && Array.isArray(data.data.result)) {
+          // 如果 code 是 201，输出 result 列表
+          data.data.result.slice(1).forEach((item) => {
+            urls.value.push(item);
+          });
+        }
+      };
+
+      socket.value.onerror = (error) => {
+        console.error("Error occurred: ", error);
+        showProgress.value = false;
+      };
+
+      socket.value.onclose = () => {
+        console.log("Connection closed");
+        showProgress.value = false;
+      };
     };
 
     const upscale = async (urls, index) => {

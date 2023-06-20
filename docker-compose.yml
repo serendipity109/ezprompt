@@ -29,7 +29,7 @@ services:
       - MYSQL_DATABASE=ezprompt
       - INTERNAL_IP=192.168.3.16:9527
       - EXTERNAL_IP=61.216.75.236:9528
-      - PROXY_IP=192.168.3.16:9999
+      - PROXY_IP=192.168.2.16:9999
     ports:
         - 9527:9527
   minio:
@@ -67,15 +67,15 @@ services:
     environment: 
       MYSQL_ROOT_PASSWORD: password
       TZ: UTC
-  midjourney-proxy:
-    image: chazzcheung/midjourney-proxy:latest
-    environment:
-      - mj.discord.guild-id=1115834541643403284
-      - mj.discord.channel-id=1115834541643403287
-      - mj.discord.user-token=MTA4MTA0MjM4MjQ3NDE4Mjc2OQ.Gn5kNJ.DGv6QNmaQtf8NoRHwDKe97yA3roysbCwdl24Dw
-    restart: always
-    ports:
-      - 9999:8080
+  # midjourney-proxy:
+  #   image: chazzcheung/midjourney-proxy:latest
+  #   environment:
+  #     - mj.discord.guild-id=1115834541643403284
+  #     - mj.discord.channel-id=1115834541643403287
+  #     - mj.discord.user-token=MTA4MTA0MjM4MjQ3NDE4Mjc2OQ.Gn5kNJ.DGv6QNmaQtf8NoRHwDKe97yA3roysbCwdl24Dw
+  #   restart: always
+  #   ports:
+  #     - 9999:8080
   nginx:
     container_name: nginx
     build:

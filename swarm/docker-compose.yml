@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  midjourney-proxy:
+    image: chazzcheung/midjourney-proxy:latest
+    environment:
+      - mj.discord.guild-id=1115834541643403284
+      - mj.discord.channel-id=1115834541643403287
+      - mj.discord.user-token=MTA4MTA0MjM4MjQ3NDE4Mjc2OQ.Gn5kNJ.DGv6QNmaQtf8NoRHwDKe97yA3roysbCwdl24Dw
+    ports:
+      - target: 8080
+        published: 9999
+        protocol: tcp
+        mode: host
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      placement:
+          constraints:
+            - node.role == worker
