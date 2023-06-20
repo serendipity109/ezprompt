@@ -1,15 +1,17 @@
 <template>
     <div>
         <div role="dialog" id="radix-:r0:" aria-describedby="radix-:r2:" aria-labelledby="radix-:r1:" data-state="open"
-            class="bg-zinc-800 items-center fixed shadow-xl rounded-2xl z-50 px-8 py-8 text-sm drop-shadow-lg border border-zinc-700 fadeInAndScale"
+            class="bg-zinc-800 items-center relative shadow-xl rounded-2xl z-50 px-8 py-8 text-sm drop-shadow-lg border border-zinc-700 fadeInAndScale"
             tabindex="-1"
-            style="top: 50%; transform: translate(-50%, -50%); left: 50%; max-width: 330px; width: 100%; max-height: 85vh; pointer-events: auto;">
-            <button type="button" class="hover:bg-zinc-700 p-1 rounded absolute right-3 top-3"><svg stroke="currentColor"
+            style="max-width: 330px; width: 100%; max-height: 85vh; pointer-events: auto;">            
+            <button @click="closeModal" type="button" class="hover:bg-zinc-700 p-1 rounded absolute right-3 top-3">
+                <svg stroke="currentColor"
                     fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"
                     class="text-xl" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg></button>
+                </svg>
+            </button>
             <div class="flex flex-col text-zinc-200 text-center items-center">
                 <div class="flex-1 w-64 text-2xl text-slate-50 justify-center items-center my-8">EZPrompt</div>
                 <div>    
@@ -34,6 +36,14 @@ import Auth from '@/components/GoogleAuth.vue';
 export default defineComponent({
     components: {
         Auth
+    },
+    setup(_, context) {
+        const closeModal = () => {
+            context.emit('login-click');
+        }
+        return {
+            closeModal
+        }
     }
 })
 </script>
