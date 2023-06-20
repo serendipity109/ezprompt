@@ -15,7 +15,7 @@
             <div class="flex flex-col text-zinc-200 text-center items-center">
                 <div class="flex-1 w-64 text-2xl text-slate-50 justify-center items-center my-8">EZPrompt</div>
                 <div>    
-                    <auth />
+                    <auth @login-click="closeModal"/>
                 </div>
                 <div class="flex-1 w-64 flex-shrink-0 opacity-50 my-8 ">Or login with email</div>
             </div>
