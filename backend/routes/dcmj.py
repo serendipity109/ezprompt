@@ -114,7 +114,7 @@ async def job_schedular(job_id):
                             "message": f"Waiting for {n} job(s) to start!",
                             "result": "",
                         }
-                     )
+                    )
                 )
             else:
                 waiting_q.queue.remove(job_id)
