@@ -106,15 +106,19 @@ async def job_schedular(job_id):
             if job_id not in list(waiting_q.queue):
                 waiting_q.put(job_id)
             n = min(len(waiting_q.queue), n)
-            await websocket.send_text(
-                json.dumps(
-                    {
-                        "code": 200,
-                        "message": f"Waiting for {n} job(s) to start!",
-                        "result": "",
-                    }
+            if websocket.open:
+                await websocket.send_text(
+                    json.dumps(
+                        {
+                            "code": 200,
+                            "message": f"Waiting for {n} job(s) to start!",
+                            "result": "",
+                        }
+                     )
                 )
-            )
+            else:
+                waiting_q.queue.remove(job_id)
+                assert "Connection dropped out!"
             await asyncio.sleep(10)
         else:
             if waiting_q.empty():

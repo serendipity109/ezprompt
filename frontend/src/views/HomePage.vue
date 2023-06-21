@@ -369,6 +369,10 @@ export default defineComponent({
   overflow: visible;
 }
 
+.el-progress-bar__innerText {
+    color: black;
+}
+
 .el-progress--line {
   width: 500px;
   margin: 0 auto;
@@ -387,8 +391,6 @@ export default defineComponent({
 .el-radio__inner {
   background-color: #ffffff12;
 }
-
-;
 
 .el-radio__label {
   color: #ffffff6e;

@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 from distutils.util import strtobool
 from minio import Minio
+# from minio.lifecycleconfig import LifecycleConfig, Rule, Expiration, DateDays
 
 
 class MinioClient:
@@ -17,6 +18,13 @@ class MinioClient:
             secret_key=MINIO_SECRET_KEY,
             secure=MINIO_SECURE,
         )
+        # rule = Rule(
+        #     expiration=Expiration(days=DateDays(7)),
+        #     rule_filter=Filter(prefix="test/"),
+        #     status="Enabled",
+        # )
+        # config = LifecycleConfig([rule])
+        # self.client.set_bucket_lifecycle("test", config)
 
     def upload_file(self, bucket, file_name, file_path):
         found = self.client.bucket_exists(bucket)

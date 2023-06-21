@@ -199,8 +199,8 @@ export default defineComponent({
                 nprompt: npmt.value,
                 hw: dimValue.value,
                 n: nValue.value,
-                CFG: cfgValue.value,
-                mock: true
+                CFG: cfgValue.value
+                // mock: true
             });
             percentage.value = 0;
             const [increaseResult, response] = await Promise.all([
