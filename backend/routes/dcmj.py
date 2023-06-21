@@ -32,8 +32,15 @@ job_map = {}
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-INTERNAL_IP = os.environ.get("INTERNAL_IP", "192.168.3.16:9527")
-EXTERNAL_IP = os.environ.get("EXTERNAL_IP", "61.216.75.236:9528")
+INTERNAL_IP = "192.168.3.16:9527"
+EXTERNAL_IP = "61.216.75.236:9528"
+BUILD_VERSION = os.environ.get("BUILD_VERSION", "internal")
+if BUILD_VERSION == "internal":
+    FRONTEND_IP = os.environ.get("F_INTERNAL_IP")
+    BACKEND_IP = os.environ.get("B_INTERNAL_IP")
+else:
+    FRONTEND_IP = os.environ.get("F_EXTERNAL_IP")
+    BACKEND_IP = os.environ.get("B_EXTERNAL_IP")
 
 
 @router.websocket("/dcmj/imagine")

@@ -205,7 +205,7 @@ export default defineComponent({
             percentage.value = 0;
             const [increaseResult, response] = await Promise.all([
                 startIncreasing(),
-                await axios.post('http://192.168.3.16:9527/sdxl', data, {
+                await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/sdxl`, data, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',

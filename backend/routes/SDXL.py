@@ -22,7 +22,13 @@ openai_keys = [
     os.getenv("OPENAI_KEY2"),
     os.getenv("OPENAI_KEY3"),
 ]
-INTERNAL_IP = os.environ.get("INTERNAL_IP", "192.168.3.16:9527")
+BUILD_VERSION = os.environ.get("BUILD_VERSION", "internal")
+if BUILD_VERSION == "internal":
+    FRONTEND_IP = os.environ.get("F_INTERNAL_IP")
+    BACKEND_IP = os.environ.get("B_INTERNAL_IP")
+else:
+    FRONTEND_IP = os.environ.get("F_EXTERNAL_IP")
+    BACKEND_IP = os.environ.get("B_EXTERNAL_IP")
 
 router = APIRouter()
 minio_client = minioTool.MinioClient()
@@ -41,10 +47,10 @@ class xlInput(BaseModel):
 async def sdxl(inp: xlInput):
     if inp.mock:
         urls = [
-            f"http://{INTERNAL_IP}/media/mock/2447423919.png",
-            f"http://{INTERNAL_IP}/media/mock/3050595030.png",
-            f"http://{INTERNAL_IP}/media/mock/3259536455.png",
-            f"http://{INTERNAL_IP}/media/mock/3335749772.png",
+            f"http://{BACKEND_IP}/media/mock/2447423919.png",
+            f"http://{BACKEND_IP}/media/mock/3050595030.png",
+            f"http://{BACKEND_IP}/media/mock/3259536455.png",
+            f"http://{BACKEND_IP}/media/mock/3335749772.png",
         ]
         fps = [
             "./mock/2447423919.png",
@@ -97,7 +103,7 @@ async def sdxl(inp: xlInput):
                 minio_client.upload_file("test", filename, file_path)
                 urls.append(
                     minio_client.share_url("test", filename).replace(
-                        "172.17.0.1:9000", "192.168.3.16:8087"
+                        "172.17.0.1:9000", FRONTEND_IP
                     )
                 )
 
@@ -129,10 +135,10 @@ class ezInput(BaseModel):
 async def ezpmt(inp: ezInput):
     if inp.mock:
         urls = [
-            f"http://{INTERNAL_IP}/media/mock/2447423919.png",
-            f"http://{INTERNAL_IP}/media/mock/3050595030.png",
-            f"http://{INTERNAL_IP}/media/mock/3259536455.png",
-            f"http://{INTERNAL_IP}/media/mock/3335749772.png",
+            f"http://{BACKEND_IP}/media/mock/2447423919.png",
+            f"http://{BACKEND_IP}/media/mock/3050595030.png",
+            f"http://{BACKEND_IP}/media/mock/3259536455.png",
+            f"http://{BACKEND_IP}/media/mock/3335749772.png",
         ]
         fps = [
             "./mock/2447423919.png",
@@ -202,7 +208,7 @@ async def ezpmt(inp: ezInput):
             minio_client.upload_file("test", filename, file_path)
             urls.append(
                 minio_client.share_url("test", filename).replace(
-                    "172.17.0.1:9000", "192.168.3.16:8087"
+                    "172.17.0.1:9000", FRONTEND_IP
                 )
             )
 
@@ -233,7 +239,7 @@ async def upscale(file_path: str):
         f.write(data)
     minio_client.upload_file("test", filename, file_path)
     url = minio_client.share_url("test", filename).replace(
-        "172.17.0.1:9000", "192.168.3.16:8087"
+        "172.17.0.1:9000", FRONTEND_IP
     )
 
     waste_milliseconds = (time.time() - start) * 1000

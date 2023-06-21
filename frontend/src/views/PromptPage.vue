@@ -115,7 +115,7 @@ export default defineComponent({
     }
 
     const fetchImageData = async (img) => {
-      const response = await axios.get('http://192.168.3.16:9527/get_image',
+      const response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/get_image`,
         {
           params: {
             img: img,

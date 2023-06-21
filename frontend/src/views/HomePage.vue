@@ -131,7 +131,7 @@
                   <div v-if="selectedImage === index" class="image-overlay">
                     <button class="overlay-button">Share</button>
                     <button class="overlay-button" v-on:click="showViewer(urls, index)">Preview</button>
-                    <button class="overlay-button" v-on:click="upscale(urls, index)">Upscale</button>
+                    <button class="overlay-button" v-on:click="downloadFile(urls, index)">Download</button>
                   </div>
                 </div>
               </div>
@@ -174,7 +174,7 @@ export default defineComponent({
 
     const getImgs = async () => {
       flag.value = 1;
-      const response = await axios.get('http://192.168.3.16:9527/get_images');
+      const response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/get_images`);
       images.value = response.data;
       console.log(response.data);
       imageRows.value = chunkArray(images.value, 5);
@@ -219,8 +219,7 @@ export default defineComponent({
       } else if (radio.value == '7') {
         type.value = '寫實';
       }
-
-      socket.value = new WebSocket("ws://192.168.3.16:9527/dcmj/imagine");
+      socket.value = new WebSocket(`ws://${process.env.VUE_APP_BACKEND_IP}/dcmj/imagine`);
 
       socket.value.onopen = () => {
         console.log("Connection opened");
@@ -258,27 +257,16 @@ export default defineComponent({
       };
     };
 
-    const upscale = async (urls, index) => {
+    const downloadFile = async (urls, index) => {
       let url = urls[index];
+      const link = document.createElement('a');
+      link.href = url;
       let fileName = url.split('/').pop().split('?')[0];
-      let filePath = './output/' + fileName;
-      showProgress.value = true;
-      percentage.value = 0;
-      // eslint-disable-next-line no-unused-vars
-      const [_, response] = await Promise.all([
-        startIncreasing(),
-        await axios.post(`http://192.168.3.16:9527/upscale?file_path=${encodeURIComponent(filePath)}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-        })
-      ]);
-      percentage.value = 100;
-      showProgress.value = false;
-      console.log(response.data);
-      urls[index] = response.data.data[0].result;
-      showViewer(urls, index);
+      link.download = fileName;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     const increasePercentage = async () => {
@@ -321,7 +309,7 @@ export default defineComponent({
       showStyle,
       radio,
       selectedImage,
-      upscale
+      downloadFile
     };
   },
 });

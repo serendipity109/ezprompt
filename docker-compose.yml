@@ -27,9 +27,12 @@ services:
       - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
       - MYSQL_URI=mysqldb://root:password@mysql:3306
       - MYSQL_DATABASE=ezprompt
-      - INTERNAL_IP=192.168.3.16:9527
-      - EXTERNAL_IP=61.216.75.236:9528
+      - F_INTERNAL_IP=192.168.3.16:8087
+      - F_EXTERNAL_IP=61.216.75.236:8087
+      - B_INTERNAL_IP=192.168.3.16:9527
+      - B_EXTERNAL_IP=61.216.75.236:9528
       - PROXY_IP=192.168.2.16:9999
+      - BUILD_VERSION=${BUILD_VERSION}
     ports:
         - 9527:9527
   minio:

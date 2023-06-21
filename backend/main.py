@@ -13,6 +13,14 @@ from utils import minioTool, redisTool
 app = FastAPI()
 minio_client = minioTool.MinioClient()
 redis_client = redisTool.RedisClient()
+BUILD_VERSION = os.environ.get("BUILD_VERSION", "internal")
+if BUILD_VERSION == "internal":
+    FRONTEND_IP = os.environ.get("F_INTERNAL_IP")
+    BACKEND_IP = os.environ.get("B_INTERNAL_IP")
+else:
+    FRONTEND_IP = os.environ.get("F_EXTERNAL_IP")
+    BACKEND_IP = os.environ.get("B_EXTERNAL_IP")
+
 
 # Add CORS middleware
 origins = ["*"]
@@ -68,7 +76,7 @@ async def get_images():
             {
                 "img": img,
                 "url": minio_client.share_url("test", img).replace(
-                    "172.17.0.1:9000", "192.168.3.16:8087"
+                    "172.17.0.1:9000", FRONTEND_IP
                 ),
                 "view1": view1,
                 "view2": view2,
@@ -82,15 +90,13 @@ async def get_image(img="s0.png"):
     img_res = []
     pmt_res = redis_client.get(img)
     img_res.append(
-        minio_client.share_url("test", img).replace(
-            "172.17.0.1:9000", "192.168.3.16:8087"
-        )
+        minio_client.share_url("test", img).replace("172.17.0.1:9000", FRONTEND_IP)
     )
     if "batch" in pmt_res.keys():
         for img in pmt_res["batch"]:
             img_res.append(
                 minio_client.share_url("test", img).replace(
-                    "172.17.0.1:9000", "192.168.3.16:8087"
+                    "172.17.0.1:9000", FRONTEND_IP
                 )
             )
     return {"img_res": img_res, "pmt_res": pmt_res}

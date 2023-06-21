@@ -8,7 +8,7 @@ import httpx
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-INTERNAL_IP = os.environ.get("INTERNAL_IP", "192.168.3.16:9527")
+INTERNAL_IP = "192.168.3.16:9527"
 PROXY_IP = os.environ.get("PROXY_IP", "192.168.3.16:9999")
 
 
