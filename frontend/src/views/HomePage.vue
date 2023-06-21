@@ -152,7 +152,7 @@
   
 <script>
 import axios from "axios";
-import { defineComponent, ref, onMounted, onUnmounted } from 'vue'
+import { defineComponent, ref, onUnmounted } from 'vue'
 import 'viewerjs/dist/viewer.css'
 import { api as viewerApi } from 'v-viewer'
 import NavBar from '@/components/NavBar.vue';
@@ -162,7 +162,6 @@ export default defineComponent({
     NavBar
   },
   setup() {
-    const message = ref('');
     const keyword = ref('');
     const images = ref([]);
     const imageRows = ref([]);
@@ -177,12 +176,6 @@ export default defineComponent({
     const type = ref(null);
     const socket = ref(null);
     let intervalId;
-
-    onMounted(async () => {
-      const response = await fetch('http://192.168.3.16:9527/');
-      const data = await response.json();
-      message.value = data.Model;
-    });
 
     const getImgs = async () => {
       flag.value = 1;
@@ -316,7 +309,6 @@ export default defineComponent({
     }
 
     return {
-      message,
       keyword,
       images,
       imageRows,

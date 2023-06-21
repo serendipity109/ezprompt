@@ -94,9 +94,14 @@
     <div class="hidden w-32 h-full  sm:flex items-center justify-end mr-4">
         <v-dialog v-model="dialog" width="auto">
             <template v-slot:activator="{ props }">
-                <v-btn size="x-small" color="primary" v-bind="props">
-                    Get started
-                </v-btn>
+                <div v-if="username">
+                    <button class="h-7 w-7 rounded-full ml-2 text-xs md:text-sm bg-zinc-800 border  border-zinc-700 drop-shadow mr-2 flex items-center justify-center opacity-80 hover:opacity-100 text-white" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="radix-:r0:" data-state="closed">{{ username_first_letter }}</button>
+                </div>
+                <div v-else>
+                    <v-btn size="x-small" color="primary" v-bind="props">
+                        Get started
+                    </v-btn>
+                </div>
             </template>
             <login @login-click="handleLoginClick"/>
         </v-dialog>
@@ -104,9 +109,12 @@
 </div>
 </template>
 <script>
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Login from '@/components/LogIn.vue';
+import {  GET_USERNAME } from "@/store/storeconstants";
+import { useStore } from 'vuex'
+
 export default defineComponent({
     name: 'NavBar',
     components: {
@@ -117,6 +125,7 @@ export default defineComponent({
     },
     setup(props) {
         const router = useRouter()
+        const store = useStore()
         const goToPage = (pagnition) => {
             router.push(pagnition)
         }
@@ -130,12 +139,25 @@ export default defineComponent({
         const handleLoginClick = () => {
             dialog.value = false;
         };
+        const username = computed(() => {
+            let userName = store.getters[`auth/${GET_USERNAME}`]
+            console.log(userName);
+            return userName;
+        });
+
+        const username_first_letter = computed(() => {
+            let userName = username.value;
+            return (typeof userName === 'string' && userName.length > 0) ? userName[0] : '';
+        });
+
         return {
             getNavStyle,
             getNavOpa,
             goToPage,
             dialog,
-            handleLoginClick
+            handleLoginClick,
+            username,
+            username_first_letter
         };
     },
 });
