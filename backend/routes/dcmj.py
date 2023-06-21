@@ -19,6 +19,7 @@ from PIL import Image
 
 from utils.tools import download_image, generate_random_id, style_parser
 from utils.worker import post_imagine
+from utils.gpt import translator
 
 router = APIRouter()
 websocket_connections = set()
@@ -60,10 +61,9 @@ async def imagine_handler(websocket, start, IP):
     global job_q, waiting_q, job_map
     data = await websocket.receive_json()
     user_id = data["user_id"]
+    prompt = await translator(data["prompt"])
     if "preset" in data.keys():
-        prompt = await style_parser(data["prompt"], data["preset"])
-    else:
-        prompt = data["prompt"]
+        prompt = await style_parser(prompt, data["preset"])
     if "image_url" in data.keys() and data["image_url"]:
         prompt = data["image_url"] + " " + prompt
     logger.info(f"prompt: {prompt}")
