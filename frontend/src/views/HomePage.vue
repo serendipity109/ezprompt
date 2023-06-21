@@ -18,15 +18,8 @@
                   </svg><input id="main-search" autoComplete="off" v-model="keyword" type="text"
                     class="bg-zinc-700 flex-1 pl-12 pr-12 rounded-full text-sm px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-700"
                     placeholder="Give me an EZprompt" />
-                  <button
-                    class="text-base absolute right-2 hover:bg-zinc-800 h-8 w-8 flex items-center justify-center rounded-full"
-                    data-state="closed">
-                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
-                      stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                      <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg></button>
+                  <upload class="text-base absolute right-2 hover:bg-zinc-800 h-8 w-8 flex items-center justify-center rounded-full"
+                    data-state="closed" />
                 </div>
               </div>
               <div class="flex justify-center"><button @click="styleSwitch"
@@ -156,10 +149,12 @@ import { defineComponent, ref, onUnmounted } from 'vue'
 import 'viewerjs/dist/viewer.css'
 import { api as viewerApi } from 'v-viewer'
 import NavBar from '@/components/NavBar.vue';
+import Upload from '@/components/UploadImg.vue';
 
 export default defineComponent({
   components: {
-    NavBar
+    NavBar,
+    Upload
   },
   setup() {
     const keyword = ref('');

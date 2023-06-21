@@ -147,7 +147,7 @@ async def upload_file(request: Request, user_id: str, file: UploadFile):
     return {
         "code": 200,
         "message": "Successfully uploaded image!",
-        "data": f"http://{IP}/media/{user_id}/{file.filename}",
+        "data": f"http://{IP}/dcmj/media/{user_id}/{file.filename}",
     }
 
 
