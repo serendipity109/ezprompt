@@ -119,7 +119,7 @@ async def job_schedular(job_id):
                 )
             else:
                 waiting_q.queue.remove(job_id)
-                assert "Connection dropped out!"
+                raise "Connection dropped out!"
             await asyncio.sleep(10)
         else:
             if waiting_q.empty():
