@@ -14,6 +14,7 @@ from fastapi import (
     WebSocket,
     WebSocketDisconnect,
 )
+from starlette.websockets import WebSocketState
 from fastapi.responses import FileResponse
 from PIL import Image
 
@@ -106,7 +107,7 @@ async def job_schedular(job_id):
             if job_id not in list(waiting_q.queue):
                 waiting_q.put(job_id)
             n = min(len(waiting_q.queue), n)
-            if websocket.open:
+            if websocket.client_state == WebSocketState.CONNECTED:
                 await websocket.send_text(
                     json.dumps(
                         {
