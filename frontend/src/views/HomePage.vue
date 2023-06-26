@@ -4,7 +4,7 @@
     <div
       class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
       <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
-        <div class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
+        <div class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" @click="set_init">
           <div class="flex flex-col items-center py-4 mt-16"><a class="font-semibold text-3xl text-gray-100"
               href="/">EZPrompt</a>
             <div class="flex items-center w-full max-w-[600px] md:ml-[48px] mt-8 px-4 pl-5 md:px-5">
@@ -274,8 +274,6 @@ export default defineComponent({
       }
     }
 
-
-
     const downloadFile = async (urls, index) => {
       let url = urls[index];
       let fileName = url.split('/').pop().split('?')[0];
@@ -317,6 +315,10 @@ export default defineComponent({
       }
     };
 
+    const set_init = async () => {
+      radio.value = null;
+    }
+
     onUnmounted(() => {
       clearInterval(intervalId);
     });
@@ -345,7 +347,8 @@ export default defineComponent({
       selectedImage,
       downloadFile,
       handleUrl,
-      img2img
+      img2img,
+      set_init
     };
   },
 });
