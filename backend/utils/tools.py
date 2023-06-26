@@ -10,9 +10,10 @@ import pickle
 from utils.gpt import translator
 
 
-with open('utils/midjourney-banned-prompt.pickle', 'rb') as f:
+with open("utils/midjourney-banned-prompt.pickle", "rb") as f:
     banned_words = pickle.load(f)
     f.close()
+
 
 async def style_parser(prompt, style):
     cc = OpenCC("t2s")
