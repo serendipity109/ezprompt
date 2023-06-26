@@ -18,7 +18,7 @@
                   </svg><input id="main-search" autoComplete="off" v-model="keyword" type="text"
                     class="bg-zinc-700 flex-1 pl-12 pr-12 rounded-full text-sm px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-700"
                     placeholder="Give me an EZprompt" />
-                  <upload
+                  <upload @fileUpload="handleUrl"
                     class="text-base absolute right-2 hover:bg-zinc-800 h-8 w-8 flex items-center justify-center rounded-full"
                     data-state="closed" />
                 </div>
@@ -59,6 +59,8 @@
                   class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 bg-gradient-to-t from-indigo-900 via-indigo-900 to-indigo-800">Generate</button>
                 <button @click="getImgs"
                   class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 border border-gray-700 hover:bg-zinc-700">Search</button>
+                <button @click="img2img"
+                  class="w-32 sm:w-36 flex items-center text-xs justify-center text-center h-9 rounded-full hover:brightness-110 bg-green-700 shadow-sm mt-4 border border-gray-700">img2img</button>
               </div>
             </div>
             <el-progress v-if="showProgress" :text-inside="true" :stroke-width="20" :percentage="percentage"
@@ -200,9 +202,11 @@ export default defineComponent({
       });
     };
 
-    const ezprompt = async () => {
+    const ezprompt = async (image_url = '') => {
       flag.value = 0;
-      urls.value = [];
+      if (urls.value && urls.value.length > 0) {
+        urls.value = [];
+      }
       showProgress.value = true;
       percentage.value = 0;
 
@@ -229,8 +233,10 @@ export default defineComponent({
         const message = {
           "user_id": "adam",
           "prompt": keyword.value,
-          ...(type.value ? { "preset": type.value } : {})
+          ...(type.value ? { "preset": type.value } : {}),
+          ...(image_url ? { "image_url": image_url } : {})
         };
+        console.log(message);
         socket.value.send(JSON.stringify(message));
       };
 
@@ -259,6 +265,7 @@ export default defineComponent({
       };
     };
 
+
     const downloadFile = async (urls, index) => {
       let url = urls[index];
       let fileName = url.split('/').pop().split('?')[0];
@@ -280,6 +287,22 @@ export default defineComponent({
     const startIncreasing = () => {
       if (!intervalId) {
         intervalId = setInterval(increasePercentage, 1000);
+      }
+    };
+
+    const handleUrl = (emittedUrl) => {
+      flag.value = 0;
+      urls.value.push(emittedUrl)
+    };
+
+    const img2img = async () => {
+      if (urls.value[selectedImage.value]) {
+        let image_url = urls.value[selectedImage.value];
+        image_url = image_url.replace("192.168.3.16:9527", "61.216.75.236:9528");
+        await ezprompt(image_url);
+        selectedImage.value = null;
+      } else {
+        console.error("Selected image is not available in urls.value");
       }
     };
 
@@ -309,7 +332,9 @@ export default defineComponent({
       showStyle,
       radio,
       selectedImage,
-      downloadFile
+      downloadFile,
+      handleUrl,
+      img2img
     };
   },
 });
