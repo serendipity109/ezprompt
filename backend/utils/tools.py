@@ -5,9 +5,14 @@ import string
 
 import requests
 from PIL import Image
+import pickle
 
 from utils.gpt import translator
 
+
+with open('utils/midjourney-banned-prompt.pickle', 'rb') as f:
+    banned_words = pickle.load(f)
+    f.close()
 
 async def style_parser(prompt, style):
     cc = OpenCC("t2s")
@@ -33,6 +38,15 @@ async def style_parser(prompt, style):
             postfix = await translator(style)
             prompt += f", {postfix}"
     return prompt
+
+
+async def prompt_censorer(prompt):
+    prompt_list = prompt.split(" ")
+    new_prompt_list = []
+    for pmt in prompt_list:
+        if pmt not in banned_words:
+            new_prompt_list.append(pmt)
+    return " ".join(new_prompt_list)
 
 
 async def download_image(user_id, url, IP):

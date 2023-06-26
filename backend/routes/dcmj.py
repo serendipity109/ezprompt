@@ -18,7 +18,7 @@ from starlette.websockets import WebSocketState
 from fastapi.responses import FileResponse
 from PIL import Image
 
-from utils.tools import download_image, generate_random_id, style_parser
+from utils.tools import download_image, generate_random_id, style_parser, prompt_censorer
 from utils.worker import post_imagine
 from utils.gpt import translator
 
@@ -74,6 +74,7 @@ async def imagine_handler(websocket, start, IP):
         prompt = await style_parser(prompt, data["preset"])
     if "image_url" in data.keys() and data["image_url"]:
         prompt = data["image_url"] + " " + prompt
+    prompt = await prompt_censorer(prompt)
     logger.info(f"prompt: {prompt}")
     job_id = await generate_random_id()
     job_map = {job_id: (websocket, prompt)}
