@@ -1,4 +1,4 @@
-import {IS_USER_AUTHENTICATED, GET_USERNAME } from "../storeconstants";
+import {IS_USER_AUTHENTICATED, GET_USERNAME, GET_EMAIL } from "../storeconstants";
 
 export default {
     [IS_USER_AUTHENTICATED](state) {
@@ -7,5 +7,9 @@ export default {
 
     [GET_USERNAME](state) {
         return state.username;
+    },
+
+    [GET_EMAIL](state) {
+        return state.email;
     }
 }
