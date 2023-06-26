@@ -148,13 +148,15 @@
   
 <script>
 import axios from "axios";
-import { defineComponent, ref, onUnmounted } from 'vue'
+import { defineComponent, ref, onUnmounted, computed } from 'vue'
 import 'viewerjs/dist/viewer.css'
 import { api as viewerApi } from 'v-viewer'
 import NavBar from '@/components/NavBar.vue';
 import Upload from '@/components/UploadImg.vue';
 import fileDownload from 'js-file-download';
 import { ElMessage } from 'element-plus'
+import { GET_EMAIL } from "@/store/storeconstants";
+import { useStore } from 'vuex'
 
 export default defineComponent({
   components: {
@@ -175,6 +177,7 @@ export default defineComponent({
     const selectedImage = ref(null);
     const type = ref(null);
     const socket = ref(null);
+    const store = useStore()
     let intervalId;
 
     const getImgs = async () => {
@@ -204,73 +207,76 @@ export default defineComponent({
     };
 
     const ezprompt = async (image_url = '') => {
-      if (keyword.value) {
-        flag.value = 0;
-        if (urls.value && urls.value.length > 0) {
-          urls.value = [];
-        }
-        showProgress.value = true;
-        percentage.value = 0;
+      if (email.value) {
+        if (keyword.value) {
+          flag.value = 0;
+          if (urls.value && urls.value.length > 0) {
+            urls.value = [];
+          }
+          showProgress.value = true;
+          percentage.value = 0;
 
-        if (radio.value === '1') {
-          type.value = '漫畫';
-        } else if (radio.value == '2') {
-          type.value = '電影';
-        } else if (radio.value == '3') {
-          type.value = '水墨畫';
-        } else if (radio.value == '4') {
-          type.value = '油畫';
-        } else if (radio.value == '5') {
-          type.value = '水彩畫';
-        } else if (radio.value == '6') {
-          type.value = '鉛筆畫';
-        } else if (radio.value == '7') {
-          type.value = '寫實';
-        }
-        if (socket.value && socket.value.readyState !== WebSocket.CLOSED) {
-          socket.value.close();
-        }
-        socket.value = new WebSocket(`ws://${process.env.VUE_APP_BACKEND_IP}/dcmj/imagine`);
+          if (radio.value === '1') {
+            type.value = '漫畫';
+          } else if (radio.value == '2') {
+            type.value = '電影';
+          } else if (radio.value == '3') {
+            type.value = '水墨畫';
+          } else if (radio.value == '4') {
+            type.value = '油畫';
+          } else if (radio.value == '5') {
+            type.value = '水彩畫';
+          } else if (radio.value == '6') {
+            type.value = '鉛筆畫';
+          } else if (radio.value == '7') {
+            type.value = '寫實';
+          }
+          if (socket.value && socket.value.readyState !== WebSocket.CLOSED) {
+            socket.value.close();
+          }
+          socket.value = new WebSocket(`ws://${process.env.VUE_APP_BACKEND_IP}/dcmj/imagine`);
 
-        socket.value.onopen = () => {
-          console.log("Connection opened");
-          // 在连接打开后发送消息
-          const message = {
-            "user_id": "adam",
-            "prompt": keyword.value,
-            ...(type.value ? { "preset": type.value } : {}),
-            ...(image_url ? { "image_url": image_url } : {})
+          socket.value.onopen = () => {
+            console.log("Connection opened");
+            // 在连接打开后发送消息
+            const message = {
+              "user_id": email.value,
+              "prompt": keyword.value,
+              ...(type.value ? { "preset": type.value } : {}),
+              ...(image_url ? { "image_url": image_url } : {})
+            };
+            console.log(message);
+            socket.value.send(JSON.stringify(message));
           };
-          console.log(message);
-          socket.value.send(JSON.stringify(message));
-        };
 
-        socket.value.onmessage = (event) => {
-          console.log("Received message: ", event.data);
-          const data = JSON.parse(event.data);
-          if (data.result && data.result.progress) {
-            percentage.value = parseInt(data.result.progress);
-          }
-          if (data.code === 201 && data.data && Array.isArray(data.data.result)) {
-            // 如果 code 是 201，输出 result 列表
-            data.data.result.slice(1).forEach((item) => {
-              urls.value.push(item);
-            });
-          }
-        };
-
-        socket.value.onerror = (error) => {
-          console.error("Error occurred: ", error);
-          showProgress.value = false;
-        };
-
-        socket.value.onclose = () => {
-          console.log("Connection closed");
-          showProgress.value = false;
-        };
+          socket.value.onmessage = (event) => {
+            // console.log("Received message: ", event.data);
+            const data = JSON.parse(event.data);
+            if (data.result && data.result.progress) {
+              percentage.value = parseInt(data.result.progress);
+            }
+            if (data.code === 201 && data.data && Array.isArray(data.data.result)) {
+              // 如果 code 是 201，输出 result 列表
+              data.data.result.slice(1).forEach((item) => {
+                urls.value.push(item);
+              });
+            }
+          };
+          socket.value.onerror = (error) => {
+            console.error("Error occurred: ", error);
+            showProgress.value = false;
+          };
+          socket.value.onclose = () => {
+            console.log("Connection closed");
+            showProgress.value = false;
+          };
+        } else {
+          console.error("Prompt is empty!");
+          ElMessage.error("Prompt is empty!")
+        }
       } else {
-        console.error("Prompt is empty!");
-        ElMessage.error("Prompt is empty!")
+        console.error("Please login at first!");
+        ElMessage.error("Please login at first!")
       }
     }
 
@@ -319,6 +325,12 @@ export default defineComponent({
       radio.value = null;
     }
 
+    const email = computed(() => {
+      let Email = store.getters[`auth/${GET_EMAIL}`]
+      const parts = Email.split('@');
+      return parts[0];
+    });
+
     onUnmounted(() => {
       clearInterval(intervalId);
     });
@@ -348,7 +360,8 @@ export default defineComponent({
       downloadFile,
       handleUrl,
       img2img,
-      set_init
+      set_init,
+      email
     };
   },
 });
