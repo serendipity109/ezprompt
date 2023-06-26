@@ -44,12 +44,18 @@ async def post_imagine(websocket, prompt, callback=False):
                     await asyncio.sleep(5)
                     continue
                 await asyncio.sleep(10)
-            elif msg["result"]["status"] == "NOT_START":
-                await asyncio.sleep(10)
+            # elif msg["result"]["status"] == "NOT_START":
+            #     await asyncio.sleep(10)
             elif msg["result"]["status"] == "FAILURE":
-                msg = {"code": 200, "message": "Midjourney proxy error! Check your input message!", "result": ""}
+                msg = {
+                    "code": 200,
+                    "message": "Midjourney proxy error! Check your input message!",
+                    "result": "",
+                }
                 await websocket.send_text(json.dumps(msg))
                 raise "Midjourney proxy error!"
+            else:
+                await asyncio.sleep(10)
     except:
         logger.info(f"Error msg: {msg}")
         raise "Account got banned!"

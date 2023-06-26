@@ -76,7 +76,7 @@ async def imagine_handler(websocket, start, IP):
     prompt = await translator(data["prompt"])
     if "preset" in data.keys():
         prompt = await style_parser(prompt, data["preset"])
-    if "image_url" in data.keys() and data["image_url"]:
+    if "image_url" in data.keys() and isinstance(data["image_url"], str):
         prompt = data["image_url"] + " " + prompt
     prompt = await prompt_censorer(prompt)
     logger.info(f"prompt: {prompt}")
