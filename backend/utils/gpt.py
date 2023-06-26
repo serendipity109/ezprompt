@@ -14,6 +14,8 @@ openai_keys = [
 
 
 async def translator(sentence: str):
+    if is_english(sentence):
+        return sentence
     prefix = {
         "role": "user",
         "content": f"Translate {sentence} into English.",
@@ -29,3 +31,8 @@ async def translator(sentence: str):
     res = completion.choices[0].message.content
     res = res.replace('"', "")
     return res
+
+
+def is_english(s):
+    allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ,.")
+    return all(char in allowed_chars for char in s)
