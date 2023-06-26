@@ -5472,6 +5472,11 @@ js-beautify@^1.6.12, js-beautify@1.14.6:
     glob "^8.0.3"
     nopt "^6.0.0"
 
+js-file-download@^0.4.12:
+  version "0.4.12"
+  resolved "https://registry.npmjs.org/js-file-download/-/js-file-download-0.4.12.tgz"
+  integrity sha512-rML+NkoD08p5Dllpjo0ffy4jRHeY6Zsapvr/W86N7E0yuzAO6qa5X9+xog6zQNlH102J7IXljNY2FtS6Lj3ucg==
+
 js-message@1.0.7:
   version "1.0.7"
   resolved "https://registry.npmjs.org/js-message/-/js-message-1.0.7.tgz"

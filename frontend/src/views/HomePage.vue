@@ -18,7 +18,8 @@
                   </svg><input id="main-search" autoComplete="off" v-model="keyword" type="text"
                     class="bg-zinc-700 flex-1 pl-12 pr-12 rounded-full text-sm px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-700"
                     placeholder="Give me an EZprompt" />
-                  <upload class="text-base absolute right-2 hover:bg-zinc-800 h-8 w-8 flex items-center justify-center rounded-full"
+                  <upload
+                    class="text-base absolute right-2 hover:bg-zinc-800 h-8 w-8 flex items-center justify-center rounded-full"
                     data-state="closed" />
                 </div>
               </div>
@@ -150,6 +151,7 @@ import 'viewerjs/dist/viewer.css'
 import { api as viewerApi } from 'v-viewer'
 import NavBar from '@/components/NavBar.vue';
 import Upload from '@/components/UploadImg.vue';
+import fileDownload from 'js-file-download';
 
 export default defineComponent({
   components: {
@@ -259,14 +261,12 @@ export default defineComponent({
 
     const downloadFile = async (urls, index) => {
       let url = urls[index];
-      const link = document.createElement('a');
-      link.href = url;
       let fileName = url.split('/').pop().split('?')[0];
-      link.download = fileName;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      await axios.get(url, {
+        responseType: 'blob',
+      }).then(res => {
+        fileDownload(res.data, fileName);
+      });
     }
 
     const increasePercentage = async () => {
@@ -370,7 +370,7 @@ export default defineComponent({
 }
 
 .el-progress-bar__innerText {
-    color: black;
+  color: black;
 }
 
 .el-progress--line {
