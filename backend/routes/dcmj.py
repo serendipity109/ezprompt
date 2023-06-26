@@ -12,13 +12,17 @@ from fastapi import (
     HTTPException,
     UploadFile,
     WebSocket,
-    WebSocketDisconnect,
 )
 from starlette.websockets import WebSocketState
 from fastapi.responses import FileResponse
 from PIL import Image
 
-from utils.tools import download_image, generate_random_id, style_parser, prompt_censorer
+from utils.tools import (
+    download_image,
+    generate_random_id,
+    style_parser,
+    prompt_censorer,
+)
 from utils.worker import post_imagine
 from utils.gpt import translator
 
@@ -58,7 +62,7 @@ async def imagine(websocket: WebSocket):
     await websocket.send_text(json.dumps(msg))
     try:
         await imagine_handler(websocket, start, IP)
-    except WebSocketDisconnect:
+    except:
         websocket_connections.remove(websocket)
         await websocket.close()
     websocket_connections.remove(websocket)
