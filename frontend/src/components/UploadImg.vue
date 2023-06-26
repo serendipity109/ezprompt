@@ -34,7 +34,7 @@ export default {
                 const blobData = new Blob([reader.result], { type: fileMimeType.value });
                 let formData = new FormData();
                 formData.append('file', blobData, fileName.value);
-                
+
                 try {
                     const endpoint = `http://${process.env.VUE_APP_BACKEND_IP}/dcmj/upload?user_id=adam`;
                     const response = await axios.post(endpoint, formData, {

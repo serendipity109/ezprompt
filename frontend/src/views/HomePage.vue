@@ -154,6 +154,7 @@ import { api as viewerApi } from 'v-viewer'
 import NavBar from '@/components/NavBar.vue';
 import Upload from '@/components/UploadImg.vue';
 import fileDownload from 'js-file-download';
+import { ElMessage } from 'element-plus'
 
 export default defineComponent({
   components: {
@@ -203,67 +204,76 @@ export default defineComponent({
     };
 
     const ezprompt = async (image_url = '') => {
-      flag.value = 0;
-      if (urls.value && urls.value.length > 0) {
-        urls.value = [];
-      }
-      showProgress.value = true;
-      percentage.value = 0;
+      if (keyword.value) {
+        flag.value = 0;
+        if (urls.value && urls.value.length > 0) {
+          urls.value = [];
+        }
+        showProgress.value = true;
+        percentage.value = 0;
 
-      if (radio.value === '1') {
-        type.value = '漫畫';
-      } else if (radio.value == '2') {
-        type.value = '電影';
-      } else if (radio.value == '3') {
-        type.value = '水墨畫';
-      } else if (radio.value == '4') {
-        type.value = '油畫';
-      } else if (radio.value == '5') {
-        type.value = '水彩畫';
-      } else if (radio.value == '6') {
-        type.value = '鉛筆畫';
-      } else if (radio.value == '7') {
-        type.value = '寫實';
-      }
-      socket.value = new WebSocket(`ws://${process.env.VUE_APP_BACKEND_IP}/dcmj/imagine`);
+        if (radio.value === '1') {
+          type.value = '漫畫';
+        } else if (radio.value == '2') {
+          type.value = '電影';
+        } else if (radio.value == '3') {
+          type.value = '水墨畫';
+        } else if (radio.value == '4') {
+          type.value = '油畫';
+        } else if (radio.value == '5') {
+          type.value = '水彩畫';
+        } else if (radio.value == '6') {
+          type.value = '鉛筆畫';
+        } else if (radio.value == '7') {
+          type.value = '寫實';
+        }
+        if (socket.value && socket.value.readyState !== WebSocket.CLOSED) {
+          socket.value.close();
+        }
+        socket.value = new WebSocket(`ws://${process.env.VUE_APP_BACKEND_IP}/dcmj/imagine`);
 
-      socket.value.onopen = () => {
-        console.log("Connection opened");
-        // 在连接打开后发送消息
-        const message = {
-          "user_id": "adam",
-          "prompt": keyword.value,
-          ...(type.value ? { "preset": type.value } : {}),
-          ...(image_url ? { "image_url": image_url } : {})
+        socket.value.onopen = () => {
+          console.log("Connection opened");
+          // 在连接打开后发送消息
+          const message = {
+            "user_id": "adam",
+            "prompt": keyword.value,
+            ...(type.value ? { "preset": type.value } : {}),
+            ...(image_url ? { "image_url": image_url } : {})
+          };
+          console.log(message);
+          socket.value.send(JSON.stringify(message));
         };
-        console.log(message);
-        socket.value.send(JSON.stringify(message));
-      };
 
-      socket.value.onmessage = (event) => {
-        console.log("Received message: ", event.data);
-        const data = JSON.parse(event.data);
-        if (data.result && data.result.progress) {
-          percentage.value = parseInt(data.result.progress);
-        }
-        if (data.code === 201 && data.data && Array.isArray(data.data.result)) {
-          // 如果 code 是 201，输出 result 列表
-          data.data.result.slice(1).forEach((item) => {
-            urls.value.push(item);
-          });
-        }
-      };
+        socket.value.onmessage = (event) => {
+          console.log("Received message: ", event.data);
+          const data = JSON.parse(event.data);
+          if (data.result && data.result.progress) {
+            percentage.value = parseInt(data.result.progress);
+          }
+          if (data.code === 201 && data.data && Array.isArray(data.data.result)) {
+            // 如果 code 是 201，输出 result 列表
+            data.data.result.slice(1).forEach((item) => {
+              urls.value.push(item);
+            });
+          }
+        };
 
-      socket.value.onerror = (error) => {
-        console.error("Error occurred: ", error);
-        showProgress.value = false;
-      };
+        socket.value.onerror = (error) => {
+          console.error("Error occurred: ", error);
+          showProgress.value = false;
+        };
 
-      socket.value.onclose = () => {
-        console.log("Connection closed");
-        showProgress.value = false;
-      };
-    };
+        socket.value.onclose = () => {
+          console.log("Connection closed");
+          showProgress.value = false;
+        };
+      } else {
+        console.error("Prompt is empty!");
+        ElMessage.error("Prompt is empty!")
+      }
+    }
+
 
 
     const downloadFile = async (urls, index) => {
@@ -296,13 +306,14 @@ export default defineComponent({
     };
 
     const img2img = async () => {
-      if (urls.value[selectedImage.value]) {
+      if (keyword.value && urls.value[selectedImage.value]) {
         let image_url = urls.value[selectedImage.value];
         image_url = image_url.replace("192.168.3.16:9527", "61.216.75.236:9528");
         await ezprompt(image_url);
         selectedImage.value = null;
       } else {
         console.error("Selected image is not available in urls.value");
+        ElMessage.error("Image not selected or prompt is empty!")
       }
     };
 
