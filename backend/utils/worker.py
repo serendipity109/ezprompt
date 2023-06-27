@@ -37,6 +37,7 @@ async def post_imagine(websocket, prompt, callback=False):
             await websocket.send_text(json.dumps(msg))
             if msg["result"]["status"] in ["SUBMITTED", "IN_PROGRESS", "SUCCESS"]:
                 if msg["result"]["progress"] == "Waiting to start":
+                    await asyncio.sleep(5)
                     continue
                 progress = msg["result"]["progress"].replace("%", "")
                 progress = int(progress)
