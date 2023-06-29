@@ -20,7 +20,7 @@ async def translator(sentence: str):
         "role": "user",
         "content": f"Translate {sentence} into English.",
     }
-    model = "gpt-3.5-turbo"
+    model = "gpt-4"
     openai.api_key = random.sample(openai_keys, 1)[0]
     messages = [prefix]
     completion = openai.ChatCompletion.create(
