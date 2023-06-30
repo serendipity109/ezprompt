@@ -184,13 +184,16 @@ async def job_handler(websocket, prompt, job_id):
 
 
 async def kill_zombie(job_id):
-    global job_q, waiting_q
-    logger.info(f"Before: wq: {str(waiting_q)}, jq: {str(job_q)}, job_id: {job_id}")
-    if job_id in job_q:
-        job_q.remove(job_id)
-    if job_id in waiting_q:
-        waiting_q.remove(job_id)
-    logger.info(f"After: wq: {str(waiting_q)}, jq: {str(job_q)}, job_id: {job_id}")
+    global job_q, waiting_q, jq1, jq2
+    logger.info(
+        f"Before: wq: {str(waiting_q)}, jq: {str(job_q)}, jq1: {str(jq1)}, jq2: {str(jq2)}, job_id: {job_id}"
+    )
+    for queue in [job_q, waiting_q, jq1, jq2]:
+        if job_id in queue:
+            queue.remove(job_id)
+    logger.info(
+        f"After: wq: {str(waiting_q)}, jq: {str(job_q)}, q1: {str(jq1)}, jq2: {str(jq2)}, job_id: {job_id}"
+    )
 
 
 @router.post("/dcmj/upload")

@@ -75,9 +75,7 @@ async def get_images():
         res.append(
             {
                 "img": img,
-                "url": minio_client.share_url("test", img).replace(
-                    "172.17.0.1:9000", FRONTEND_IP
-                ),
+                "url": f"http://192.168.3.16:9527/media/mock/{img}",
                 "view1": view1,
                 "view2": view2,
             }
@@ -89,16 +87,10 @@ async def get_images():
 async def get_image(img="s0.png"):
     img_res = []
     pmt_res = redis_client.get(img)
-    img_res.append(
-        minio_client.share_url("test", img).replace("172.17.0.1:9000", FRONTEND_IP)
-    )
+    img_res.append(f"http://192.168.3.16:9527/media/mock/{img}")
     if "batch" in pmt_res.keys():
         for img in pmt_res["batch"]:
-            img_res.append(
-                minio_client.share_url("test", img).replace(
-                    "172.17.0.1:9000", FRONTEND_IP
-                )
-            )
+            img_res.append(f"http://192.168.3.16:9527/media/mock/{img}")
     return {"img_res": img_res, "pmt_res": pmt_res}
 
 
