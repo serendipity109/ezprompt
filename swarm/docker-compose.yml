@@ -3,9 +3,9 @@ services:
   midjourney-proxy:
     image: chazzcheung/midjourney-proxy:latest
     environment:
-      - mj.discord.guild-id=1115834541643403284
-      - mj.discord.channel-id=1115834541643403287
-      - mj.discord.user-token=MTA4MTA0MjM4MjQ3NDE4Mjc2OQ.Gn5kNJ.DGv6QNmaQtf8NoRHwDKe97yA3roysbCwdl24Dw
+      - mj.discord.guild-id=1115834494818209844
+      - mj.discord.channel-id=1115834495313117216
+      - mj.discord.user-token=MTExNTE3MjE4Nzc4ODI5MjE1Ng.G7IU23.nxS4oYHlQkqIohYzuiMa5E4FyXfpWofcB2D2a4
     ports:
       - target: 8080
         published: 9999

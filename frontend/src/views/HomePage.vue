@@ -235,16 +235,24 @@ export default defineComponent({
             socket.value.close();
           }
           socket.value = new WebSocket(`ws://${process.env.VUE_APP_BACKEND_IP}/dcmj/imagine`);
-
+          let message;
           socket.value.onopen = () => {
             console.log("Connection opened");
             // 在连接打开后发送消息
-            const message = {
-              "user_id": email.value,
-              "prompt": keyword.value,
-              ...(type.value ? { "preset": type.value } : {}),
-              ...(image_url ? { "image_url": image_url } : {})
-            };
+            if ((image_url instanceof String) && image_url !== '') {
+              message = {
+                "user_id": email.value,
+                "prompt": keyword.value,
+                "image_url": image_url,
+                ...(type.value ? { "preset": type.value } : {})
+              };
+            } else {
+              message = {
+                "user_id": email.value,
+                "prompt": keyword.value,
+                ...(type.value ? { "preset": type.value } : {})
+              };
+            }
             console.log(message);
             socket.value.send(JSON.stringify(message));
           };

@@ -2,17 +2,54 @@ import os
 from opencc import OpenCC
 import random
 import string
-
+import logging
+import httpx
 import requests
 from PIL import Image
+import json
 import pickle
+from json import JSONDecodeError
 
 from utils.gpt import translator
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+INTERNAL_IP = "192.168.3.16:9527"
+EXTERNAL_IP = "61.216.75.236:9528"
+BUILD_VERSION = os.environ.get("BUILD_VERSION", "internal")
+if BUILD_VERSION == "internal":
+    BACKEND_IP = os.environ.get("B_INTERNAL_IP")
+else:
+    BACKEND_IP = os.environ.get("B_EXTERNAL_IP")
 
 with open("utils/midjourney-banned-prompt.pickle", "rb") as f:
     banned_words = pickle.load(f)
     f.close()
+
+
+async def schema_validator(websocket):
+    try:
+        data = await websocket.receive_json()
+        logger.info(json.dumps(data))
+    except JSONDecodeError as e:
+        logger.info(e)
+        raise Exception(e)
+    if "image_url" in data.keys():
+        if isinstance(data["image_url"], str) and len(data["image_url"]) > 0:
+            async with httpx.AsyncClient() as client:
+                res = await client.get(data["image_url"])
+            if res.status_code == 404:
+                logger.info("Image url error!")
+                msg = {"code": 400, "message": "Image url error!", "result": ""}
+                await websocket.send_text(json.dumps(msg))
+                raise Exception("Image url error!")
+            else:
+                msg = {"code": 200, "message": "Image url is valid!", "result": ""}
+                await websocket.send_text(json.dumps(msg))
+        else:
+            raise Exception("Image url error!")
+    return data
 
 
 async def style_parser(prompt, style):
@@ -50,9 +87,10 @@ async def prompt_censorer(prompt):
     return " ".join(new_prompt_list)
 
 
-async def download_image(user_id, url, IP):
+async def download_image(user_id, url):
     response = requests.get(url)
     file_name = os.path.basename(url)
+    file_name = file_name.split("_")[1] + ".png"
     file_path = f"/workspace/output/{user_id}/{file_name}"
     file_prefix = file_path.split(".")[0]
     with open(file_path, "wb") as f:
@@ -69,7 +107,7 @@ async def download_image(user_id, url, IP):
         file_prefix + "_4.png",
     ]
     return [
-        path.replace("/workspace/output/", f"http://{IP}/dcmj/media/")
+        path.replace("/workspace/output/", f"http://{BACKEND_IP}/dcmj/media/")
         for path in image_list
     ]
 

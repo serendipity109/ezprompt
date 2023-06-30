@@ -12,7 +12,7 @@ docker swarm join --token ....
 3. 部屬工作
 #### manager 主機上
 ```bash
-docker stack deploy -c /path/to/your/docker-compose.yml myapp
+docker stack deploy -c swarm/docker-compose.yml midjourney-proxy
 ```
 4. 關閉工作
 #### worker 主機上

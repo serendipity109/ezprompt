@@ -12,8 +12,8 @@ INTERNAL_IP = "192.168.3.16:9527"
 PROXY_IP = os.environ.get("PROXY_IP", "192.168.3.16:9999")
 
 
-async def post_imagine(websocket, prompt, callback=False):
-    msg = {"code": 200, "message": "Start imagining!", "result": ""}
+async def post_imagine(websocket, prompt, job_id, callback=False):
+    msg = {"code": 200, "message": "Start imagining!", "data": {"job_id": job_id}}
     await websocket.send_text(json.dumps(msg))
     header = {"content-type": "application/json"}
     if callback:
@@ -35,9 +35,17 @@ async def post_imagine(websocket, prompt, callback=False):
         while progress != 100:
             msg = await get_status(id)
             await websocket.send_text(json.dumps(msg))
-            if msg["result"]["status"] in ["SUBMITTED", "IN_PROGRESS", "SUCCESS"]:
-                if msg["result"]["progress"] == "Waiting to start":
-                    await asyncio.sleep(5)
+            if msg["result"]["status"] in [
+                "SUBMITTED",
+                "IN_PROGRESS",
+                "SUCCESS",
+                "NOT_START",
+            ]:
+                if msg["result"]["progress"] is None or msg["result"]["progress"] in [
+                    "Waiting Midjourney to start.",
+                    "paused",
+                ]:
+                    await asyncio.sleep(10)
                     continue
                 progress = msg["result"]["progress"].replace("%", "")
                 progress = int(progress)
@@ -45,21 +53,13 @@ async def post_imagine(websocket, prompt, callback=False):
                     await asyncio.sleep(5)
                     continue
                 await asyncio.sleep(10)
-            # elif msg["result"]["status"] == "NOT_START":
-            #     await asyncio.sleep(10)
             elif msg["result"]["status"] == "FAILURE":
-                msg = {
-                    "code": 200,
-                    "message": "Midjourney proxy error! Check your input message!",
-                    "result": "",
-                }
-                await websocket.send_text(json.dumps(msg))
-                raise "Midjourney proxy error!"
+                raise Exception("Midjourney proxy error!")
             else:
                 await asyncio.sleep(10)
-    except:
-        logger.info(f"Error msg: {msg}")
-        raise "Account got banned!"
+    except Exception as e:
+        logger.info(f"Exception {str(e)}")
+        raise Exception(e)
     response = {"id": msg["result"]["id"], "imageUrl": msg["result"]["imageUrl"]}
     return response
 
@@ -69,6 +69,8 @@ async def get_status(id: str):
         response = await client.get(f"http://{PROXY_IP}/mj/task/{id}/fetch")
     status = response.json()["status"]
     progress = response.json()["progress"]
+    if progress == "Waiting to start":
+        progress = "Waiting Midjourney to start."
     imageUrl = response.json()["imageUrl"]
     msg = {
         "code": 200,

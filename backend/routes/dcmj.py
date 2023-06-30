@@ -3,7 +3,6 @@ import io
 import json
 import logging
 import os
-import queue
 import time
 
 from fastapi import (
@@ -15,6 +14,7 @@ from fastapi import (
 )
 from starlette.websockets import WebSocketState
 from fastapi.responses import FileResponse
+from multiprocessing import Manager
 from PIL import Image
 
 from utils.tools import (
@@ -22,17 +22,19 @@ from utils.tools import (
     generate_random_id,
     style_parser,
     prompt_censorer,
+    schema_validator,
 )
 from utils.worker import post_imagine
 from utils.gpt import translator
 
 router = APIRouter()
 websocket_connections = set()
+manager = Manager()
 
 n_jobs = os.environ.get("CONCURRENT_JOBS", "3")
-job_q = queue.Queue(int(n_jobs))
-waiting_q = queue.Queue(1000)
-job_map = {}
+job_q = manager.list()
+waiting_q = manager.list()
+job_map = manager.dict()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -50,37 +52,42 @@ else:
 
 @router.websocket("/dcmj/imagine")
 async def imagine(websocket: WebSocket):
+    global job_q, waiting_q, job_map
     start = time.time()
     await websocket.accept()
-    client_ip = websocket.client.host
-    if "192.168" in client_ip:
-        IP = INTERNAL_IP
-    else:
-        IP = EXTERNAL_IP
     websocket_connections.add(websocket)
     msg = {"code": 200, "message": "Waiting to start imagining.", "result": ""}
     await websocket.send_text(json.dumps(msg))
+    job_id = await generate_random_id()
     try:
-        await imagine_handler(websocket, start, IP)
-    except:
+        await imagine_handler(websocket, start, job_id)
+    except Exception as e:
+        await kill_zombie(job_id)
+        if e == "Midjourney proxy error!":
+            await imagine_handler(websocket, start, job_id)
+        else:
+            msg = {
+                "code": 400,
+                "message": str(e),
+                "result": "",
+            }
+            logger.info(json.dumps(msg))
+    finally:
         websocket_connections.remove(websocket)
         await websocket.close()
-    websocket_connections.remove(websocket)
-    await websocket.close()
 
 
-async def imagine_handler(websocket, start, IP):
+async def imagine_handler(websocket, start, job_id):
     global job_q, waiting_q, job_map
-    data = await websocket.receive_json()
+    data = await schema_validator(websocket)
     user_id = data["user_id"]
     prompt = await translator(data["prompt"])
     if "preset" in data.keys():
         prompt = await style_parser(prompt, data["preset"])
-    if "image_url" in data.keys() and isinstance(data["image_url"], str):
+    if "image_url" in data.keys():
         prompt = data["image_url"] + " " + prompt
     prompt = await prompt_censorer(prompt)
     logger.info(f"prompt: {prompt}")
-    job_id = await generate_random_id()
     job_map = {job_id: (websocket, prompt)}
     folder = f"/workspace/output/{user_id}"
     if not os.path.exists(folder):
@@ -88,7 +95,7 @@ async def imagine_handler(websocket, start, IP):
     res = await job_schedular(job_id)
     taskid = res["id"]
     url = res["imageUrl"]
-    image_list = await download_image(user_id, url, IP)
+    image_list = await download_image(user_id, url)
     image_list.insert(0, image_list[0].replace("_1.png", ".png"))
     elapsed_time = time.time() - start
     return_msg = {
@@ -107,11 +114,13 @@ async def job_schedular(job_id):
     global job_q, waiting_q, job_map
     websocket, prompt = job_map[job_id]
     n = 1000
-    while True:
-        if job_q.full():
-            if job_id not in list(waiting_q.queue):
-                waiting_q.put(job_id)
-            n = min(len(waiting_q.queue), n)
+    while websocket.client_state == WebSocketState.CONNECTED:
+        state = websocket.client_state
+        logger.info(f"State: {state}, job_q: {len(job_q)}, waiting_q: {len(waiting_q)}")
+        if len(job_q) == 3:
+            if job_id not in waiting_q:
+                waiting_q.append(job_id)
+            n = min(len(waiting_q), n)
             if websocket.client_state == WebSocketState.CONNECTED:
                 await websocket.send_text(
                     json.dumps(
@@ -123,26 +132,44 @@ async def job_schedular(job_id):
                     )
                 )
             else:
-                waiting_q.queue.remove(job_id)
-                raise "Connection dropped out!"
+                waiting_q.remove(job_id)
+                raise Exception("Connection dropped out!")
             await asyncio.sleep(10)
         else:
-            if waiting_q.empty():
+            if len(waiting_q) == 0:
                 # 沒人排
                 pass
-            elif job_id == waiting_q.queue[0]:
+            elif job_id == waiting_q[0]:
                 # 排備取一
-                waiting_q.get()
+                waiting_q.remove(job_id)
             else:
                 # 排後面的讓別人先上
                 await asyncio.sleep(10)
                 continue
-            job_q.put(job_id)
-            res = await post_imagine(websocket, prompt)
-            job_q.queue.remove(job_id)
-            if job_q.empty() and waiting_q.empty():
-                job_map = {}
+            if websocket.client_state == WebSocketState.CONNECTED:
+                job_q.append(job_id)
+                res = await post_imagine(websocket, prompt, job_id)
+                job_q.remove(job_id)
+            else:
+                raise Exception("Connection Error!")
+            if job_id in waiting_q:
+                waiting_q.remove(job_id)
+            if len(job_q) + len(waiting_q) == 0:
+                job_map.clear()
+                logger.info(
+                    f"cleansing! wq: {str(waiting_q)}, jq: {str(job_q)}, job_map: {job_map}"
+                )
             return res
+
+
+async def kill_zombie(job_id):
+    global job_q, waiting_q, job_map
+    logger.info(f"Before: wq: {str(waiting_q)}, jq: {str(job_q)}, job_id: {job_id}")
+    if job_id in job_q:
+        job_q.remove(job_id)
+    if job_id in waiting_q:
+        waiting_q.remove(job_id)
+    logger.info(f"After: wq: {str(waiting_q)}, jq: {str(job_q)}, job_id: {job_id}")
 
 
 @router.post("/dcmj/upload")
@@ -174,7 +201,7 @@ async def show_image(user_id: str, image_name: str):
     if os.path.isfile(image_path):
         return FileResponse(image_path)
     else:
-        return {"error": "Image not found"}
+        raise HTTPException(status_code=404, detail="Image not found")
 
 
 @router.post("/dcmj/callback")
