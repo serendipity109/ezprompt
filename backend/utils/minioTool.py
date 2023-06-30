@@ -7,10 +7,10 @@ from minio import Minio
 
 class MinioClient:
     def __init__(self):
-        MINIO_ACCESS_KEY = os.environ.get("MINIO_ACCESS_KEY", "")
-        MINIO_SECRET_KEY = os.environ.get("MINIO_SECRET_KEY", "")
-        MINIO_URL = os.environ.get("MINIO_URL", "")
-        MINIO_SECURE = bool(strtobool(os.environ.get("MINIO_SECURE", "")))
+        MINIO_ACCESS_KEY = os.environ.get("MINIO_ACCESS_KEY", "minioadmin")
+        MINIO_SECRET_KEY = os.environ.get("MINIO_SECRET_KEY", "minioadmin")
+        MINIO_URL = os.environ.get("MINIO_URL", "172.17.0.1:9000")
+        MINIO_SECURE = bool(strtobool(os.environ.get("MINIO_SECURE", "false")))
 
         self.client = Minio(
             MINIO_URL,

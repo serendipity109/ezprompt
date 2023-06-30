@@ -37,8 +37,9 @@ async def schema_validator(websocket):
         raise Exception(e)
     if "image_url" in data.keys():
         if isinstance(data["image_url"], str) and len(data["image_url"]) > 0:
+            url = data["image_url"].replace("61.216.75.236:9528", "192.168.3.16:9527")
             async with httpx.AsyncClient() as client:
-                res = await client.get(data["image_url"])
+                res = await client.get(url)
             if res.status_code == 404:
                 logger.info("Image url error!")
                 msg = {"code": 400, "message": "Image url error!", "result": ""}
@@ -54,27 +55,30 @@ async def schema_validator(websocket):
 
 async def style_parser(prompt, style):
     cc = OpenCC("t2s")
-    style = cc.convert(style)
-    match style:
-        case "漫画":
-            prompt += ", anime --niji 5"
-        case "电影":
-            prompt += (
-                ", photorealistic, cinematic, shot on kodak detailed cinematic hbo"
-            )
-        case "水墨画":
-            prompt += ", chinese ink painting"
-        case "油画":
-            prompt += ", oil painting"
-        case "水彩画":
-            prompt += ", watercolor painting"
-        case "铅笔画":
-            prompt += ", pencil drawing"
-        case "写实":
-            prompt += ", realistic, DSLR, depth of field"
-        case _:
-            postfix = await translator(style)
-            prompt += f", {postfix}"
+    try:
+        style = cc.convert(style)
+        match style:
+            case "漫画":
+                prompt += ", anime --niji 5"
+            case "电影":
+                prompt += (
+                    ", photorealistic, cinematic, shot on kodak detailed cinematic hbo"
+                )
+            case "水墨画":
+                prompt += ", chinese ink painting"
+            case "油画":
+                prompt += ", oil painting"
+            case "水彩画":
+                prompt += ", watercolor painting"
+            case "铅笔画":
+                prompt += ", pencil drawing"
+            case "写实":
+                prompt += ", realistic, DSLR, depth of field"
+            case _:
+                postfix = await translator(style)
+                prompt += f", {postfix}"
+    except:
+        raise Exception("Style Parsing error")
     return prompt
 
 

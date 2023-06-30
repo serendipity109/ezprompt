@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-import os
 
 import httpx
 
@@ -9,22 +8,23 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 INTERNAL_IP = "192.168.3.16:9527"
-PROXY_IP = os.environ.get("PROXY_IP", "192.168.3.16:9999")
 
 
-async def post_imagine(websocket, prompt, job_id, callback=False):
-    msg = {"code": 200, "message": "Start imagining!", "data": {"job_id": job_id}}
+async def post_imagine(websocket, prompt, job_id, proxy="proxy1"):
+    PROXY_IP = ""
+    match proxy:
+        case "proxy1":
+            PROXY_IP = "192.168.2.16:9999"
+        case "proxy2":
+            PROXY_IP = "192.168.2.16:9998"
+        case _:
+            raise Exception("Proxy selection error!")
+    msg = {"code": 200, "message": "Start imagining!", "data": {"job_id": job_id, "PROXY_IP": PROXY_IP}}
     await websocket.send_text(json.dumps(msg))
     header = {"content-type": "application/json"}
-    if callback:
-        payload = {
-            "notifyHook": f"http://{INTERNAL_IP}/callback",
-            "prompt": prompt,
-        }
-    else:
-        payload = {
-            "prompt": prompt,
-        }
+    payload = {
+        "prompt": prompt,
+    }
     async with httpx.AsyncClient() as client:
         response = await client.post(
             f"http://{PROXY_IP}/mj/submit/imagine", json=payload, headers=header
@@ -33,7 +33,7 @@ async def post_imagine(websocket, prompt, job_id, callback=False):
     progress = 0
     try:
         while progress != 100:
-            msg = await get_status(id)
+            msg = await get_status(id, PROXY_IP)
             await websocket.send_text(json.dumps(msg))
             if msg["result"]["status"] in [
                 "SUBMITTED",
@@ -64,7 +64,7 @@ async def post_imagine(websocket, prompt, job_id, callback=False):
     return response
 
 
-async def get_status(id: str):
+async def get_status(id: str, PROXY_IP: str):
     async with httpx.AsyncClient() as client:
         response = await client.get(f"http://{PROXY_IP}/mj/task/{id}/fetch")
     status = response.json()["status"]

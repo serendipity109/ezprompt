@@ -17,7 +17,7 @@ services:
     volumes:
       - ./backend:/workspace
     environment:
-      - WORKERS=2
+      - CONCURRENT_JOBS=6
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - MINIO_URL=172.17.0.1:9000

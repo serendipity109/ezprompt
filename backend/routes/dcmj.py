@@ -31,8 +31,10 @@ router = APIRouter()
 websocket_connections = set()
 manager = Manager()
 
-n_jobs = os.environ.get("CONCURRENT_JOBS", "3")
+n_jobs = os.environ.get("CONCURRENT_JOBS", "6")
 job_q = manager.list()
+jq1 = manager.list()
+jq2 = manager.list()
 waiting_q = manager.list()
 job_map = manager.dict()
 
@@ -79,14 +81,18 @@ async def imagine(websocket: WebSocket):
 
 async def imagine_handler(websocket, start, job_id):
     global job_q, waiting_q, job_map
-    data = await schema_validator(websocket)
-    user_id = data["user_id"]
-    prompt = await translator(data["prompt"])
-    if "preset" in data.keys():
-        prompt = await style_parser(prompt, data["preset"])
-    if "image_url" in data.keys():
-        prompt = data["image_url"] + " " + prompt
-    prompt = await prompt_censorer(prompt)
+    try:
+        data = await schema_validator(websocket)
+        user_id = data["user_id"]
+        prompt = await translator(data["prompt"])
+        if "preset" in data.keys():
+            prompt = await style_parser(prompt, data["preset"])
+        if "image_url" in data.keys():
+            prompt = data["image_url"] + " " + prompt
+        prompt = await prompt_censorer(prompt)
+    except Exception as e:
+        logger.info(e)
+        raise Exception(e)
     logger.info(f"prompt: {prompt}")
     job_map = {job_id: (websocket, prompt)}
     folder = f"/workspace/output/{user_id}"
@@ -117,7 +123,7 @@ async def job_schedular(job_id):
     while websocket.client_state == WebSocketState.CONNECTED:
         state = websocket.client_state
         logger.info(f"State: {state}, job_q: {len(job_q)}, waiting_q: {len(waiting_q)}")
-        if len(job_q) == 3:
+        if len(job_q) == int(n_jobs):
             if job_id not in waiting_q:
                 waiting_q.append(job_id)
             n = min(len(waiting_q), n)
@@ -147,9 +153,7 @@ async def job_schedular(job_id):
                 await asyncio.sleep(10)
                 continue
             if websocket.client_state == WebSocketState.CONNECTED:
-                job_q.append(job_id)
-                res = await post_imagine(websocket, prompt, job_id)
-                job_q.remove(job_id)
+                res = await job_handler(websocket, prompt, job_id)
             else:
                 raise Exception("Connection Error!")
             if job_id in waiting_q:
@@ -162,8 +166,25 @@ async def job_schedular(job_id):
             return res
 
 
+async def job_handler(websocket, prompt, job_id):
+    global job_q, jq1, jq2
+    job_q.append(job_id)
+    if len(jq1) < int(n_jobs) // 2:
+        jq1.append(job_id)
+        res = await post_imagine(websocket, prompt, job_id, "proxy1")
+        jq1.remove(job_id)
+    elif len(jq2) < int(n_jobs) // 2:
+        jq2.append(job_id)
+        res = await post_imagine(websocket, prompt, job_id, "proxy2")
+        jq2.remove(job_id)
+    else:
+        raise Exception(f"Job queue error! jq1: {jq1}, jq2: {jq2}, jq: {job_q}")
+    job_q.remove(job_id)
+    return res
+
+
 async def kill_zombie(job_id):
-    global job_q, waiting_q, job_map
+    global job_q, waiting_q
     logger.info(f"Before: wq: {str(waiting_q)}, jq: {str(job_q)}, job_id: {job_id}")
     if job_id in job_q:
         job_q.remove(job_id)
