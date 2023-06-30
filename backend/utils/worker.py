@@ -19,7 +19,11 @@ async def post_imagine(websocket, prompt, job_id, proxy="proxy1"):
             PROXY_IP = "192.168.2.16:9998"
         case _:
             raise Exception("Proxy selection error!")
-    msg = {"code": 200, "message": "Start imagining!", "data": {"job_id": job_id, "PROXY_IP": PROXY_IP}}
+    msg = {
+        "code": 200,
+        "message": "Start imagining!",
+        "data": {"job_id": job_id, "PROXY_IP": PROXY_IP},
+    }
     await websocket.send_text(json.dumps(msg))
     header = {"content-type": "application/json"}
     payload = {
@@ -54,7 +58,7 @@ async def post_imagine(websocket, prompt, job_id, proxy="proxy1"):
                     continue
                 await asyncio.sleep(10)
             elif msg["result"]["status"] == "FAILURE":
-                raise Exception("Midjourney proxy error!")
+                raise MidjourneyProxyError("Midjourney proxy error!")
             else:
                 await asyncio.sleep(10)
     except Exception as e:
@@ -83,3 +87,7 @@ async def get_status(id: str, PROXY_IP: str):
         },
     }
     return msg
+
+
+class MidjourneyProxyError(Exception):
+    pass

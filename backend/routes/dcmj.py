@@ -1,32 +1,20 @@
 import asyncio
+import glob
 import io
 import json
 import logging
 import os
-import glob
 import time
-
-from fastapi import (
-    APIRouter,
-    Request,
-    HTTPException,
-    UploadFile,
-    WebSocket,
-)
-from starlette.websockets import WebSocketState
-from fastapi.responses import FileResponse
 from multiprocessing import Manager
-from PIL import Image
 
-from utils.tools import (
-    download_image,
-    generate_random_id,
-    style_parser,
-    prompt_censorer,
-    schema_validator,
-)
-from utils.worker import post_imagine
+from fastapi import APIRouter, HTTPException, Request, UploadFile, WebSocket
+from fastapi.responses import FileResponse
+from PIL import Image
+from starlette.websockets import WebSocketState
 from utils.gpt import translator
+from utils.tools import (download_image, generate_random_id, prompt_censorer,
+                         schema_validator, style_parser)
+from utils.worker import MidjourneyProxyError, post_imagine
 
 router = APIRouter()
 websocket_connections = set()
@@ -64,17 +52,24 @@ async def imagine(websocket: WebSocket):
     job_id = await generate_random_id()
     try:
         await imagine_handler(websocket, start, job_id)
+    except MidjourneyProxyError as e:
+        msg = {
+            "code": 400,
+            "message": str(e),
+            "result": "",
+        }
+        logger.info(json.dumps(msg))
+        await kill_zombie(job_id)
+        job_id = await generate_random_id()
+        await imagine_handler(websocket, start, job_id)
     except Exception as e:
         await kill_zombie(job_id)
-        if e == "Midjourney proxy error!":
-            await imagine_handler(websocket, start, job_id)
-        else:
-            msg = {
-                "code": 400,
-                "message": str(e),
-                "result": "",
-            }
-            logger.info(json.dumps(msg))
+        msg = {
+            "code": 400,
+            "message": str(e),
+            "result": "",
+        }
+        logger.info(json.dumps(msg))
     finally:
         websocket_connections.remove(websocket)
         await websocket.close()
