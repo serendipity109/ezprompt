@@ -239,7 +239,7 @@ export default defineComponent({
           socket.value.onopen = () => {
             console.log("Connection opened");
             // 在连接打开后发送消息
-            if ((image_url instanceof String) && image_url !== '') {
+            if ((typeof image_url === 'string') && image_url !== '') {
               message = {
                 "user_id": email.value,
                 "prompt": keyword.value,
@@ -258,7 +258,6 @@ export default defineComponent({
           };
 
           socket.value.onmessage = (event) => {
-            // console.log("Received message: ", event.data);
             const data = JSON.parse(event.data);
             if (data.result && data.result.progress) {
               percentage.value = parseInt(data.result.progress);

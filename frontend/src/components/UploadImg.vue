@@ -36,7 +36,7 @@ export default {
                 formData.append('file', blobData, fileName.value);
 
                 try {
-                    const endpoint = `http://${process.env.VUE_APP_BACKEND_IP}/dcmj/upload?user_id=adam`;
+                    const endpoint = `https://tti-dev.emotibot.com/dcmj/upload?user_id=adam`;
                     const response = await axios.post(endpoint, formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data'
