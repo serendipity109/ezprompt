@@ -3,6 +3,7 @@ import Home from '@/views/HomePage.vue'
 import Prompt from '@/views/PromptPage.vue'
 import Test from '@/views/TestPage.vue'
 import Gen from '@/views/GenPage.vue'
+import Hist from '@/views/HistPage.vue'
 
 
 const router = createRouter({
@@ -16,7 +17,8 @@ const router = createRouter({
             component: Prompt,
             meta: {title: 'EZPrompt - prompt'}
         },
-        {path: '/generate', component: Gen, meta: {title: 'EZPrompt - Generate'}}
+        {path: '/generate', component: Gen, meta: {title: 'EZPrompt - Generate'}},
+        {path: '/history', component: Hist, meta: {title: 'EZPrompt - History'}}
         ]
   });
 

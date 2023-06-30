@@ -45,14 +45,16 @@
                     </svg>
                 </div>
             </a><a
-                class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
-                style="width:80px;z-index:2;opacity:0.5" href="/">
+            class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
+                id="genpage" :style="{ opacity: getNavOpa('history') }" style="width:80px;z-index:2;"
+                v-on:click="goToPage('/history')">
                 <div class="relative sm:flex justify-center hidden w-full">
-                    <div class="absolute w-full" style="border-bottom:2.5px solid transparent;bottom:-17px"></div><span
-                        class="text-slate-50">History</span>
+                    <div class="absolute w-full" :style="{ borderBottom: '2.5px ' + getNavStyle('history') }"
+                        style="bottom:-17px"></div><span class="text-slate-50">History</span>
                 </div>
                 <div class="relative flex items-center justify-center text-xl sm:hidden w-full">
-                    <div class="absolute w-full" style="border-bottom:2.5px solid transparent;bottom:-17px"></div><svg
+                    <div class="absolute w-full" :style="{ borderBottom: '2.5px ' + getNavStyle('history') }"
+                        style="bottom:-17px"></div><svg
                         stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" height="1em"
                         width="1em" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd"
