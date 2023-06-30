@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import os
+import glob
 import time
 
 from fastapi import (
@@ -227,6 +228,13 @@ async def show_image(user_id: str, image_name: str):
     else:
         raise HTTPException(status_code=404, detail="Image not found")
 
+@router.get("/dcmj/history")
+async def get_history(user_id):
+    image_folder_path = os.path.join("/workspace/output", user_id)
+    image_files = glob.glob(os.path.join(image_folder_path, '*.[jp][np]g'))
+    image_files.sort(key=os.path.getctime, reverse=True)
+    output_url = ["http://192.168.3.16:9527" + file.replace("/workspace/output/", "/dcmj/media/") for file in image_files if "_" in file]
+    return {"code": 200, "message": "Successfully get images", "data": output_url}
 
 @router.post("/dcmj/callback")
 async def handle_callback(data: dict):
