@@ -49,14 +49,14 @@ async def schema_validator(websocket):
             else:
                 msg = {"code": 200, "message": "Image url is valid!", "result": ""}
                 await websocket.send_text(json.dumps(msg))
-        else:
-            raise Exception("Image url error!")
     if "size" in data.keys():
         pattern = "^\d+:\d+$"
         size = data["size"]
         if isinstance(size, str) and re.match(pattern, size):
             pass
         else:
+            msg = {"code": 400, "message": "Invalid size format!", "result": ""}
+            await websocket.send_text(json.dumps(msg))
             raise Exception("Size format error!")
     return data
 
