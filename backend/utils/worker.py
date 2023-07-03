@@ -35,6 +35,7 @@ async def post_imagine(websocket, prompt, job_id, proxy="proxy1"):
         )
     id = response.json()["result"]
     progress = 0
+    patience = 0
     try:
         while progress != 100:
             msg = await get_status(id, PROXY_IP)
@@ -58,7 +59,22 @@ async def post_imagine(websocket, prompt, job_id, proxy="proxy1"):
                     continue
                 await asyncio.sleep(10)
             elif msg["result"]["status"] == "FAILURE":
-                raise MidjourneyProxyError("Midjourney proxy error!")
+                failReason = msg["result"]["failReason"]
+                msg = {
+                    "code": 400,
+                    "message": failReason,
+                    "data": {"patience": str(patience)},
+                }
+                await websocket.send_text(json.dumps(msg))
+                if patience < 5:
+                    if failReason.startswith("You've run out of hours"):
+                        raise MidjourneyProxyError(f"{proxy} run out of hours!")
+                    else:
+                        await asyncio.sleep(5)
+                        patience += 1
+                        continue
+                else:
+                    raise MidjourneyProxyError(msg["result"]["failReason"])
             else:
                 await asyncio.sleep(10)
     except Exception as e:
@@ -72,6 +88,7 @@ async def get_status(id: str, PROXY_IP: str):
     async with httpx.AsyncClient() as client:
         response = await client.get(f"http://{PROXY_IP}/mj/task/{id}/fetch")
     status = response.json()["status"]
+
     progress = response.json()["progress"]
     if progress == "Waiting to start":
         progress = "Waiting Midjourney to start."
@@ -86,6 +103,9 @@ async def get_status(id: str, PROXY_IP: str):
             "imageUrl": imageUrl,
         },
     }
+    if status == "FAILURE":
+        failReason = response.json()["failReason"]
+        msg["result"]["failReason"] = failReason
     return msg
 
 
