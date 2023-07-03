@@ -50,7 +50,7 @@ async def schema_validator(websocket):
                 msg = {"code": 200, "message": "Image url is valid!", "result": ""}
                 await websocket.send_text(json.dumps(msg))
     if "size" in data.keys():
-        pattern = r"^\d+:\d+$"
+        pattern = r"^[1-9]+\d*:[1-9]+\d*$"
         size = data["size"]
         if isinstance(size, str) and re.match(pattern, size):
             pass
