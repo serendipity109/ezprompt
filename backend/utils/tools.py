@@ -1,4 +1,5 @@
 import os
+import re
 from opencc import OpenCC
 import random
 import string
@@ -50,6 +51,13 @@ async def schema_validator(websocket):
                 await websocket.send_text(json.dumps(msg))
         else:
             raise Exception("Image url error!")
+    if "size" in data.keys():
+        pattern = "^\d+:\d+$"
+        size = data["size"]
+        if isinstance(size, str) and re.match(pattern, size):
+            pass
+        else:
+            raise Exception("Size format error!")
     return data
 
 

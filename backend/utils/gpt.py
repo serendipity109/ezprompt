@@ -14,25 +14,23 @@ openai_keys = [
 
 
 async def translator(sentence: str):
-    if is_english(sentence):
+    if await is_english(sentence):
         return sentence
     prefix = {
-        "role": "user",
-        "content": f"Translate {sentence} into English.",
+        "role": "system",
+        "content": "Translate the following text to English.",
     }
     model = "gpt-4"
     openai.api_key = random.sample(openai_keys, 1)[0]
-    messages = [prefix]
+    messages = [prefix, {"role": "user", "content": sentence}]
     completion = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=0,
+        model=model, messages=messages, temperature=0, top_p=1, stop="\n"
     )
     res = completion.choices[0].message.content
     res = res.replace('"', "")
     return res
 
 
-def is_english(s):
-    allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ,.")
+async def is_english(s):
+    allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ,.-")
     return all(char in allowed_chars for char in s)

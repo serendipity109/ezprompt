@@ -12,8 +12,13 @@ from fastapi.responses import FileResponse
 from PIL import Image
 from starlette.websockets import WebSocketState
 from utils.gpt import translator
-from utils.tools import (download_image, generate_random_id, prompt_censorer,
-                         schema_validator, style_parser)
+from utils.tools import (
+    download_image,
+    generate_random_id,
+    prompt_censorer,
+    schema_validator,
+    style_parser,
+)
 from utils.worker import MidjourneyProxyError, post_imagine
 
 router = APIRouter()
@@ -86,6 +91,9 @@ async def imagine_handler(websocket, start, job_id):
         if "image_url" in data.keys():
             prompt = data["image_url"] + " " + prompt
         prompt = await prompt_censorer(prompt)
+        if "size" in data.keys():
+            size = data["size"]
+            prompt += f" --ar {size} "
     except Exception as e:
         logger.info(e)
         raise Exception(e)

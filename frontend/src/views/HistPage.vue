@@ -31,7 +31,26 @@
                     </div>
                 </div>
                 <div w-full mt-4 px-1 relative>
-                    <div role="grid" class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm"
+                    <div role="grid" v-if="flag == 0"
+                        class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
+                        style="position: relative; width: 100%; max-width: 100%; ">
+                        <div class="image-row">
+                        <div class="image-container" v-for="(url, index) in urls" :key="index"
+                            :style="{ 'margin-right': index < urls.length - 1 ? '10px' : '0' }" @click="selectedImage = index">
+                            <div :class="{ 'selected-container': true, 'selected': selectedImage === index }">
+                            <img :src="url" style="object-fit: contain; height: 100%; max-height: 50vh"
+                                :class="{ 'selected': selectedImage === index }" />
+                            <div v-if="selectedImage === index" class="image-overlay">
+                                <button class="overlay-button">Share</button>
+                                <button class="overlay-button" v-on:click="showViewer(urls, index)">Preview</button>
+                                <button class="overlay-button" v-on:click="downloadFile(urls, index)">Download</button>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    <div role="grid"  v-else-if="flag == 1" 
+                        class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm"
                         tabindex="0" style="position: relative; width: 100%; max-width: 100%;">
                         <div class="image-row" v-for="(row, index) in imageRows" :key="index">
                             <div class="image-container" v-for="(image, index) in row" :key="index">
@@ -117,9 +136,11 @@ export default defineComponent({
         const radio = ref(null);
         const selectedImage = ref(null);
         const store = useStore()
+        const flag = ref(0);
         let intervalId;
 
         const getImgs = async () => {
+            flag.value = 1;
             const response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/get_images`);
             images.value = response.data;
             console.log(response.data);
@@ -166,6 +187,7 @@ export default defineComponent({
 
         return {
             keyword,
+            flag,
             images,
             imageRows,
             datas,
