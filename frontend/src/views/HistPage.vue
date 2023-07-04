@@ -34,27 +34,29 @@
                     </div>
                 </div>
                 <div w-full mt-4 px-1 relative>
-                    <div role="grid" v-if="username"
+                    <div role="grid" v-if="flag == 1"
                         class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
                         style="position: relative; width: 100%; max-width: 100%; ">
-                        <div class="image-row" v-for="(row, index) in imageRows" :key="index">
+                        <div class="image-row" v-for="(row, rowIndex) in imageRows" :key="rowIndex">
                             <div class="image-container" v-for="(url, index) in row" :key="index"
-                                :style="{ 'margin-right': index < urls.length - 1 ? '10px' : '0' }"
-                                @click="selectedImage = index">
-                                <div :class="{ 'selected-container': true, 'selected': selectedImage === index }">
+                                :style="{ 'margin-right': index < row.length - 1 ? '10px' : '0' }"
+                                @click="selectedImage = { row: rowIndex, col: index }">
+                                <div
+                                    :class="{ 'selected-container': true, 'selected': selectedImage.row === rowIndex && selectedImage.col === index }">
                                     <img :src="url" style="object-fit: contain; height: 100%; max-height: 50vh"
-                                        :class="{ 'selected': selectedImage === index }" />
-                                    <div v-if="selectedImage === index" class="image-overlay">
+                                        :class="{ 'selected': selectedImage.row === rowIndex && selectedImage.col === index }" />
+                                    <div v-if="selectedImage.row === rowIndex && selectedImage.col === index"
+                                        class="image-overlay">
                                         <button class="overlay-button">Share</button>
-                                        <button class="overlay-button" v-on:click="showViewer(urls, index)">Preview</button>
+                                        <button class="overlay-button" v-on:click="showViewer(row, index)">Preview</button>
                                         <button class="overlay-button"
-                                            v-on:click="downloadFile(urls, index)">Download</button>
+                                            v-on:click="downloadFile(row, index)">Download</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div role="grid" v-else
+                    <div role="grid" v-else-if="flag == 0"
                         class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
                         style="position: relative; width: 100%; max-width: 100%;">
                         <div class="image-row" v-for="(row, index) in imageRows" :key="index">
@@ -136,11 +138,12 @@ export default defineComponent({
         const imageRows = ref([]);
         const datas = ref([]);
         const urls = ref([]);
+        const flag = ref(0);
         const showProgress = ref(false);
         const percentage = ref(0);
         const showStyle = ref(false);
         const radio = ref(null);
-        const selectedImage = ref(null);
+        const selectedImage = ref({row: -1, col: -1});
         const store = useStore()
         let intervalId;
 
@@ -150,12 +153,14 @@ export default defineComponent({
         });
 
         const getHistory = async () => {
+            flag.value = 1;
             const response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/dcmj/history?user_id=${username.value}`);
-            images.value = response.data;
-            console.log(response.data);
+            images.value = response.data.data;
+            imageRows.value = chunkArray(images.value, 5);
         };
 
         const getImgs = async () => {
+            flag.value = 0;
             const response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/get_images`);
             images.value = response.data;
             console.log(response.data);
@@ -208,6 +213,7 @@ export default defineComponent({
             urls,
             showProgress,
             username,
+            flag,
             getHistory,
             getImgs,
             chunkArray,
