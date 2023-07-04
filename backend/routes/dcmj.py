@@ -69,7 +69,8 @@ async def imagine(websocket: WebSocket):
         logger.info(json.dumps(msg))
     finally:
         websocket_connections.remove(websocket)
-        await websocket.close()
+        if websocket.client_state == WebSocketState.CONNECTED:
+            await websocket.close()
 
 
 async def imagine_handler(websocket, start, job_id):

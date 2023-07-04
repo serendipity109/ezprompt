@@ -7,8 +7,6 @@ import httpx
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-INTERNAL_IP = "192.168.3.16:9527"
-
 
 async def post_imagine(websocket, prompt, job_id, proxy="proxy1"):
     PROXY_IP = ""
@@ -64,7 +62,7 @@ async def post_imagine(websocket, prompt, job_id, proxy="proxy1"):
                     msg = {
                         "code": 400,
                         "message": f"{proxy} run out of hours!",
-                        "result": "Switch to another proxy."
+                        "result": "Switch to another proxy.",
                     }
                     await websocket.send_text(json.dumps(msg))
                     raise MidjourneyProxyError(f"{proxy} run out of hours!")
@@ -72,9 +70,7 @@ async def post_imagine(websocket, prompt, job_id, proxy="proxy1"):
                     msg = {
                         "code": 400,
                         "message": failReason,
-                        "data": {
-                            "patience": patience
-                        }
+                        "data": {"patience": patience},
                     }
                     await websocket.send_text(json.dumps(msg))
                     await asyncio.sleep(5)
