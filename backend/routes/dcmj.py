@@ -113,7 +113,7 @@ async def imagine_handler(websocket, start, job_id):
 
 
 async def job_schedular(job_id):
-    global n_jobs, job_q, waiting_q, job_map
+    global n_jobs, job_q, waiting_q, job_map, jq1_exists, jq2_exists
     websocket, prompt = job_map[job_id]
     n = 1000
     while websocket.client_state == WebSocketState.CONNECTED:
@@ -162,7 +162,20 @@ async def job_schedular(job_id):
                             logger.info("Account 2 run out of credits!")
                     await kill_zombie(job_id)
                     job_id = await generate_random_id()
-                    res = await job_handler(websocket, prompt, job_id)
+                    try:
+                        res = await job_handler(websocket, prompt, job_id)
+                    except MidjourneyProxyError as e:
+                        if str(e).endswith("run out of hours!"):
+                            await websocket.send_text(
+                                json.dumps(
+                                    {
+                                        "code": 400,
+                                        "message": "All accounts have no credits. Reach out to the backend team.",
+                                        "result": "",
+                                    }
+                                )
+                            )
+                            raise Exception("All accounts have no credits!")
             else:
                 raise Exception("Connection Error!")
             if job_id in waiting_q:
@@ -201,6 +214,15 @@ async def job_handler(websocket, prompt, job_id):
             stream = 2
         else:
             n_jobs = 0
+            await websocket.send_text(
+                json.dumps(
+                    {
+                        "code": 400,
+                        "message": "All accounts have no credits. Reach out to the backend team.",
+                        "result": "",
+                    }
+                )
+            )
             raise Exception("All accounts have no credits!")
     if stream == 1:
         jq1.append(job_id)
