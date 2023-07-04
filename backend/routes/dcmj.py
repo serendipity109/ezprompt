@@ -28,7 +28,9 @@ manager = Manager()
 n_jobs = os.environ.get("CONCURRENT_JOBS", "6")
 job_q = manager.list()
 jq1 = manager.list()
+jq1_exists = manager.Value("b", True)
 jq2 = manager.list()
+jq2_exists = manager.Value("b", True)
 waiting_q = manager.list()
 job_map = manager.dict()
 
@@ -48,7 +50,7 @@ else:
 
 @router.websocket("/dcmj/imagine")
 async def imagine(websocket: WebSocket):
-    global job_q, waiting_q, job_map
+    global job_q, waiting_q, job_map, jq1_exists, jq2_exists
     start = time.time()
     await websocket.accept()
     websocket_connections.add(websocket)
@@ -56,16 +58,6 @@ async def imagine(websocket: WebSocket):
     await websocket.send_text(json.dumps(msg))
     job_id = await generate_random_id()
     try:
-        await imagine_handler(websocket, start, job_id)
-    except MidjourneyProxyError as e:
-        msg = {
-            "code": 400,
-            "message": str(e),
-            "result": "",
-        }
-        logger.info(json.dumps(msg))
-        await kill_zombie(job_id)
-        job_id = await generate_random_id()
         await imagine_handler(websocket, start, job_id)
     except Exception as e:
         await kill_zombie(job_id)
@@ -121,7 +113,7 @@ async def imagine_handler(websocket, start, job_id):
 
 
 async def job_schedular(job_id):
-    global job_q, waiting_q, job_map
+    global n_jobs, job_q, waiting_q, job_map
     websocket, prompt = job_map[job_id]
     n = 1000
     while websocket.client_state == WebSocketState.CONNECTED:
@@ -157,7 +149,20 @@ async def job_schedular(job_id):
                 await asyncio.sleep(10)
                 continue
             if websocket.client_state == WebSocketState.CONNECTED:
-                res = await job_handler(websocket, prompt, job_id)
+                try:
+                    res = await job_handler(websocket, prompt, job_id)
+                except MidjourneyProxyError as e:
+                    if str(e).endswith("run out of hours!"):
+                        proxy = str(e).split(" ")[0]
+                        if proxy == "proxy1":
+                            jq1_exists.value = False
+                            logger.info("Account 1 run out of credits!")
+                        elif proxy == "proxy2":
+                            jq2_exists.value = False
+                            logger.info("Account 2 run out of credits!")
+                    await kill_zombie(job_id)
+                    job_id = await generate_random_id()
+                    res = await job_handler(websocket, prompt, job_id)
             else:
                 raise Exception("Connection Error!")
             if job_id in waiting_q:
@@ -171,15 +176,45 @@ async def job_schedular(job_id):
 
 
 async def job_handler(websocket, prompt, job_id):
-    global job_q, jq1, jq2
+    global n_jobs, job_q, jq1, jq2, jq1_exists, jq2_exists
     job_q.append(job_id)
-    if len(jq1) < int(n_jobs) // 2:
+    stream = ""
+    if jq1_exists.value and jq2_exists.value:
+        if len(jq1) < int(n_jobs) // 2 and len(jq2) < int(n_jobs) // 2:
+            if len(jq1) <= len(jq2):
+                stream = 1
+            else:
+                stream = 2
+        else:
+            if len(jq1) == int(n_jobs) // 2 and len(jq2) < int(n_jobs) // 2:
+                stream = 2
+            elif len(jq2) == int(n_jobs) // 2 and len(jq1) < int(n_jobs) // 2:
+                stream = 1
+            else:
+                raise Exception(f"Job queue error! jq1: {jq1}, jq2: {jq2}, jq: {job_q}")
+    else:
+        if jq1_exists.value:
+            n_jobs = 3
+            stream = 1
+        elif jq2_exists.value:
+            n_jobs = 3
+            stream = 2
+        else:
+            n_jobs = 0
+            raise Exception("All accounts have no credits!")
+    if stream == 1:
         jq1.append(job_id)
-        res = await post_imagine(websocket, prompt, job_id, "proxy1")
+        try:
+            res = await post_imagine(websocket, prompt, job_id, "proxy1")
+        except MidjourneyProxyError as e:
+            raise e from None
         jq1.remove(job_id)
-    elif len(jq2) < int(n_jobs) // 2:
+    elif stream == 2:
         jq2.append(job_id)
-        res = await post_imagine(websocket, prompt, job_id, "proxy2")
+        try:
+            res = await post_imagine(websocket, prompt, job_id, "proxy2")
+        except MidjourneyProxyError as e:
+            raise e from None
         jq2.remove(job_id)
     else:
         raise Exception(f"Job queue error! jq1: {jq1}, jq2: {jq2}, jq: {job_q}")
@@ -190,13 +225,13 @@ async def job_handler(websocket, prompt, job_id):
 async def kill_zombie(job_id):
     global job_q, waiting_q, jq1, jq2
     logger.info(
-        f"Before: wq: {str(waiting_q)}, jq: {str(job_q)}, jq1: {str(jq1)}, jq2: {str(jq2)}, job_id: {job_id}"
+        f"Before: wq: {str(waiting_q)}, jq: {str(job_q)}, jq1: {str(jq1)}, jq2: {str(jq2)}, job_id: {job_id}, jq1_exists: {jq1_exists.value}, jq2_exists: {jq2_exists.value}"
     )
     for queue in [job_q, waiting_q, jq1, jq2]:
         if job_id in queue:
             queue.remove(job_id)
     logger.info(
-        f"After: wq: {str(waiting_q)}, jq: {str(job_q)}, q1: {str(jq1)}, jq2: {str(jq2)}, job_id: {job_id}"
+        f"After: wq: {str(waiting_q)}, jq: {str(job_q)}, jq1: {str(jq1)}, jq2: {str(jq2)}, job_id: {job_id}, jq1_exists: {jq1_exists.value}, jq2_exists: {jq2_exists.value}"
     )
 
 

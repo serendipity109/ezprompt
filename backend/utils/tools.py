@@ -34,7 +34,8 @@ async def schema_validator(websocket):
         data = await websocket.receive_json()
         logger.info(json.dumps(data))
     except JSONDecodeError as e:
-        logger.info(e)
+        msg = {"code": 400, "message": "Invalid message format!", "result": ""}
+        await websocket.send_text(json.dumps(msg))
         raise Exception(e)
     if "image_url" in data.keys():
         if isinstance(data["image_url"], str) and len(data["image_url"]) > 0:

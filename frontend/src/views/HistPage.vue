@@ -24,34 +24,39 @@
                         <div class="flex w-full max-w-[600px] md:ml-[48px] px-4 pl-5 md:px-5"></div>
                         <div class=" mb-8 flex flex-col items-center">
                             <div class="flex space-x-2">
-                                <button @click="getImgs"
+                                <button v-if="username" @click="getHistory"
+                                    class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 bg-gradient-to-t from-indigo-900 via-indigo-900 to-indigo-800">Get
+                                    History</button>
+                                <button v-else @click="getImgs"
                                     class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 bg-gradient-to-t from-indigo-900 via-indigo-900 to-indigo-800">Search</button>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div w-full mt-4 px-1 relative>
-                    <div role="grid" v-if="flag == 0"
+                    <div role="grid" v-if="username"
                         class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
                         style="position: relative; width: 100%; max-width: 100%; ">
-                        <div class="image-row">
-                        <div class="image-container" v-for="(url, index) in urls" :key="index"
-                            :style="{ 'margin-right': index < urls.length - 1 ? '10px' : '0' }" @click="selectedImage = index">
-                            <div :class="{ 'selected-container': true, 'selected': selectedImage === index }">
-                            <img :src="url" style="object-fit: contain; height: 100%; max-height: 50vh"
-                                :class="{ 'selected': selectedImage === index }" />
-                            <div v-if="selectedImage === index" class="image-overlay">
-                                <button class="overlay-button">Share</button>
-                                <button class="overlay-button" v-on:click="showViewer(urls, index)">Preview</button>
-                                <button class="overlay-button" v-on:click="downloadFile(urls, index)">Download</button>
+                        <div class="image-row" v-for="(row, index) in imageRows" :key="index">
+                            <div class="image-container" v-for="(url, index) in row" :key="index"
+                                :style="{ 'margin-right': index < urls.length - 1 ? '10px' : '0' }"
+                                @click="selectedImage = index">
+                                <div :class="{ 'selected-container': true, 'selected': selectedImage === index }">
+                                    <img :src="url" style="object-fit: contain; height: 100%; max-height: 50vh"
+                                        :class="{ 'selected': selectedImage === index }" />
+                                    <div v-if="selectedImage === index" class="image-overlay">
+                                        <button class="overlay-button">Share</button>
+                                        <button class="overlay-button" v-on:click="showViewer(urls, index)">Preview</button>
+                                        <button class="overlay-button"
+                                            v-on:click="downloadFile(urls, index)">Download</button>
+                                    </div>
+                                </div>
                             </div>
-                            </div>
-                        </div>
                         </div>
                     </div>
-                    <div role="grid"  v-else-if="flag == 1" 
-                        class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm"
-                        tabindex="0" style="position: relative; width: 100%; max-width: 100%;">
+                    <div role="grid" v-else
+                        class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" tabindex="0"
+                        style="position: relative; width: 100%; max-width: 100%;">
                         <div class="image-row" v-for="(row, index) in imageRows" :key="index">
                             <div class="image-container" v-for="(image, index) in row" :key="index">
                                 <router-link :to="'/image/' + image.img" :key="index"
@@ -118,6 +123,7 @@ import { api as viewerApi } from 'v-viewer'
 import NavBar from '@/components/NavBar.vue';
 import fileDownload from 'js-file-download';
 import { GET_EMAIL } from "@/store/storeconstants";
+import { GET_USERNAME } from "@/store/storeconstants";
 import { useStore } from 'vuex'
 
 export default defineComponent({
@@ -136,11 +142,20 @@ export default defineComponent({
         const radio = ref(null);
         const selectedImage = ref(null);
         const store = useStore()
-        const flag = ref(0);
         let intervalId;
 
+        const username = computed(() => {
+            let userName = store.getters[`auth/${GET_USERNAME}`]
+            return userName;
+        });
+
+        const getHistory = async () => {
+            const response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/dcmj/history?user_id=${username.value}`);
+            images.value = response.data;
+            console.log(response.data);
+        };
+
         const getImgs = async () => {
-            flag.value = 1;
             const response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/get_images`);
             images.value = response.data;
             console.log(response.data);
@@ -187,12 +202,13 @@ export default defineComponent({
 
         return {
             keyword,
-            flag,
             images,
             imageRows,
             datas,
             urls,
             showProgress,
+            username,
+            getHistory,
             getImgs,
             chunkArray,
             showViewer,
@@ -291,5 +307,4 @@ export default defineComponent({
 .radioRow {
     display: flex;
     justify-content: center;
-}
-</style>
+}</style>
