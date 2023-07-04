@@ -45,7 +45,7 @@
                     </svg>
                 </div>
             </a><a
-            class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
+                class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
                 id="genpage" :style="{ opacity: getNavOpa('history') }" style="width:80px;z-index:2;"
                 v-on:click="goToPage('/history')">
                 <div class="relative sm:flex justify-center hidden w-full">
@@ -54,9 +54,8 @@
                 </div>
                 <div class="relative flex items-center justify-center text-xl sm:hidden w-full">
                     <div class="absolute w-full" :style="{ borderBottom: '2.5px ' + getNavStyle('history') }"
-                        style="bottom:-17px"></div><svg
-                        stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" height="1em"
-                        width="1em" xmlns="http://www.w3.org/2000/svg">
+                        style="bottom:-17px"></div><svg stroke="currentColor" fill="currentColor" stroke-width="0"
+                        viewBox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd"
                             d="M13.507 12.324a7 7 0 0 0 .065-8.56A7 7 0 0 0 2 4.393V2H1v3.5l.5.5H5V5H2.811a6.008 6.008 0 1 1-.135 5.77l-.887.462a7 7 0 0 0 11.718 1.092zm-3.361-.97l.708-.707L8 7.792V4H7v4l.146.354 3 3z">
                         </path>
@@ -101,10 +100,13 @@
             <v-dialog v-model="dialog" width="auto">
                 <template v-slot:activator="{ props }">
                     <div v-if="username">
-                        <button
+                        <button @click="showpanel"
                             class="h-7 w-7 rounded-full ml-2 text-xs md:text-sm bg-zinc-800 border  border-zinc-700 drop-shadow mr-2 flex items-center justify-center opacity-80 hover:opacity-100 text-white"
                             type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="radix-:r0:"
                             data-state="closed">{{ username_first_letter }}</button>
+                        <div v-if="panel">
+                            <AccountPanel />
+                        </div>
                     </div>
                     <div v-else>
                         <v-btn size="x-small" color="primary" v-bind="props">
@@ -121,13 +123,15 @@
 import { defineComponent, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Login from '@/components/LogIn.vue';
+import AccountPanel from '@/components/AccountPanel.vue';
 import { GET_USERNAME } from "@/store/storeconstants";
 import { useStore } from 'vuex'
 
 export default defineComponent({
     name: 'NavBar',
     components: {
-        Login
+        Login,
+        AccountPanel
     },
     props: {
         page: String,
@@ -135,7 +139,8 @@ export default defineComponent({
     setup(props) {
         const router = useRouter()
         const store = useStore()
-        let dialog = ref(false);
+        const dialog = ref(false);
+        const panel = ref(false);
         const goToPage = (pagnition) => {
             router.push(pagnition)
         }
@@ -158,11 +163,16 @@ export default defineComponent({
             return (typeof userName === 'string' && userName.length > 0) ? userName[0] : '';
         });
 
+        const showpanel = () => {
+            panel.value = true;
+        };
         return {
             getNavStyle,
             getNavOpa,
             goToPage,
             dialog,
+            showpanel,
+            panel,
             handleLoginClick,
             username,
             username_first_letter
