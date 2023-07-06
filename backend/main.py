@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from datetime import timedelta
@@ -6,9 +7,11 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from routes import kkbot, magicwriter, SDXL, t2i, dcmj
+from routes import SDXL, dcmj, kkbot, magicwriter, t2i
 from utils import minioTool, redisTool
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 minio_client = minioTool.MinioClient()
@@ -105,23 +108,28 @@ async def show_image(folder: str, image_name: str):
 
 # 定期刪檔案
 FOLDER_PATH = "/workspace/output"
-DELETE_INTERVAL = timedelta(days=7)
+DELETE_INTERVAL = timedelta(days=1)
 
 
 def delete_old_files(folder_path: str, max_age: timedelta):
     current_time = time.time()
+    logger.info("Start cleansing expired files!")
     for root, _, files in os.walk(folder_path):
         for file in files:
             file_path = os.path.join(root, file)
             file_access_time = os.path.getatime(file_path)
             file_age = current_time - file_access_time
             if file_age > max_age.total_seconds():
-                os.remove(file_path)
-                print(f"Deleted file: {file_path}")
+                try:
+                    os.remove(file_path)
+                    logger.info(f"Deleted file: {file_path}")
+                except Exception as e:
+                    logger.error(f"Error deleting file: {file_path}, error: {str(e)}")
 
 
 @app.on_event("startup")
 async def start_scheduler():
+    delete_old_files(FOLDER_PATH, DELETE_INTERVAL)
     scheduler = AsyncIOScheduler()
     scheduler.add_job(
         delete_old_files, "interval", days=1, args=[FOLDER_PATH, DELETE_INTERVAL]

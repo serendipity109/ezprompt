@@ -87,6 +87,9 @@ async def imagine_handler(websocket, start, job_id):
         if "size" in data.keys():
             size = data["size"]
             prompt += f" --ar {size} "
+        if "mode" in data.keys():
+            mode = data["mode"]
+            prompt += f" --{mode} "
     except Exception as e:
         logger.info(e)
         raise Exception(e)

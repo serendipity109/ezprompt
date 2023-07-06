@@ -59,6 +59,19 @@ async def schema_validator(websocket):
             msg = {"code": 400, "message": "Invalid size format!", "result": ""}
             await websocket.send_text(json.dumps(msg))
             raise Exception("Size format error!")
+    if "mode" in data.keys():
+        mode = data["mode"]
+        match mode:
+            case "turbo":
+                pass
+            case "fast":
+                pass
+            case "relax":
+                pass
+            case _:
+                msg = {"code": 400, "message": f"Mode {mode} is not valid!", "result": ""}
+                await websocket.send_text(json.dumps(msg))
+                raise Exception(f"Mode {mode} is not valid!")
     return data
 
 

@@ -12,9 +12,9 @@ async def post_imagine(websocket, prompt, job_id, proxy="proxy1"):
     PROXY_IP = ""
     match proxy:
         case "proxy1":
-            PROXY_IP = "192.168.2.16:9999"
-        case "proxy2":
             PROXY_IP = "192.168.2.16:9998"
+        case "proxy2":
+            PROXY_IP = "192.168.2.16:9999"
         case _:
             raise Exception("Proxy selection error!")
     msg = {
@@ -66,6 +66,16 @@ async def post_imagine(websocket, prompt, job_id, proxy="proxy1"):
                     }
                     await websocket.send_text(json.dumps(msg))
                     raise MidjourneyProxyError(f"{proxy} run out of hours!")
+                elif failReason == "可能包含违规信息":
+                    msg = {
+                        "code": 400,
+                        "message": "Input message contains controversial issues. Reach out to the backend team.",
+                        "result": "",
+                    }
+                    await websocket.send_text(json.dumps(msg))
+                    raise MidjourneyProxyError(
+                        "Input message contains controversial issues. Reach out to the backend team."
+                    )
                 else:
                     msg = {
                         "code": 400,
