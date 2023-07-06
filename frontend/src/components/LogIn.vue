@@ -1,7 +1,7 @@
 <template>
     <div>
         <div role="dialog" id="radix-:r0:" aria-describedby="radix-:r2:" aria-labelledby="radix-:r1:" data-state="open"
-            class="bg-zinc-800 items-center relative shadow-xl rounded-2xl z-50 px-8 py-8 text-sm drop-shadow-lg border border-zinc-700 fadeInAndScale"
+            class="bg-zinc-800 text-zinc-100 items-center relative shadow-xl rounded-2xl z-50 px-8 py-8 text-sm drop-shadow-lg border border-zinc-700 fadeInAndScale"
             tabindex="-1" style="max-width: 330px; width: 100%; max-height: 85vh; pointer-events: auto;">
             <button @click="closeModal" type="button" class="hover:bg-zinc-700 p-1 rounded absolute right-3 top-3">
                 <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
@@ -19,10 +19,10 @@
             </div>
             <form @submit.prevent="handleSubmit">
                 <input v-model="email" autocomplete="email" placeholder="Email address"
-                    class="w-64 px-3 py-2 bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-indigo-600 rounded-lg border border-zinc-600 hover:brightness-110 text-white"
+                    class="w-64 px-3 py-2 bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-indigo-600 rounded-lg border border-zinc-600 hover:brightness-110 text-zinc-100"
                     type="email">
                 <button type="submit"
-                    class="hover:brightness-110 bg-gradient-to-t from-indigo-800 via-indigo-800 to-indigo-700 border border-indigo-800 px-4 py-1.5 rounded-lg shadow h-9 w-64 drop-shadow flex items-center justify-center mt-3 text-white">
+                    class="hover:brightness-110 bg-gradient-to-t from-indigo-800 via-indigo-800 to-indigo-700 border border-indigo-800 px-4 py-1.5 rounded-lg shadow h-9 w-64 drop-shadow flex items-center justify-center mt-3 text-zinc-100">
                     Continue
                 </button>
             </form>

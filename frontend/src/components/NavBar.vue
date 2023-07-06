@@ -100,27 +100,27 @@
             <v-dialog v-model="dialog" width="auto">
                 <template v-slot:activator="{ props }">
                     <div v-if="username">
-                        <button @click="showpanel"
-                            class="h-7 w-7 rounded-full ml-2 text-xs md:text-sm bg-zinc-800 border  border-zinc-700 drop-shadow mr-2 flex items-center justify-center opacity-80 hover:opacity-100 text-white"
+                        <button @click="openPanel"
+                            class="h-7 w-7 rounded-full ml-2 text-xs md:text-sm bg-zinc-800 border  border-zinc-700 drop-shadow mr-2 flex items-center justify-center opacity-80 hover:opacity-100 text-zinc-100"
                             type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="radix-:r0:"
                             data-state="closed">{{ username_first_letter }}</button>
-                        <div v-if="panel">
-                            <AccountPanel />
-                        </div>
                     </div>
                     <div v-else>
                         <v-btn size="x-small" color="primary" v-bind="props">
                             Login
                         </v-btn>
                     </div>
+                    <div v-if="show_panel">
+                        <AccountPanel @signout-click="closePanelClick"/>
+                    </div>
                 </template>
-                <login @login-click="handleLoginClick" />
+                <login @login-click="closeLoginClick" />
             </v-dialog>
         </div>
     </div>
 </template>
 <script>
-import { defineComponent, ref, computed } from 'vue'
+import { defineComponent, ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Login from '@/components/LogIn.vue';
 import AccountPanel from '@/components/AccountPanel.vue';
@@ -135,12 +135,13 @@ export default defineComponent({
     },
     props: {
         page: String,
+        closePanel: Boolean
     },
     setup(props) {
         const router = useRouter()
         const store = useStore()
         const dialog = ref(false);
-        const panel = ref(false);
+        const show_panel = ref(false);
         const goToPage = (pagnition) => {
             router.push(pagnition)
         }
@@ -150,7 +151,7 @@ export default defineComponent({
         function getNavOpa(pagnition) {
             return props.page === pagnition ? '1' : '0.5';
         }
-        const handleLoginClick = () => {
+        const closeLoginClick = () => {
             dialog.value = false;
         };
         const username = computed(() => {
@@ -163,19 +164,29 @@ export default defineComponent({
             return (typeof userName === 'string' && userName.length > 0) ? userName[0] : '';
         });
 
-        const showpanel = () => {
-            panel.value = true;
+        const openPanel = () => {
+            show_panel.value = true;
         };
+
+        const closePanelClick = () => {
+            show_panel.value = false;
+        };
+
+        watch(() => props.closePanel, () => {
+            show_panel.value = false; // 收到消息就關掉
+        });
+
         return {
             getNavStyle,
             getNavOpa,
             goToPage,
             dialog,
-            showpanel,
-            panel,
-            handleLoginClick,
+            openPanel,
+            closePanelClick,
+            show_panel,
+            closeLoginClick,
             username,
-            username_first_letter
+            username_first_letter,
         };
     },
 });

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <nav-bar page="home" />
+    <nav-bar page="home" :closePanel="closePanel"/>
     <div
       class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
       <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
@@ -177,7 +177,7 @@ export default defineComponent({
     const selectedImage = ref(null);
     const type = ref(null);
     const socket = ref(null);
-    const store = useStore()
+    const store = useStore();
     let intervalId;
 
     const getImgs = async () => {
@@ -322,9 +322,12 @@ export default defineComponent({
         ElMessage.error("Image not selected or prompt is empty!")
       }
     };
+    
+    const closePanel = ref(true);
 
     const set_init = async () => {
       radio.value = null;
+      closePanel.value = !closePanel.value;
     }
 
     const email = computed(() => {
@@ -362,6 +365,7 @@ export default defineComponent({
       downloadFile,
       handleUrl,
       img2img,
+      closePanel,
       set_init,
       email
     };
