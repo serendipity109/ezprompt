@@ -66,7 +66,7 @@ async def imagine(websocket: WebSocket):
             "message": str(e),
             "result": "",
         }
-        logger.info(json.dumps(msg))
+        logger.exception(json.dumps(msg))
     finally:
         websocket_connections.remove(websocket)
         if websocket.client_state == WebSocketState.CONNECTED:
@@ -91,7 +91,7 @@ async def imagine_handler(websocket, start, job_id):
             mode = data["mode"]
             prompt += f" --{mode} "
     except Exception as e:
-        logger.info(e)
+        logger.exception(e)
         raise Exception(e)
     logger.info(f"prompt: {prompt}")
     job_map = {job_id: (websocket, prompt)}
@@ -160,10 +160,10 @@ async def job_schedular(job_id):
                         proxy = str(e).split(" ")[0]
                         if proxy == "proxy1":
                             jq1_exists.value = False
-                            logger.info("Account 1 run out of credits!")
+                            logger.exception("Account 1 run out of credits!")
                         elif proxy == "proxy2":
                             jq2_exists.value = False
-                            logger.info("Account 2 run out of credits!")
+                            logger.exception("Account 2 run out of credits!")
                     await kill_zombie(job_id)
                     job_id = await generate_random_id()
                     try:

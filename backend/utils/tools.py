@@ -43,7 +43,7 @@ async def schema_validator(websocket):
             async with httpx.AsyncClient() as client:
                 res = await client.get(url)
             if res.status_code == 404:
-                logger.info("Image url error!")
+                logger.error("Image url error!")
                 msg = {"code": 400, "message": "Image url error!", "result": ""}
                 await websocket.send_text(json.dumps(msg))
                 raise Exception("Image url error!")
