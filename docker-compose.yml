@@ -25,7 +25,7 @@ services:
       - REDIS_HOST=cache
       - REDIS_PORT=6379
       - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
-      - MYSQL_URI=mysqldb://root:password@mysql:3306
+      - MYSQL_URI=mysql+pymysql://root:password@mysql:3306
       - MYSQL_DATABASE=ezprompt
       - F_INTERNAL_IP=192.168.3.16:8087
       - F_EXTERNAL_IP=61.216.75.236:8087
@@ -62,7 +62,7 @@ services:
     container_name: mysql
     restart: always
     volumes:
-      - ./backend/utils/sqls:/docker-entrypoint-initdb.d
+      - ./backend/utils/sql_init:/docker-entrypoint-initdb.d
       - ./backend/mysql:/var/lib/mysql
       - ./backend/utils/mysqld:/var/run/mysqld
     ports:
