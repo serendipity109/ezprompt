@@ -20,7 +20,7 @@ async def post_imagine(websocket, prompt, job_id, proxy="proxy1"):
     msg = {
         "code": 200,
         "message": "Start imagining!",
-        "data": {"job_id": job_id, "PROXY_IP": PROXY_IP},
+        "data": {"job_id": job_id, "PROXY_IP": proxy},
     }
     await websocket.send_text(json.dumps(msg))
     header = {"content-type": "application/json"}
