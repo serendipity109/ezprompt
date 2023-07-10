@@ -41,6 +41,21 @@ class SQLAlchemyCRUD:
         except Exception as e:
             logger.error(f"Error in read: {e}")
 
+    def read_all(self):
+        try:
+            records = self.session.query(self.model).all()
+            result = []
+            for record in records:
+                result.append(
+                    {
+                        column.key: getattr(record, column.key)
+                        for column in self.model.__table__.columns
+                    }
+                )
+            return result
+        except Exception as e:
+            logger.error(f"Error in read_all: {e}")
+
     def update(self, _id, **kwargs):
         try:
             record = self.session.query(self.model).get(_id)

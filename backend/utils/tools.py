@@ -155,6 +155,5 @@ async def split_image(image_file):
 
 
 async def generate_random_id(n=10):
-    letters_and_digits = string.digits
-    random_id = "".join(random.choice(letters_and_digits) for _ in range(n))
-    return random_id
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(n))

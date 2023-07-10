@@ -7,7 +7,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from routes import SDXL, dcmj, kkbot, magicwriter, t2i
+from routes import SDXL, dcmj
 from utils import minioTool, redisTool
 
 logging.basicConfig(level=logging.INFO)
@@ -38,9 +38,6 @@ app.add_middleware(
 
 api_router = APIRouter()
 
-api_router.include_router(kkbot.router)
-api_router.include_router(magicwriter.router)
-api_router.include_router(t2i.router)
 api_router.include_router(SDXL.router)
 api_router.include_router(dcmj.router)
 

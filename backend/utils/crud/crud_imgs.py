@@ -1,5 +1,5 @@
-from crud import SQLAlchemyCRUD
-from model import Users
+from .crud import SQLAlchemyCRUD
+from .model import Imgs
 import logging
 
 
@@ -7,6 +7,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class UserCRUD(SQLAlchemyCRUD):
+class ImgsCRUD(SQLAlchemyCRUD):
     def __init__(self):
-        super().__init__(Users)
+        super().__init__(Imgs)

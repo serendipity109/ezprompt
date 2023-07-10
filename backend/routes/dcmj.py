@@ -20,9 +20,12 @@ from utils.tools import (
     style_parser,
 )
 from utils.worker import MidjourneyProxyError, post_imagine
+from utils.integrated_crud import IntegratedCRUD
+from utils.crud import MJImg
 
 router = APIRouter()
 websocket_connections = set()
+crud = IntegratedCRUD()
 manager = Manager()
 
 n_jobs = os.environ.get("CONCURRENT_JOBS", "6")
@@ -75,24 +78,27 @@ async def imagine(websocket: WebSocket):
 
 async def imagine_handler(websocket, start, job_id):
     global job_q, waiting_q, job_map
-    try:
-        data = await schema_validator(websocket)
-        user_id = data["user_id"]
-        prompt = await translator(data["prompt"])
-        if "preset" in data.keys():
-            prompt = await style_parser(prompt, data["preset"])
-        if "image_url" in data.keys():
-            prompt = data["image_url"] + " " + prompt
-        prompt = await prompt_censorer(prompt)
-        if "size" in data.keys():
-            size = data["size"]
-            prompt += f" --ar {size} "
-        if "mode" in data.keys():
-            mode = data["mode"]
-            prompt += f" --{mode} "
-    except Exception as e:
-        logger.exception(e)
-        raise Exception(e)
+    data = await schema_validator(websocket)
+    user_id = data["user_id"]
+    if not await crud.check_trans_valid(user_id, 4):
+        msg = {"code": 400, "message": "Invalid user_id or credits not enough!", "result": ""}
+        await websocket.send_text(json.dumps(msg))
+        raise Exception(json.dumps(msg))
+    prompt = await translator(data["prompt"])
+    if "preset" in data.keys():
+        prompt = await style_parser(prompt, data["preset"])
+    if "image_url" in data.keys():
+        img_url = data["image_url"]
+        prompt = img_url + " " + prompt
+    prompt = await prompt_censorer(prompt)
+    if "size" in data.keys():
+        size = data["size"]
+        prompt += f" --ar {size} "
+    else:
+        size = "1:1"
+    if "mode" in data.keys():
+        mode = data["mode"]
+        prompt += f" --{mode} "
     logger.info(f"prompt: {prompt}")
     job_map = {job_id: (websocket, prompt)}
     folder = f"/workspace/output/{user_id}"
@@ -103,6 +109,11 @@ async def imagine_handler(websocket, start, job_id):
     url = res["imageUrl"]
     image_list = await download_image(user_id, url)
     image_list.insert(0, image_list[0].replace("_1.png", ".png"))
+    if "image_url" in data.keys():
+        mjimg = MJImg(user_id=user_id, prompt=prompt, source_url=img_url, size=size, images=image_list[1:])
+    else:
+        mjimg = MJImg(user_id=user_id, prompt=prompt, size=size, images=image_list[1:])
+    await crud.insert_mjimage(mjimg)
     elapsed_time = time.time() - start
     return_msg = {
         "code": 201,

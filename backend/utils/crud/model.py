@@ -15,7 +15,7 @@ Base = declarative_base()
 class Users(Base):
     __tablename__ = "users"
     _id = Column(String(24), primary_key=True, nullable=False)
-    username = Column(String(24), nullable=False, unique=True)
+    user_id = Column(String(24), nullable=False, unique=True)
     password = Column(String(24), nullable=False)
     credits = Column(Integer, nullable=False, default=100)
     create_time = Column(DateTime, default=func.now())
@@ -24,7 +24,7 @@ class Users(Base):
 class Trans(Base):
     __tablename__ = "trans"
     _id = Column(String, primary_key=True)
-    username = Column(String)
+    user_id = Column(String)
     prompt_id = Column(String)
     img1 = Column(Text)
     img2 = Column(Text)
@@ -36,7 +36,7 @@ class Trans(Base):
 class Imgs(Base):
     __tablename__ = "imgs"
     _id = Column(String, primary_key=True)
-    username = Column(String)
+    user_id = Column(String)
     prompt_id = Column(String)
     img = Column(Text)
     create_time = Column(DateTime, default=datetime.now)

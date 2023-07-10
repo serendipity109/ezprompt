@@ -1,5 +1,5 @@
-from crud import SQLAlchemyCRUD
-from model import Trans
+from .crud import SQLAlchemyCRUD
+from .model import Trans
 import logging
 
 
