@@ -81,7 +81,7 @@ async def imagine_handler(websocket, start, job_id):
     data = await schema_validator(websocket)
     user_id = data["user_id"]
     if not await crud.check_trans_valid(user_id, 4):
-        msg = {"code": 400, "message": "Invalid user_id or credits not enough!", "result": ""}
+        msg = {"code": 400, "message": f"Invalid user_id {user_id} or credits not enough!", "result": ""}
         await websocket.send_text(json.dumps(msg))
         raise Exception(json.dumps(msg))
     prompt = await translator(data["prompt"])
@@ -306,18 +306,8 @@ async def show_image(user_id: str, image_name: str):
 
 @router.get("/dcmj/history")
 async def get_history(user_id):
-    image_folder_path = os.path.join("/workspace/output", user_id)
-    image_files = glob.glob(os.path.join(image_folder_path, "*.[jp][np]g"))
-    image_files.sort(key=os.path.getctime, reverse=True)
-    output_url = [
-        "http://192.168.3.16:9527" + file.replace("/workspace/output/", "/dcmj/media/")
-        for file in image_files
-        if "_" in file
-    ]
-    return {"code": 200, "message": "Successfully get images", "data": output_url}
-
-
-@router.post("/dcmj/callback")
-async def handle_callback(data: dict):
-    if data["progress"] == "100%":
-        return {"message": "Callback received"}
+    history = await crud.read_user_history(user_id)
+    if len(history) > 0:
+        return history
+    else:
+        return "user_id doesn't exists or user have no image."

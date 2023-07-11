@@ -3,6 +3,7 @@ cryptography
 fastapi
 httpx
 minio
+mysqlclient
 openai
 opencc-python-reimplemented
 Pillow

@@ -27,6 +27,7 @@ class SQLAlchemyCRUD:
         except Exception as e:
             logger.error(f"Error in create: {e}")
             self.session.rollback()
+            raise Exception(e)
 
     def read(self, _id):
         try:
@@ -40,6 +41,26 @@ class SQLAlchemyCRUD:
                 return None
         except Exception as e:
             logger.error(f"Error in read: {e}")
+            raise Exception(e)
+
+    def read_user_by_id(self, user_id):
+        try:
+            records = self.session.query(self.model).filter_by(user_id=user_id).all()
+            if records:
+                result = []
+                for record in records:
+                    result.append(
+                        {
+                            column.key: getattr(record, column.key)
+                            for column in self.model.__table__.columns
+                        }
+                    )
+                return result
+            else:
+                return None
+        except Exception as e:
+            logger.error(f"Error in read: {e}")
+            raise Exception(e)
 
     def read_all(self):
         try:
@@ -55,6 +76,7 @@ class SQLAlchemyCRUD:
             return result
         except Exception as e:
             logger.error(f"Error in read_all: {e}")
+            raise Exception(e)
 
     def update(self, _id, **kwargs):
         try:
@@ -69,6 +91,7 @@ class SQLAlchemyCRUD:
         except Exception as e:
             logger.error(f"Error in update: {e}")
             self.session.rollback()
+            raise Exception(e)
 
     def delete(self, _id):
         try:
@@ -82,3 +105,17 @@ class SQLAlchemyCRUD:
         except Exception as e:
             logger.error(f"Error in delete: {e}")
             self.session.rollback()
+            raise Exception(e)
+
+    def delete_user_by_id(self, user_id):
+        try:
+            # 这将删除所有 user_id 等于指定值的记录
+            record_count = self.session.query(self.model).filter_by(user_id=user_id).delete()
+            self.session.commit()
+
+            # 如果有任何记录被删除，返回 True，否则返回 False
+            return record_count > 0
+        except Exception as e:
+            logger.error(f"Error in delete_user_by_id: {e}")
+            self.session.rollback()
+            raise Exception(e)

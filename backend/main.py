@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from routes import SDXL, dcmj
 from utils import minioTool, redisTool
+from utils.integrated_crud import IntegratedCRUD
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -40,6 +41,7 @@ api_router = APIRouter()
 
 api_router.include_router(SDXL.router)
 api_router.include_router(dcmj.router)
+crud = IntegratedCRUD()
 
 
 @app.get("/")
@@ -101,6 +103,24 @@ async def show_image(folder: str, image_name: str):
         return FileResponse(image_path)
     else:
         return {"error": "Image not found"}
+
+
+@app.post("/create")
+async def create_user(user_id, password, credits):
+    try:
+        await crud.create_user(user_id, password, credits)
+        return {"code": 200, "message": f"Successfully create user {user_id}"}
+    except Exception as e:
+        return {"code": 400, "message": str(e)}
+
+
+@app.delete("/delete")
+async def delete_user(user_id):
+    try:
+        await crud.delete_user_by_id(user_id)
+        return {"code": 200, "message": f"Successfully delete user {user_id}"}
+    except Exception as e:
+        return {"code": 400, "message": str(e)}
 
 
 # 定期刪檔案

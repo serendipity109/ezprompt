@@ -123,9 +123,13 @@ async def download_image(user_id, url):
         f.write(response.content)
     top_left, top_right, bottom_left, bottom_right = await split_image(file_path)
     top_left.save(file_prefix + "_1.png")
+    top_left.save(file_prefix + "_1.jpg", 'JPEG', quality=95)
     top_right.save(file_prefix + "_2.png")
+    top_right.save(file_prefix + "_2.jpg", 'JPEG', quality=95)
     bottom_left.save(file_prefix + "_3.png")
+    bottom_left.save(file_prefix + "_3.jpg", 'JPEG', quality=95)
     bottom_right.save(file_prefix + "_4.png")
+    bottom_right.save(file_prefix + "_4.jpg", 'JPEG', quality=95)
     image_list = [
         file_prefix + "_1.png",
         file_prefix + "_2.png",
