@@ -1,2 +1,2 @@
 pip3 install -r backend/requirements.txt
-pip3 install httpx pytest pytest-ordering pymysql
+pip3 install httpx pytest pytest-ordering pytest-asyncio

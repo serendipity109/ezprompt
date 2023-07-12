@@ -134,8 +134,8 @@ def delete_old_files(folder_path: str, max_age: timedelta):
     for root, _, files in os.walk(folder_path):
         for file in files:
             file_path = os.path.join(root, file)
-            file_access_time = os.path.getatime(file_path)
-            file_age = current_time - file_access_time
+            file_modification_time = os.path.getmtime(file_path)
+            file_age = current_time - file_modification_time
             if file_age > max_age.total_seconds():
                 try:
                     os.remove(file_path)

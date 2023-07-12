@@ -1,41 +1,64 @@
-import unittest
-import os
-from fastapi.testclient import TestClient
-from main import app
+# test_module.py
+import pytest
+import asyncio
+
+from utils.tools import (
+    schema_validator,
+    style_parser,
+    prompt_censorer,
+    generate_random_id,
+)
 
 
-# 用 TestClient 包裝你的 FastAPI 應用
-client = TestClient(app)
+@pytest.mark.asyncio
+async def test_schema_validator():
+    class FakeWebsocket:
+        async def receive_json(self):
+            return {
+                "user_id": "adam",
+                "prompt": "大象在潛水",
+                "preset": "写实",
+                "size": "16:9",
+                "mode": "turbo",
+            }
+
+        async def send_text(self, text):
+            return True
+
+    fake_websocket = FakeWebsocket()
+    data = await schema_validator(fake_websocket)
+    assert data == {
+        "user_id": "adam",
+        "prompt": "大象在潛水",
+        "preset": "写实",
+        "size": "16:9",
+        "mode": "turbo",
+    }
 
 
-# 測試 GET / 路由
-def test_root():
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json() == {"Model": "EZPrompt"}
+@pytest.mark.asyncio
+async def test_style_parser():
+    prompt = "some prompt"
+    style = "漫画"
+    result = await style_parser(prompt, style)
+    assert result == "some prompt, anime --niji 5"
 
 
-class TestShowImage(unittest.TestCase):
-    def setUp(self):
-        # 建立一個測試用的檔案
-        self.test_folder = "/workspace/test_folder"
-        self.test_image_name = "test_image.jpg"
-        self.test_image_path = os.path.join(self.test_folder, self.test_image_name)
-        os.makedirs(self.test_folder, exist_ok=True)
-        with open(self.test_image_path, "w") as f:
-            f.write("test")
+@pytest.mark.asyncio
+async def test_prompt_censorer():
+    # Test that banned words are removed
+    prompt = "Wang"
+    result = await prompt_censorer(prompt)
+    assert result == ""  # All words should be removed
 
-    def tearDown(self):
-        # 測試結束後，刪除測試用的檔案和目錄
-        os.remove(self.test_image_path)
-        os.rmdir(self.test_folder)
+    # Test that allowed words are not removed
+    prompt = "chubby"
+    result = await prompt_censorer(prompt)
+    assert result == "chubby"  # Words should not be removed
 
-    def test_show_image_exists(self):
-        response = client.get(f"/media/test_folder/{self.test_image_name}")
-        self.assertEqual(response.status_code, 200)
-        # 你可能需要根據實際情況，驗證返回的內容
 
-    def test_show_image_not_exists(self):
-        response = client.get("/media/test_folder/non_existent_image.jpg")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"error": "Image not found"})
+def test_generate_random_id():
+    # asyncio.run is used to run an asyncio function from synchronous code
+    random_id = asyncio.run(generate_random_id())
+    assert len(random_id) == 10  # Check the length
+    assert random_id.isalnum()  # Check if it contains only alphanumeric characters
