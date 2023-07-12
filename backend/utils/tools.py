@@ -69,7 +69,11 @@ async def schema_validator(websocket):
             case "relax":
                 pass
             case _:
-                msg = {"code": 400, "message": f"Mode {mode} is not valid!", "result": ""}
+                msg = {
+                    "code": 400,
+                    "message": f"Mode {mode} is not valid!",
+                    "result": "",
+                }
                 await websocket.send_text(json.dumps(msg))
                 raise Exception(f"Mode {mode} is not valid!")
     return data
@@ -123,13 +127,13 @@ async def download_image(user_id, url):
         f.write(response.content)
     top_left, top_right, bottom_left, bottom_right = await split_image(file_path)
     top_left.save(file_prefix + "_1.png")
-    top_left.save(file_prefix + "_1.jpg", 'JPEG', quality=95)
+    top_left.save(file_prefix + "_1.jpg", "JPEG", quality=95)
     top_right.save(file_prefix + "_2.png")
-    top_right.save(file_prefix + "_2.jpg", 'JPEG', quality=95)
+    top_right.save(file_prefix + "_2.jpg", "JPEG", quality=95)
     bottom_left.save(file_prefix + "_3.png")
-    bottom_left.save(file_prefix + "_3.jpg", 'JPEG', quality=95)
+    bottom_left.save(file_prefix + "_3.jpg", "JPEG", quality=95)
     bottom_right.save(file_prefix + "_4.png")
-    bottom_right.save(file_prefix + "_4.jpg", 'JPEG', quality=95)
+    bottom_right.save(file_prefix + "_4.jpg", "JPEG", quality=95)
     image_list = [
         file_prefix + "_1.png",
         file_prefix + "_2.png",
@@ -158,6 +162,12 @@ async def split_image(image_file):
         return top_left, top_right, bottom_left, bottom_right
 
 
+async def make_user_folder(user_id):
+    folder = f"/workspace/output/{user_id}"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+
 async def generate_random_id(n=10):
     chars = string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for _ in range(n))
+    return "".join(random.choice(chars) for _ in range(n))

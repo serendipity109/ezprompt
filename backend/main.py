@@ -114,6 +114,15 @@ async def create_user(user_id, password, credits):
         return {"code": 400, "message": str(e)}
 
 
+@app.get("/history")
+async def get_history(user_id):
+    history = await crud.read_user_history(user_id)
+    if len(history) > 0:
+        return history
+    else:
+        return "user_id doesn't exists or user have no image."
+
+
 @app.delete("/delete")
 async def delete_user(user_id):
     try:

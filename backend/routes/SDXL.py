@@ -43,7 +43,7 @@ class xlInput(BaseModel):
     mock: bool = False
 
 
-@router.post("/sdxl")
+@router.post("/sdxl/t2i")
 async def sdxl(inp: xlInput):
     if inp.mock:
         urls = [
@@ -131,7 +131,7 @@ class ezInput(BaseModel):
     mock: bool = False
 
 
-@router.post("/ezpmt")
+@router.post("/sdxl/ezpmt")
 async def ezpmt(inp: ezInput):
     if inp.mock:
         urls = [

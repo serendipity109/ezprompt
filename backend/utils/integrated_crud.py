@@ -27,9 +27,26 @@ class IntegratedCRUD:
         if user_data:
             credits = user_data["credits"]
             if (credits - n) >= 0:
-                self.user_crud.update_user_credit(user_id, user_data["credits"] - n)
                 return True
         return False
+
+    async def pay_credits(self, user_id: str, n: int):
+        user_data = self.user_crud.read_by_userid(user_id)
+        credits = user_data["credits"]
+        try:
+            self.user_crud.update_user_credit(user_id, credits - n)
+        except Exception as e:
+            logger.error(f"Error in paying: {e}")
+            raise Exception(f"Error in paying: {e}")
+
+    async def refund_credits(self, user_id: str, n: int):
+        user_data = self.user_crud.read_by_userid(user_id)
+        credits = user_data["credits"]
+        try:
+            self.user_crud.update_user_credit(user_id, credits + n)
+        except Exception as e:
+            logger.error(f"Error in refunding: {e}")
+            raise Exception(f"Error in refunding: {e}")
 
     async def insert_mjimage(self, input: MJImg):
         user_id = input.user_id
@@ -101,6 +118,14 @@ class IntegratedCRUD:
         except Exception as e:
             logger.error(f"Error in delete imgs: {e}")
             raise Exception(f"Error in delete imgs: {e}")
+        records = self.trans_crud.read_user_by_id(user_id)
+        if records:
+            records = sorted(records, key=lambda x: x["create_time"], reverse=True)
+            for record in records:
+                pmt_id = record["prompt_id"]
+                if self.redis_client.delete(pmt_id) == 0:
+                    logger.error("Error in delete pmt_id")
+                    raise Exception("Error in delete pmt_id")
         try:
             self.trans_crud.delete_user_by_id(user_id)
         except Exception as e:
@@ -149,65 +174,3 @@ class IntegratedCRUD:
             return history
         else:
             return []
-
-    # def create_table(self, table_name, table_def):
-    #     if not self.has_table(table_name):
-    #         table_def.create(self.engine)
-    #         print(f"Table '{table_name}' created.")
-    #     else:
-    #         print(f"Table '{table_name}' already exists.")
-
-    # def has_table(self, table_name):
-    #     inspector = inspect(self.engine)
-    #     return inspector.has_table(table_name)
-
-    # def read_table(self, table_name):
-    #     logger.info(f"Read table {table_name.__tablename__}")
-    #     session = self.Session()
-    #     try:
-    #         column_names = self.get_columns(table_name.__tablename__)
-    #         table = session.query(table_name).all()
-    #         for row in table:
-    #             target = ""
-    #             for column in column_names:
-    #                 value = getattr(row, column)  # 獲取 row 物件中名為 column 的屬性的值
-    #                 target += f"{column}: {value}, "
-    #             logger.info(target)
-    #     except Exception as e:
-    #         logger.error(f"Error while reading table: {e}")
-    #     finally:
-    #         session.close()  # 確保session最後被關閉
-
-    # def get_columns(self, table_name):
-    #     inspector = inspect(self.engine)
-    #     columns = inspector.get_columns(table_name)
-    #     column_names = [column["name"] for column in columns]
-    #     return column_names
-
-    # def delete_expire_imgs(self):
-    #     session = self.Session()
-    #     try:
-    #         stmt = select(Trans.prompt_id).where(
-    #             Trans.create_time < func.now() - datetime.timedelta(minutes=1)
-    #         )
-    #         result = session.execute(stmt)
-    #         expired_prompt_ids = [row.prompt_id for row in result]
-
-    #         if expired_prompt_ids:
-    #             stmt_delete_imgs = delete(Imgs).where(
-    #                 Imgs.prompt_id.in_(expired_prompt_ids)
-    #             )
-    #             stmt_delete_trans = delete(Trans).where(
-    #                 Trans.prompt_id.in_(expired_prompt_ids)
-    #             )
-    #             session.execute(stmt_delete_imgs)
-    #             session.execute(stmt_delete_trans)
-    #             session.commit()
-    #         else:
-    #             logger.info("There's no expired trans, imgs!")
-    #     except:
-    #         session.rollback()
-    #         logger.exception("Delete expired imgs error")
-    #         raise
-    #     finally:
-    #         session.close()

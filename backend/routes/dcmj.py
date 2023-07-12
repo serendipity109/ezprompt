@@ -18,6 +18,7 @@ from utils.tools import (
     prompt_censorer,
     schema_validator,
     style_parser,
+    make_user_folder
 )
 from utils.worker import MidjourneyProxyError, post_imagine
 from utils.integrated_crud import IntegratedCRUD
@@ -78,32 +79,36 @@ async def imagine(websocket: WebSocket):
 
 async def imagine_handler(websocket, start, job_id):
     global job_q, waiting_q, job_map
-    data = await schema_validator(websocket)
-    user_id = data["user_id"]
-    if not await crud.check_trans_valid(user_id, 4):
-        msg = {"code": 400, "message": f"Invalid user_id {user_id} or credits not enough!", "result": ""}
-        await websocket.send_text(json.dumps(msg))
-        raise Exception(json.dumps(msg))
-    prompt = await translator(data["prompt"])
-    if "preset" in data.keys():
-        prompt = await style_parser(prompt, data["preset"])
-    if "image_url" in data.keys():
-        img_url = data["image_url"]
-        prompt = img_url + " " + prompt
-    prompt = await prompt_censorer(prompt)
-    if "size" in data.keys():
-        size = data["size"]
-        prompt += f" --ar {size} "
-    else:
-        size = "1:1"
-    if "mode" in data.keys():
-        mode = data["mode"]
-        prompt += f" --{mode} "
-    logger.info(f"prompt: {prompt}")
-    job_map = {job_id: (websocket, prompt)}
-    folder = f"/workspace/output/{user_id}"
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+    try:
+        data = await schema_validator(websocket)
+        user_id = data["user_id"]
+        if not await crud.check_trans_valid(user_id, 4):
+            msg = {"code": 400, "message": f"Invalid user_id {user_id} or credits not enough!", "result": ""}
+            await websocket.send_text(json.dumps(msg))
+            raise Exception(json.dumps(msg))
+        else:
+            await crud.pay_credits(user_id, 4)
+        prompt = await translator(data["prompt"])
+        if "preset" in data.keys():
+            prompt = await style_parser(prompt, data["preset"])
+        if "image_url" in data.keys():
+            img_url = data["image_url"]
+            prompt = img_url + " " + prompt
+        prompt = await prompt_censorer(prompt)
+        if "size" in data.keys():
+            size = data["size"]
+            prompt += f" --ar {size} "
+        else:
+            size = "1:1"
+        if "mode" in data.keys():
+            mode = data["mode"]
+            prompt += f" --{mode} "
+        logger.info(f"prompt: {prompt}")
+        await make_user_folder(user_id)
+        job_map = {job_id: (websocket, prompt)}
+    except Exception as e:
+        await crud.refund_credits(user_id, 4)
+        raise Exception(e)
     res = await job_schedular(job_id)
     taskid = res["id"]
     url = res["imageUrl"]
@@ -302,12 +307,3 @@ async def show_image(user_id: str, image_name: str):
         return FileResponse(image_path)
     else:
         raise HTTPException(status_code=404, detail="Image not found")
-
-
-@router.get("/dcmj/history")
-async def get_history(user_id):
-    history = await crud.read_user_history(user_id)
-    if len(history) > 0:
-        return history
-    else:
-        return "user_id doesn't exists or user have no image."
