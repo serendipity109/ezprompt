@@ -155,7 +155,7 @@ import NavBar from '@/components/NavBar.vue';
 import Upload from '@/components/UploadImg.vue';
 import fileDownload from 'js-file-download';
 import { ElMessage } from 'element-plus'
-import { GET_EMAIL } from "@/store/storeconstants";
+import { GET_EMAIL, GET_USERNAME } from "@/store/storeconstants";
 import { useStore } from 'vuex'
 
 export default defineComponent({
@@ -238,16 +238,17 @@ export default defineComponent({
         socket.value.onopen = () => {
           console.log("Connection opened");
           // 在连接打开后发送消息
+          let user_id = store.getters[`auth/${GET_USERNAME}`]
           if ((typeof image_url === 'string') && image_url !== '') {
             message = {
-              "user_id": "adam",
+              "user_id": user_id,
               "prompt": keyword.value,
               "image_url": image_url,
               ...(type.value ? { "preset": type.value } : {})
             };
           } else {
             message = {
-              "user_id": "adam",
+              "user_id": user_id,
               "prompt": keyword.value,
               ...(type.value ? { "preset": type.value } : {})
             };
