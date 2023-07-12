@@ -49,6 +49,15 @@ async def root():
     return {"Model": "EZPrompt"}
 
 
+@app.get("/get_hash")
+async def get_hash(key: str):
+    try:
+        value = redis_client.get_hash(key)
+    except Exception as e:
+        raise Exception(e)
+    return value
+
+
 @app.get("/get_images")
 async def get_images():
     imgs = [
@@ -68,32 +77,21 @@ async def get_images():
         "s13",
         "s14",
     ]
-    imgs = [img + ".png" for img in imgs]
     res = []
     for img in imgs:
-        preview = redis_client.get(img)["prompt"]
-        view1 = preview.split(",")[0]
-        view2 = preview.replace(view1 + ",", "")
+        value = redis_client.get_hash(img)
+        prompt = value["prompt"]
+        view1 = prompt.split(",")[0]
+        view2 = prompt.replace(view1 + ",", "")
         res.append(
             {
                 "img": img,
-                "url": f"http://192.168.3.16:9527/media/mock/{img}",
+                "url": f"http://192.168.3.16:9527/media/mock/{img}.jpg",
                 "view1": view1,
                 "view2": view2,
             }
         )
     return res
-
-
-@app.get("/get_image")
-async def get_image(img="s0.png"):
-    img_res = []
-    pmt_res = redis_client.get(img)
-    img_res.append(f"http://192.168.3.16:9527/media/mock/{img}")
-    if "batch" in pmt_res.keys():
-        for img in pmt_res["batch"]:
-            img_res.append(f"http://192.168.3.16:9527/media/mock/{img}")
-    return {"img_res": img_res, "pmt_res": pmt_res}
 
 
 @app.get("/media/{folder}/{image_name}")
@@ -134,7 +132,7 @@ async def delete_user(user_id):
 
 # 定期刪檔案
 FOLDER_PATH = "/workspace/output"
-DELETE_INTERVAL = timedelta(days=1)
+DELETE_INTERVAL = timedelta(days=7)
 
 
 def delete_old_files(folder_path: str, max_age: timedelta):

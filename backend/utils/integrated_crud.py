@@ -52,16 +52,22 @@ class IntegratedCRUD:
         user_id = input.user_id
         prompt = input.prompt
         size = input.size
+        dim = ""
+        match size:
+            case "1:1":
+                dim = "1024x1024"
+            case "16:9":
+                dim = "1456x816"
+            case "9:16":
+                dim = "816x1456"
         pmt_id = await generate_random_id(10)
         img1, img2, img3, img4 = input.images
         redis_json = {
             "user_id": user_id,
             "prompt": prompt,
-            "size": size,
-            "img1": img1,
-            "img2": img2,
-            "img3": img3,
-            "img4": img4,
+            "size": dim,
+            "batch": [img1, img2, img3, img4],
+            "model": "midjourney"
         }
         if input.source_url:
             # img2img
@@ -153,10 +159,10 @@ class IntegratedCRUD:
                     pmt = pmt_record["prompt"]
                     view1 = pmt.split(",")[0]
                     view2 = pmt.replace(view1 + ",", "")
-                    img1 = pmt_record["img1"]
-                    img2 = pmt_record["img2"]
-                    img3 = pmt_record["img3"]
-                    img4 = pmt_record["img4"]
+                    img1 = pmt_record["batch"][0]
+                    img2 = pmt_record["batch"][1]
+                    img3 = pmt_record["batch"][2]
+                    img4 = pmt_record["batch"][3]
                     for img in [img4, img3, img2, img1]:
                         logger.info(img)
                         if img:
@@ -164,7 +170,8 @@ class IntegratedCRUD:
                             filename = os.path.basename(img)
                             history.append(
                                 {
-                                    "img": filename,
+                                    "id": pmt_id,
+                                    "filename": filename,
                                     "url": img,
                                     "view1": view1,
                                     "view2": view2,

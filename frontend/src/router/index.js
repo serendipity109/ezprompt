@@ -13,7 +13,7 @@ const router = createRouter({
         {path: '/test', component: Test},
         {path: '/home', component: Home, meta: {title: 'EZPrompt'}},
         {
-            path: '/image/:img',
+            path: '/image/:id',
             component: Prompt,
             meta: {title: 'EZPrompt - prompt'}
         },

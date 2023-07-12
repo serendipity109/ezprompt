@@ -39,7 +39,7 @@
                         style="position: relative; width: 100%; max-width: 100%;">
                         <div class="image-row" v-for="(row, index) in imageRows" :key="index">
                         <div class="image-container" v-for="(image, index) in row" :key="index">
-                            <router-link :to="'/image/' + image.img" :key="index"
+                            <router-link :to="'/image/' + image.id" :key="index"
                             class="block relative group select-none overflow-hidden m-0.5 border-indigo-600  rounded-xl"
                             style="transition: opacity 500ms ease 0s;">
                             <div
