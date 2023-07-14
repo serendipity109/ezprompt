@@ -87,7 +87,7 @@ async def imagine_handler(websocket, start, job_id):
             await websocket.send_text(json.dumps(msg))
             raise Exception(json.dumps(msg))
         else:
-            await crud.pay_credits(user_id, 4)
+            credits = await crud.pay_credits(user_id, 4)
         prompt = await translator(data["prompt"])
         if "preset" in data.keys():
             prompt = await style_parser(prompt, data["preset"])
@@ -107,7 +107,7 @@ async def imagine_handler(websocket, start, job_id):
         await make_user_folder(user_id)
         job_map = {job_id: (websocket, prompt)}
     except Exception as e:
-        await crud.refund_credits(user_id, 4)
+        await crud.topup_credits(user_id, 4)
         raise Exception(e)
     res = await job_schedular(job_id)
     taskid = res["id"]
@@ -127,6 +127,7 @@ async def imagine_handler(websocket, start, job_id):
             "result": image_list,
             "elapsed_time": elapsed_time,
             "task_id": taskid,
+            "remaining_credits": credits
         },
     }
     await websocket.send_text(json.dumps(return_msg))

@@ -12,9 +12,9 @@ async def post_imagine(websocket, prompt, job_id, proxy="proxy1"):
     PROXY_IP = ""
     match proxy:
         case "proxy1":
-            PROXY_IP = "192.168.2.16:9998"
-        case "proxy2":
             PROXY_IP = "192.168.2.16:9999"
+        case "proxy2":
+            PROXY_IP = "192.168.2.16:9998"
         case _:
             raise Exception("Proxy selection error!")
     msg = {

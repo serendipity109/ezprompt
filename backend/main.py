@@ -7,7 +7,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from routes import SDXL, dcmj
+from routes import SDXL, dcmj, account
 from utils import minioTool, redisTool
 from utils.integrated_crud import IntegratedCRUD
 
@@ -41,6 +41,7 @@ api_router = APIRouter()
 
 api_router.include_router(SDXL.router)
 api_router.include_router(dcmj.router)
+api_router.include_router(account.router)
 crud = IntegratedCRUD()
 
 
@@ -103,29 +104,15 @@ async def show_image(folder: str, image_name: str):
         return {"error": "Image not found"}
 
 
-@app.post("/create")
-async def create_user(user_id, password, credits):
-    try:
-        await crud.create_user(user_id, password, credits)
-        return {"code": 200, "message": f"Successfully create user {user_id}"}
-    except Exception as e:
-        return {"code": 400, "message": str(e)}
-
-
 @app.get("/history")
 async def get_history(user_id):
-    history = await crud.read_user_history(user_id)
-    if len(history) > 0:
-        return history
-    else:
-        return "user_id doesn't exists or user have no image."
-
-
-@app.delete("/delete")
-async def delete_user(user_id):
     try:
-        await crud.delete_user_by_id(user_id)
-        return {"code": 200, "message": f"Successfully delete user {user_id}"}
+        history = await crud.read_user_history(user_id)
+        return {
+            "code": 200,
+            "message": "Successfully get images",
+            "data": history,
+        }
     except Exception as e:
         return {"code": 400, "message": str(e)}
 

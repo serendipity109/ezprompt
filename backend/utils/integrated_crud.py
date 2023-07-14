@@ -1,9 +1,14 @@
 import shutil
 import logging
-import json
 import os
 
-from .crud import Imgs, ImgsCRUD, MJImg, Trans, TransCRUD, UserCRUD, Users
+from .crud import (
+    UserCRUD,
+    UserInfoCRUD,
+    ImgsCRUD,
+    TransCRUD,
+    MJImg,
+)
 from sqlalchemy import delete, inspect, select
 from sqlalchemy.sql import func
 from utils import redisTool
@@ -12,12 +17,13 @@ from utils.tools import generate_random_id
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# user_crud.create(_id = "2", user_id= "fw-adam", password="6666", credits=100)
+# user_crud.create(user_id= "fw-adam", password="6666", credits=100)
 
 
 class IntegratedCRUD:
     def __init__(self):
         self.user_crud = UserCRUD()
+        self.userinfo_crud = UserInfoCRUD()
         self.trans_crud = TransCRUD()
         self.imgs_crud = ImgsCRUD()
         self.redis_client = redisTool.RedisClient()
@@ -29,24 +35,6 @@ class IntegratedCRUD:
             if (credits - n) >= 0:
                 return True
         return False
-
-    async def pay_credits(self, user_id: str, n: int):
-        user_data = self.user_crud.read_by_userid(user_id)
-        credits = user_data["credits"]
-        try:
-            self.user_crud.update_user_credit(user_id, credits - n)
-        except Exception as e:
-            logger.error(f"Error in paying: {e}")
-            raise Exception(f"Error in paying: {e}")
-
-    async def refund_credits(self, user_id: str, n: int):
-        user_data = self.user_crud.read_by_userid(user_id)
-        credits = user_data["credits"]
-        try:
-            self.user_crud.update_user_credit(user_id, credits + n)
-        except Exception as e:
-            logger.error(f"Error in refunding: {e}")
-            raise Exception(f"Error in refunding: {e}")
 
     async def insert_mjimage(self, input: MJImg):
         user_id = input.user_id
@@ -67,7 +55,7 @@ class IntegratedCRUD:
             "prompt": prompt,
             "size": dim,
             "batch": [img1, img2, img3, img4],
-            "model": "midjourney"
+            "model": "midjourney",
         }
         if input.source_url:
             # img2img
@@ -104,12 +92,19 @@ class IntegratedCRUD:
             raise Exception(f"Error in insert imgs: {e}")
         logger.info("Successfully store image data!")
 
-    async def create_user(self, user_id, password, credits):
-        if self.user_crud.read_by_userid(user_id) is None:
+    async def get_token(self, user_id, password):
+        if self.user_crud.user_id_exists(user_id):
+            user_data = self.userinfo_crud.read_by_userid(user_id)
+            if user_data["password"] == password:
+                return user_data["token"]
+        return ""
+
+    async def create_user(self, user_id, password, token):
+        if self.user_crud.read(user_id) is None:
             try:
-                _id = await generate_random_id(10)
-                self.user_crud.create(
-                    _id=_id, user_id=user_id, password=password, credits=credits
+                self.user_crud.create(user_id=user_id)
+                self.userinfo_crud.create(
+                    user_id=user_id, password=password, token=token
                 )
             except Exception as e:
                 logger.error(f"Error in create user: {e}")
@@ -138,10 +133,15 @@ class IntegratedCRUD:
             logger.error(f"Error in delete trans: {e}")
             raise Exception(f"Error in delete trans: {e}")
         try:
+            self.userinfo_crud.delete_user_by_id(user_id)
+        except Exception as e:
+            logger.error(f"Error in delete userinfo: {e}")
+            raise Exception(f"Error in delete userinfo: {e}")
+        try:
             self.user_crud.delete_user_by_id(user_id)
         except Exception as e:
-            logger.error(f"Error in delete users: {e}")
-            raise Exception(f"Error in delete users: {e}")
+            logger.error(f"Error in delete user: {e}")
+            raise Exception(f"Error in delete user: {e}")
         if os.path.exists(f"/workspace/output/{user_id}"):
             shutil.rmtree(f"/workspace/output/{user_id}")
         logger.info(f"Successfully delete user {user_id}")
@@ -180,4 +180,36 @@ class IntegratedCRUD:
                     visited.append(pmt_id)
             return history
         else:
-            return []
+            raise Exception(f"user_id {user_id} doesn't exist.")
+
+    async def get_credits(self, user_id: str):
+        try:
+            user_data = self.userinfo_crud.read_by_userid(user_id)
+            credits = user_data["credits"]
+            return credits
+        except Exception as e:
+            logger.error(f"Error in get credits: {e}")
+            raise Exception(f"Error get credits: {e}")
+
+    async def pay_credits(self, user_id: str, n: int):
+        user_data = self.userinfo_crud.read_by_userid(user_id)
+        credits = user_data["credits"]
+        try:
+            self.userinfo_crud.update_user_credit(user_id, credits - n)
+            return credits - n
+        except Exception as e:
+            logger.error(f"Error in paying: {e}")
+            raise Exception(f"Error in paying: {e}")
+
+    async def topup_credits(self, user_id: str, n: int):
+        user_data = self.userinfo_crud.read_by_userid(user_id)
+        credits = int(user_data["credits"]) + n
+        try:
+            self.userinfo_crud.update_user_credit(user_id, credits)
+            return credits
+        except Exception as e:
+            logger.error(f"Error in topup: {e}")
+            raise Exception(f"Error in topup: {e}")
+
+    # async def read_showcase(self, top_n: int):
+    #     records = self.trans_crud.read_top_k_rows(top_n)

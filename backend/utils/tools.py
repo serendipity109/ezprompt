@@ -99,7 +99,7 @@ async def style_parser(prompt, style):
             case "铅笔画":
                 prompt += ", pencil drawing"
             case "写实":
-                prompt += ", realistic, DSLR, depth of field"
+                prompt += ", realistic, depth of field"
             case _:
                 postfix = await translator(style)
                 prompt += f", {postfix}"

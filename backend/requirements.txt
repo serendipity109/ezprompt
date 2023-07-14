@@ -9,6 +9,7 @@ Pillow
 pymysql
 python-dotenv
 python-multipart
+PyJWT
 redis
 stability-sdk
 SQLAlchemy
