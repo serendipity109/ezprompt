@@ -36,13 +36,13 @@ def verify_jwt(token: str):
         raise Exception("Invalid token")  # 捕获无效token异常
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/login")
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     try:
         payload = verify_jwt(token)
-        return payload['user_id']
+        return payload["user_id"]
     except:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
