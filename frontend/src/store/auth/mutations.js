@@ -1,7 +1,8 @@
 import {
     SET_AUTHENTICATION,
     SET_USERNAME,
-    SET_EMAIL
+    SET_EMAIL,
+    SET_TOKEN
 } from "../storeconstants";
 
 export default {
@@ -14,5 +15,8 @@ export default {
     },
     [SET_EMAIL](state, email) {
         state.email = email
+    },
+    [SET_TOKEN](state, token) {
+        state.token = token
     },
 }

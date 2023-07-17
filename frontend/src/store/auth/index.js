@@ -7,7 +7,8 @@ export default {
         return {
             authenticated: false,
             username: "",
-            email: ""
+            email: "",
+            token: "",
         }
     },
     mutations,

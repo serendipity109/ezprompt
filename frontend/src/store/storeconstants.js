@@ -4,3 +4,5 @@ export const SET_USERNAME = '[mutations] set username';
 export const GET_USERNAME = '[getters] get username';
 export const SET_EMAIL = '[mutations] set email';
 export const GET_EMAIL = '[getters] get email';
+export const SET_TOKEN = '[mutations] set token';
+export const GET_TOKEN = '[getters] get token';
