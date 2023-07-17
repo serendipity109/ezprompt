@@ -23,7 +23,8 @@
                         Continue
                     </button>
                     <div class="flex flex-1 w-64 text-m text-slate-50 justify-center items-center mb-2">
-                        Don't have an account? Sign up
+                        Don't have an account? 
+                        <button @click="gotoCreate" class="text-purple-400 ml-2">Sign up</button>
                     </div>
                     <div class="flex flex-1 w-64 text-s text-slate-50 justify-center items-center mb-4">
                         <div class="bar"></div>
@@ -63,10 +64,48 @@
                     </button>
                 </form>
                 <div class="flex flex-1 w-64 text-m text-slate-50 justify-center items-center mb-2">
-                    Don't have an account? Sign up
+                    Don't have an account? 
+                    <button @click="gotoCreate" class="text-purple-400 ml-2">Sign up</button>
                 </div>
             </div>
-            >
+            <div v-else-if="page == 3">
+                <div class="flex flex-1 w-64 text-2xl text-slate-50 justify-center items-center mb-4">
+                    Create your account
+                </div>
+                <form @submit.prevent="SubmitCreate">
+                    <input v-model="email" autocomplete="email" placeholder="Email address"
+                        class="w-64 px-3 py-2 bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-indigo-600 rounded-lg border border-zinc-600 hover:brightness-110 text-zinc-100 pr-20"
+                        type="email">
+                    <input v-model="password" autocomplete="password" placeholder="Password"
+                        class="w-64 px-3 py-2 bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-indigo-600 rounded-lg border border-zinc-600 hover:brightness-110 text-zinc-100 mt-4  mb-4"
+                        type="password">
+                    <button type="submit"
+                        class="hover:brightness-110 bg-gradient-to-t from-indigo-800 via-indigo-800 to-indigo-700 border border-indigo-800 px-4 py-1.5 rounded-lg shadow h-9 w-64 drop-shadow flex items-center justify-center text-zinc-100">
+                        Continue
+                    </button>
+                </form>
+                <div class="flex flex-1 w-64 text-m text-slate-50 justify-center items-center mb-2">
+                    Already have an account? Log in
+                </div>
+                <div class="flex flex-1 w-64 text-s text-slate-50 justify-center items-center mb-4">
+                        <div class="bar"></div>
+                        <span>Or</span>
+                        <div class="bar"></div>
+                    </div>
+                <div class="flex flex-col text-zinc-200 text-center items-center">
+                    <div>
+                        <auth @login-click="closeModal" />
+                    </div>
+                </div>
+            </div>
+            <div v-else-if="page == 4">
+                <div class="flex flex-1 w-64 text-2xl text-slate-50 justify-center items-center mb-4">
+                    Check your email for a login link
+                </div>
+                <div class="flex flex-1 w-64 text-m text-slate-50 justify-center items-center mb-2">
+                    If you don't see the email, check your spam folder.
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -77,6 +116,7 @@ import { SET_AUTHENTICATION, SET_USERNAME, SET_EMAIL, SET_TOKEN } from "@/store/
 import { defineComponent, ref } from 'vue';
 import 'viewerjs/dist/viewer.css';
 import Auth from '@/components/GoogleAuth.vue';
+import { ElMessage } from 'element-plus'
 import { useStore } from 'vuex'
 
 export default defineComponent({
@@ -86,14 +126,19 @@ export default defineComponent({
     setup(_, context) {
         const store = useStore()
         const email = ref('');
-        const page = ref('1');
+        const page = ref(1);
         const username = ref('');
         const password = ref('');
         const closeModal = () => {
             context.emit('login-click');
         }
+
+        const gotoCreate = () => {
+            page.value = 3;
+        };
+
         const SubmitEmail = () => {
-            username.value = email.value.split('@')[0];
+            username.value = email.value;
             page.value = 2;
         };
 
@@ -109,13 +154,32 @@ export default defineComponent({
             context.emit('login-click');
         };
 
+        const SubmitCreate = async () => {
+            const user = email.value
+            const pwd = password.value
+            try {
+                const response = await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/create?username=${user}&password=${pwd}`)
+                if (response.data.code === 200) {
+                    await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/send-email?receiver_email=${user}`)
+                    ElMessage.info("Already sent an email to confirm the registration.")
+                    page.value = 4;
+                } else {
+                    ElMessage.error(response.data.message);
+                }
+            } catch (error) {
+                ElMessage.error('Failed to sign up', error);
+            }
+        }
+
         return {
             page,
+            gotoCreate,
             closeModal,
             username,
             password,
             SubmitEmail,
             SubmitLogin,
+            SubmitCreate,
             email
         }
     }

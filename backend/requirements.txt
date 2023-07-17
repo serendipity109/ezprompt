@@ -6,6 +6,7 @@ minio
 openai
 opencc-python-reimplemented
 Pillow
+pydantic[email]
 pymysql
 python-dotenv
 python-multipart

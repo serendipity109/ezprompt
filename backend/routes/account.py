@@ -1,4 +1,5 @@
 from typing import Annotated
+import os
 
 from fastapi import Depends, APIRouter, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
@@ -8,29 +9,47 @@ from utils.loginTool import (
     get_current_user,
 )
 from utils.integrated_crud import IntegratedCRUD
+from smtplib import SMTP_SSL
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import logging
+from dotenv import load_dotenv
 
 
 router = APIRouter()
 crud = IntegratedCRUD()
 
+load_dotenv()
+OWN_EMAIL = os.getenv("OWN_EMAIL")
+OWN_EMAIL_PASSWORD = os.getenv("OWN_EMAIL_PASSWORD")
+email_server = SMTP_SSL("smtp.gmail.com", 465)
+email_server.login(OWN_EMAIL, OWN_EMAIL_PASSWORD)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 @router.post("/user/create")
 async def create_user(username: str, password: str):
     try:
+        if username == "" or password == "":
+            return {"code": 400, "message": "Invalid username or password"}
         token = create_jwt(username, password)
         await crud.create_user(username, hash_password(password), token)
         return {"code": 200, "message": f"Successfully create user {username}"}
     except Exception as e:
+        if f"Duplicate entry '{username}' for key 'user.user_id'" in str(e):
+            return {"code": 400, "message": f"User {username} already exists!"}
         return {"code": 400, "message": str(e)}
 
 
 @router.put("/user/top-up")
-async def topup_credits(username: str, credits: int):
+async def topup_credits(credits: int, user_id: str = Depends(get_current_user)):
     try:
-        credits = await crud.topup_credits(username, credits)
+        credits = await crud.topup_credits(user_id, credits)
         return {
             "code": 200,
-            "message": f"Successfully top up credits {username}",
+            "message": f"Successfully top up credits {user_id}",
             "result": {"remaining_credits": credits},
         }
     except Exception as e:
@@ -65,3 +84,30 @@ async def delete_user(user_id):
         return {"code": 200, "message": f"Successfully delete user {user_id}"}
     except Exception as e:
         return {"code": 400, "message": str(e)}
+
+
+@router.post("/user/send-email")
+def send_email(receiver_email, verification_link="http://localhost:8080/"):
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = "Log in to EZPrompt"
+        html = """
+        <html>
+        <body>
+            <p>Click the button below to log in to <b>EZPrompt</b></p>
+
+            <a href="{}" style="display: inline-block; padding: 10px 20px; color: #FFF; background-color: #007BFF; text-decoration: none; border-radius: 5px;">Log in to EZPrompt</a>
+        </body>
+        </html>
+        """.format(
+            verification_link
+        )
+
+        part = MIMEText(html, "html")
+        msg.attach(part)
+
+        email_server.sendmail(OWN_EMAIL, receiver_email, msg.as_string())
+        email_server.quit()
+        return {"message": "Email sent successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e)
