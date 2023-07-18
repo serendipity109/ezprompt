@@ -111,7 +111,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import axios from "axios";
 import { SET_AUTHENTICATION, SET_USERNAME, SET_EMAIL, SET_TOKEN } from "@/store/storeconstants";
 import { defineComponent, ref } from 'vue';
 import 'viewerjs/dist/viewer.css';

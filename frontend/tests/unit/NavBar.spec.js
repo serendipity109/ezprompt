@@ -1,3 +1,4 @@
+import mockAxios from 'jest-mock-axios';
 import { shallowMount } from "@vue/test-utils";
 import NavBar from "@/components/NavBar.vue";
 
@@ -5,6 +6,9 @@ describe("NavBar.vue", () => {
   let wrapper;
 
   beforeEach(() => {
+    // 清除所有未解決的請求和重設所有的模擬
+    mockAxios.reset();
+
     wrapper = shallowMount(NavBar, {
       propsData: {
         page: "home",
