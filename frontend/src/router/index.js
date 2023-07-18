@@ -4,6 +4,7 @@ import Prompt from "@/views/PromptPage.vue";
 import Test from "@/views/TestPage.vue";
 import Gen from "@/views/GenPage.vue";
 import Hist from "@/views/HistPage.vue";
+import Acc from "@/views/AccountPage.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -30,6 +31,11 @@ const router = createRouter({
       path: "/history",
       component: Hist,
       meta: { title: "EZPrompt - History" },
+    },
+    {
+      path: "/account",
+      component: Acc,
+      meta: { title: "EZPrompt - Account" },
     },
   ],
 });

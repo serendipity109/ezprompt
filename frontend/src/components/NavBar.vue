@@ -54,7 +54,8 @@
                 </div>
                 <div class="relative flex items-center justify-center text-xl sm:hidden w-full">
                     <div class="absolute w-full" :style="{ borderBottom: '2.5px ' + getNavStyle('history') }"
-                        style="bottom:-17px"></div><svg stroke="currentColor" fill="currentColor" stroke-width="0"
+                        style="bottom:-17px"></div>
+                        <svg stroke="currentColor" fill="currentColor" stroke-width="0"
                         viewBox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd"
                             d="M13.507 12.324a7 7 0 0 0 .065-8.56A7 7 0 0 0 2 4.393V2H1v3.5l.5.5H5V5H2.811a6.008 6.008 0 1 1-.135 5.77l-.887.462a7 7 0 0 0 11.718 1.092zm-3.361-.97l.708-.707L8 7.792V4H7v4l.146.354 3 3z">
@@ -79,14 +80,16 @@
                 </div>
             </a><a
                 class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
-                style="width:80px;z-index:2;opacity:0.5" href="/">
+                id="genpage" :style="{ opacity: getNavOpa('account') }" style="width:80px;z-index:2;"
+                v-on:click="goToPage('/account')">
                 <div class="relative sm:flex justify-center hidden w-full">
-                    <div class="absolute w-full" style="border-bottom:2.5px solid transparent;bottom:-17px"></div><span
-                        class="text-slate-50">Account</span>
+                    <div class="absolute w-full" :style="{ borderBottom: '2.5px ' + getNavStyle('account') }"
+                        style="bottom:-17px"></div><span class="text-slate-50">Account</span>
                 </div>
                 <div class="relative flex items-center justify-center text-xl sm:hidden w-full">
-                    <div class="absolute w-full" style="border-bottom:2.5px solid transparent;bottom:-17px"></div><svg
-                        stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                    <div class="absolute w-full" :style="{ borderBottom: '2.5px ' + getNavStyle('account') }"
+                        style="bottom:-17px"></div>
+                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
                         stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="12" r="3"></circle>
                         <path
