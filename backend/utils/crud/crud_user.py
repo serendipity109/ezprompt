@@ -12,7 +12,7 @@ class UserCRUD(SQLAlchemyCRUD):
         super().__init__(User)
 
     def user_id_exists(self, user_id):
-        if self.session.query(self.model).filter_by(user_id=user_id):
+        if self.session.query(self.model).filter_by(user_id=user_id).first():
             return True
         else:
             return False

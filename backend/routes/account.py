@@ -3,11 +3,7 @@ import os
 
 from fastapi import Depends, APIRouter, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
-from utils.loginTool import (
-    hash_password,
-    create_jwt,
-    get_current_user,
-)
+from utils.loginTool import hash_password, create_jwt, get_current_user, encode, decode
 from utils.integrated_crud import IntegratedCRUD
 from smtplib import SMTP_SSL
 from email.mime.multipart import MIMEMultipart
@@ -22,8 +18,6 @@ crud = IntegratedCRUD()
 load_dotenv()
 OWN_EMAIL = os.getenv("OWN_EMAIL")
 OWN_EMAIL_PASSWORD = os.getenv("OWN_EMAIL_PASSWORD")
-email_server = SMTP_SSL("smtp.gmail.com", 465)
-email_server.login(OWN_EMAIL, OWN_EMAIL_PASSWORD)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,9 +30,14 @@ async def create_user(username: str, password: str):
             return {"code": 400, "message": "Invalid username or password"}
         token = create_jwt(username, password)
         await crud.create_user(username, hash_password(password), token)
-        return {"code": 200, "message": f"Successfully create user {username}"}
+        return {
+            "code": 200,
+            "message": f"Successfully create user {username}",
+            "data": username,
+        }
     except Exception as e:
-        if f"Duplicate entry '{username}' for key 'user.user_id'" in str(e):
+        logger.error(str(e))
+        if "Duplicate entry" in str(e):
             return {"code": 400, "message": f"User {username} already exists!"}
         return {"code": 400, "message": str(e)}
 
@@ -53,6 +52,7 @@ async def topup_credits(credits: int, user_id: str = Depends(get_current_user)):
             "result": {"remaining_credits": credits},
         }
     except Exception as e:
+        logger.error(str(e))
         return {"code": 400, "message": str(e)}
 
 
@@ -62,9 +62,9 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     hashed_password = hash_password(form_data.password)
     token = await crud.get_token(user_id, hashed_password)
     if token:
-        return {"access_token": token, "token_type": "bearer"}
+        return {"code": 200, "access_token": token, "token_type": "bearer"}
     else:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
+        return {"code": 400, "message": "Incorrect username or password"}
 
 
 @router.get("/user/credits")
@@ -87,8 +87,10 @@ async def delete_user(user_id):
 
 
 @router.post("/user/send-email")
-def send_email(receiver_email, verification_link="http://localhost:8080/"):
+def send_email(receiver_email, token, verification_link="http://localhost:8080/"):
     try:
+        email_server = SMTP_SSL("smtp.gmail.com", 465)
+        email_server.login(OWN_EMAIL, OWN_EMAIL_PASSWORD)
         msg = MIMEMultipart("alternative")
         msg["Subject"] = "Log in to EZPrompt"
         html = """
@@ -100,14 +102,27 @@ def send_email(receiver_email, verification_link="http://localhost:8080/"):
         </body>
         </html>
         """.format(
-            verification_link
+            verification_link + f"?token={token}"
         )
-
         part = MIMEText(html, "html")
         msg.attach(part)
-
         email_server.sendmail(OWN_EMAIL, receiver_email, msg.as_string())
         email_server.quit()
-        return {"message": "Email sent successfully"}
+        return {"code": 200, "message": "Email sent successfully"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=e)
+        logger.error(str(e))
+        return {"code": 400, "message": str(e)}
+
+
+@router.post("/user/encode")
+def encode_account(user_id: str, password: str):
+    payload = {"user_id": user_id, "password": password}
+    return encode(payload)
+
+
+@router.post("/user/decode")
+def decode_account(token: str):
+    try:
+        return decode(token)
+    except Exception as e:
+        return HTTPException(status_code=400, detail=e)

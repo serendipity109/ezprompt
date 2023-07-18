@@ -10,7 +10,7 @@
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
             </button>
-            <div v-if="page == 1">
+            <div v-if="page == 1" v-loading="loading" element-loading-background="rgba(10, 10, 10, 0.2)">
                 <div class="flex flex-1 w-64 text-2xl text-slate-50 justify-center items-center mb-4">
                     Welcome back
                 </div>
@@ -23,7 +23,7 @@
                         Continue
                     </button>
                     <div class="flex flex-1 w-64 text-m text-slate-50 justify-center items-center mb-2">
-                        Don't have an account? 
+                        Don't have an account?
                         <button @click="gotoCreate" class="text-purple-400 ml-2">Sign up</button>
                     </div>
                     <div class="flex flex-1 w-64 text-s text-slate-50 justify-center items-center mb-4">
@@ -38,7 +38,7 @@
                     </div>
                 </div>
             </div>
-            <div v-else-if="page == 2">
+            <div v-else-if="page == 2" v-loading="loading" element-loading-background="rgba(10, 10, 10, 0.2)">
                 <div class="flex flex-1 w-64 text-2xl text-slate-50 justify-center items-center mb-4">
                     Enter your password
                 </div>
@@ -64,11 +64,11 @@
                     </button>
                 </form>
                 <div class="flex flex-1 w-64 text-m text-slate-50 justify-center items-center mb-2">
-                    Don't have an account? 
+                    Don't have an account?
                     <button @click="gotoCreate" class="text-purple-400 ml-2">Sign up</button>
                 </div>
             </div>
-            <div v-else-if="page == 3">
+            <div v-else-if="page == 3" v-loading="loading" element-loading-background="rgba(10, 10, 10, 0.2)">
                 <div class="flex flex-1 w-64 text-2xl text-slate-50 justify-center items-center mb-4">
                     Create your account
                 </div>
@@ -81,17 +81,17 @@
                         type="password">
                     <button type="submit"
                         class="hover:brightness-110 bg-gradient-to-t from-indigo-800 via-indigo-800 to-indigo-700 border border-indigo-800 px-4 py-1.5 rounded-lg shadow h-9 w-64 drop-shadow flex items-center justify-center text-zinc-100">
-                        Continue
+                        Register
                     </button>
                 </form>
-                <div class="flex flex-1 w-64 text-m text-slate-50 justify-center items-center mb-2">
+                <div class="flex flex-1 w-64 text-m text-slate-50 justify-center items-center mt-2 mb-2">
                     Already have an account? Log in
                 </div>
                 <div class="flex flex-1 w-64 text-s text-slate-50 justify-center items-center mb-4">
-                        <div class="bar"></div>
-                        <span>Or</span>
-                        <div class="bar"></div>
-                    </div>
+                    <div class="bar"></div>
+                    <span>Or</span>
+                    <div class="bar"></div>
+                </div>
                 <div class="flex flex-col text-zinc-200 text-center items-center">
                     <div>
                         <auth @login-click="closeModal" />
@@ -129,6 +129,7 @@ export default defineComponent({
         const page = ref(1);
         const username = ref('');
         const password = ref('');
+        const loading = ref(false);
         const closeModal = () => {
             context.emit('login-click');
         }
@@ -146,29 +147,39 @@ export default defineComponent({
             let formData = new FormData()
             formData.append('username', username.value)
             formData.append('password', password.value)
-            const response = await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/login`, formData)
-            store.commit(`auth/${SET_AUTHENTICATION}`, true);
-            store.commit(`auth/${SET_USERNAME}`, username.value);
-            store.commit(`auth/${SET_EMAIL}`, email.value);
-            store.commit(`auth/${SET_TOKEN}`, response.data.access_token);
-            context.emit('login-click');
-        };
-
-        const SubmitCreate = async () => {
-            const user = email.value
-            const pwd = password.value
-            try {
-                const response = await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/create?username=${user}&password=${pwd}`)
+            await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/login`, formData)
+            .then(function (response) {
                 if (response.data.code === 200) {
-                    await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/send-email?receiver_email=${user}`)
-                    ElMessage.info("Already sent an email to confirm the registration.")
-                    page.value = 4;
+                    ElMessage.info("Successfully login!")
+                    store.commit(`auth/${SET_AUTHENTICATION}`, true);
+                    store.commit(`auth/${SET_USERNAME}`, username.value);
+                    store.commit(`auth/${SET_EMAIL}`, email.value);
+                    store.commit(`auth/${SET_TOKEN}`, response.data.access_token);
+                    context.emit('login-click');
                 } else {
                     ElMessage.error(response.data.message);
                 }
-            } catch (error) {
-                ElMessage.error('Failed to sign up', error);
-            }
+            })
+        };
+
+        const SubmitCreate = async () => {
+            const mail = email.value
+            const pwd = password.value
+            loading.value = true
+            const response = await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/encode?user_id=${mail}&password=${pwd}`)
+            const token = response.data
+            await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/send-email?receiver_email=${mail}&token=${token}`)
+                .then(function (response) {
+                    console.log(response.data)
+                    if (response.data.code === 200) {
+                        ElMessage.info("Already sent an email to confirm the registration.")
+                        page.value = 4;
+                    } else {
+                        ElMessage.error('Failed to send email');
+                    }
+                }
+                )
+            loading.value = false
         }
 
         return {
@@ -180,7 +191,8 @@ export default defineComponent({
             SubmitEmail,
             SubmitLogin,
             SubmitCreate,
-            email
+            email,
+            loading
         }
     }
 })

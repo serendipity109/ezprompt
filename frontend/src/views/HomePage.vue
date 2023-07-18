@@ -1,6 +1,6 @@
 <template>
   <div>
-    <nav-bar page="home" :closePanel="closePanel"/>
+    <nav-bar page="home" :closePanel="closePanel" />
     <div
       class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
       <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
@@ -148,7 +148,7 @@
   
 <script>
 import axios from "axios";
-import { defineComponent, ref, onUnmounted, computed } from 'vue'
+import { defineComponent, ref, onMounted, onUnmounted, computed } from 'vue'
 import 'viewerjs/dist/viewer.css'
 import { api as viewerApi } from 'v-viewer'
 import NavBar from '@/components/NavBar.vue';
@@ -157,6 +157,7 @@ import fileDownload from 'js-file-download';
 import { ElMessage } from 'element-plus'
 import { GET_EMAIL, GET_USERNAME } from "@/store/storeconstants";
 import { useStore } from 'vuex'
+import { useRoute, useRouter } from 'vue-router';
 
 export default defineComponent({
   components: {
@@ -178,6 +179,9 @@ export default defineComponent({
     const type = ref(null);
     const socket = ref(null);
     const store = useStore();
+    const route = useRoute();
+    const router = useRouter();
+    const token = route.query.token;
     let intervalId;
 
     const getImgs = async () => {
@@ -237,7 +241,6 @@ export default defineComponent({
         let message;
         socket.value.onopen = () => {
           console.log("Connection opened");
-          // 在连接打开后发送消息
           let user_id = store.getters[`auth/${GET_USERNAME}`]
           if ((typeof image_url === 'string') && image_url !== '') {
             message = {
@@ -323,7 +326,7 @@ export default defineComponent({
         ElMessage.error("Image not selected or prompt is empty!")
       }
     };
-    
+
     const closePanel = ref(true);
 
     const set_init = async () => {
@@ -336,6 +339,35 @@ export default defineComponent({
       const parts = Email.split('@');
       return parts[0];
     });
+
+
+    onMounted(async () => {
+      if (token) {
+        const user_res = await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/decode?token=${token}`)
+        const user = user_res.data.user_id
+        const pwd = user_res.data.password
+        axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/create?username=${user}&password=${pwd}`)
+          .then(function (response) {
+            if (response.data.code === 200) {
+              const user_id = response.data.data;
+              ElMessage.info({
+                message: `Successfully create account ${user_id}.`,
+                duration: 5000
+              });
+              ElMessage.info({
+                message: `Please login.`,
+                duration: 5000
+              });
+            } else if (response.data.code === 400) {
+              ElMessage.error({
+                message: response.data.message,
+                duration: 5000
+              });
+            }
+          })
+        router.push('/home');
+      }
+    })
 
     onUnmounted(() => {
       clearInterval(intervalId);

@@ -8,7 +8,7 @@
                 </div>
                 <span class="font-medium truncate text-zinc-100">{{ email }}</span>
             </div>
-            <a class="w-full px-4 py-2 hover:bg-gray-700 flex justify-center text-zinc-100" href="/account">Credits {{ credits }}</a>
+            <a class="w-full px-4 py-2 hover:bg-gray-700 flex justify-center text-zinc-100" href="/account">Credits: {{ credits }}</a>
             <button @click="handleSignout" class="w-full px-4 py-2 hover:bg-gray-700 text-zinc-100">Sign out</button>
         </div>
     </div>
