@@ -1,10 +1,10 @@
 <template>
     <div>
-        <nav-bar page="account" />
+        <nav-bar page="account" :closePanel="closePanel"/>
         <div
             class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
             <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
-                <div class="pt-8 sm:pt-10 pb-16 container mx-auto max-w-6xl px-5 mb-32 sm:mb-0">
+                <div class="pt-8 sm:pt-10 pb-16 container mx-auto max-w-6xl px-5 mb-32 sm:mb-0" @click="set_init">
                     <div class="sm:flex sm:flex-col sm:align-center">
                         <h1 class="mt-4 text-5xl md:text-6xl font-logo font-bold text-zinc-200 text-center">Memberships</h1>
                         <p class="mt-4 text-base text-zinc-200 text-center max-w-2xl m-auto">Choose a plan that works for
@@ -36,7 +36,7 @@
                                         <span v-if="plan == 2" class="text-5xl font-medium white">$8</span>
                                         <span class="text-base font-medium text-zinc-100">/ month</span>
                                         <p v-if="plan == 2" class="mt-2 ml-1 text-zinc-200 text-sm">Billed annually at $96/year</p>
-                                    </span><button
+                                    </span><button @click="topup(1)"
                                         class="mt-6 w-full h-11 flex items-center justify-center text-sm rounded-lg drop-shadow text-md px-8 py-2 shadow cursor-pointer active:scale-95 hover:brightness-110 transition-all bg-gradient-to-t from-indigo-600 via-indigo-600 to-indigo-500 ">&nbsp;Get
                                         started&nbsp;</button>
                                 </div>
@@ -58,7 +58,7 @@
                                         <span v-if="plan == 2" class="text-5xl font-medium white">$24</span><span
                                             class="text-base font-medium text-zinc-100">/ month</span>
                                         <p v-if="plan == 2" class="mt-2 ml-1 text-zinc-200 text-sm">Billed annually at $288/year</p>
-                                    </span><button
+                                    </span><button @click="topup(2)"
                                         class="mt-6 w-full h-11 flex items-center justify-center text-sm rounded-lg drop-shadow text-md px-8 py-2 shadow cursor-pointer active:scale-95 hover:brightness-110 transition-all bg-gradient-to-t from-indigo-600 via-indigo-600 to-indigo-500 ">&nbsp;Get
                                         started&nbsp;</button>
                                 </div>
@@ -80,7 +80,7 @@
                                         <span v-if="plan == 2" class="text-5xl font-medium white">$48</span><span
                                             class="text-base font-medium text-zinc-100">/ month</span>
                                         <p v-if="plan == 2" class="mt-2 ml-1 text-zinc-200 text-sm">Billed annually at $576/year</p>
-                                    </span><button
+                                    </span><button @click="topup(3)"
                                         class="mt-6 w-full h-11 flex items-center justify-center text-sm rounded-lg drop-shadow text-md px-8 py-2 shadow cursor-pointer active:scale-95 hover:brightness-110 transition-all bg-gradient-to-t from-indigo-600 via-indigo-600 to-indigo-500 ">&nbsp;Get
                                         started&nbsp;</button>
                                 </div>
@@ -206,15 +206,46 @@
 </div></template>
 
 <script>
+import axios from "axios";
 import { defineComponent, ref } from 'vue'
 import NavBar from '@/components/NavBar.vue';
+import { GET_TOKEN } from "@/store/storeconstants";
+import { useStore } from 'vuex'
+import { ElMessage } from 'element-plus'
+
 export default defineComponent({
     components: {
         NavBar
     },
     setup() {
         const plan = ref(1);
-        return { plan }
+        const store = useStore()
+        const closePanel = ref(true);
+        const topup = async (n) => {
+            const token = store.getters[`auth/${GET_TOKEN}`]
+            console.log(token)
+            if (token) {
+                const credits = n*100
+                const response = await axios.put(`http://${process.env.VUE_APP_BACKEND_IP}/user/top-up?credits=${credits}`, {}, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                })
+                if (response.data.code == 200) {
+                    const remaining_credits = response.data.result.remaining_credits
+                    ElMessage.info("Successfully top-up credits.");
+                    ElMessage.info(`Remaining credits: ${remaining_credits}`)
+                } else {
+                    ElMessage.error(response.data.message);
+                }
+            } else {
+                ElMessage.error("Please log in.");
+            }
+        }
+        const set_init = async () => {
+            closePanel.value = !closePanel.value;
+        }
+        return { plan, topup, closePanel, set_init }
     }
 })
 </script>

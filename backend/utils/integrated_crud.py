@@ -29,7 +29,7 @@ class IntegratedCRUD:
         self.redis_client = redisTool.RedisClient()
 
     async def check_trans_valid(self, user_id: str, n: int):
-        user_data = self.user_crud.read_by_userid(user_id)
+        user_data = self.userinfo_crud.read_by_userid(user_id)
         if user_data:
             credits = user_data["credits"]
             if (credits - n) >= 0:
@@ -61,6 +61,7 @@ class IntegratedCRUD:
             # img2img
             source_url = input.source_url
             redis_json["source_url"] = source_url
+            redis_json["prompt"] = prompt.replace(source_url + " ", "")
         try:
             self.redis_client.set_hash(pmt_id, redis_json)
         except Exception as e:
@@ -68,13 +69,8 @@ class IntegratedCRUD:
             raise Exception(f"Error in insert redis: {e}")
         try:
             self.trans_crud.create(
-                _id=await generate_random_id(10),
                 user_id=user_id,
                 prompt_id=pmt_id,
-                img1=img1,
-                img2=img2,
-                img3=img3,
-                img4=img4,
             )
         except Exception as e:
             logger.error(f"Error in insert trans: {e}")
@@ -82,7 +78,6 @@ class IntegratedCRUD:
         try:
             for img in [img1, img2, img3, img4]:
                 self.imgs_crud.create(
-                    _id=await generate_random_id(10),
                     user_id=user_id,
                     prompt_id=pmt_id,
                     img=img,
@@ -124,9 +119,11 @@ class IntegratedCRUD:
             records = sorted(records, key=lambda x: x["create_time"], reverse=True)
             for record in records:
                 pmt_id = record["prompt_id"]
-                if self.redis_client.delete(pmt_id) == 0:
-                    logger.error("Error in delete pmt_id")
-                    raise Exception("Error in delete pmt_id")
+                try:
+                    self.redis_client.delete(pmt_id)
+                except:
+                    logger.error("Error in delete redis prompt")
+                    raise Exception("Error in delete redis prompt")
         try:
             self.trans_crud.delete_user_by_id(user_id)
         except Exception as e:
@@ -196,6 +193,7 @@ class IntegratedCRUD:
         credits = user_data["credits"]
         try:
             self.userinfo_crud.update_user_credit(user_id, credits - n)
+            logger.info(f"User {user_id} Pay 4 credits")
             return credits - n
         except Exception as e:
             logger.error(f"Error in paying: {e}")

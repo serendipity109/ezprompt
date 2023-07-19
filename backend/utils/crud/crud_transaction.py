@@ -31,4 +31,5 @@ class TransCRUD(SQLAlchemyCRUD):
             return result
         except Exception as e:
             logger.error(f"Error in read_top_k_rows: {e}")
+            self.session.rollback()
             raise Exception(e)

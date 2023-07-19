@@ -8,7 +8,7 @@
                 </div>
                 <span class="font-medium truncate text-zinc-100">{{ email }}</span>
             </div>
-            <a class="w-full px-4 py-2 hover:bg-gray-700 flex justify-center text-zinc-100" href="/account">Credits: {{ credits }}</a>
+            <a class="w-full px-4 py-2 hover:bg-gray-700 flex justify-center text-zinc-100" v-on:click="goToPage('/account')">Credits: {{ credits }}</a>
             <button @click="handleSignout" class="w-full px-4 py-2 hover:bg-gray-700 text-zinc-100">Sign out</button>
         </div>
     </div>
@@ -19,16 +19,21 @@ import axios from 'axios'
 import { defineComponent, computed, ref } from 'vue'
 import { GET_EMAIL, GET_USERNAME, SET_AUTHENTICATION, SET_USERNAME, SET_EMAIL, SET_TOKEN, GET_TOKEN } from "@/store/storeconstants";
 import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 import { onMounted } from 'vue';
 
 export default defineComponent({
     setup(_, context) {
+        const router = useRouter()
         const credits = ref(0);
         const store = useStore()
         const email = computed(() => {
             let Email = store.getters[`auth/${GET_EMAIL}`]
             return Email;
         });
+        const goToPage = (pagnition) => {
+            router.push(pagnition)
+        }
         const username = computed(() => {
             let userName = store.getters[`auth/${GET_USERNAME}`]
             return userName;
@@ -69,7 +74,8 @@ export default defineComponent({
             username,
             username_first_letter,
             handleSignout,
-            getCredits
+            getCredits,
+            goToPage
         }
     }
 })

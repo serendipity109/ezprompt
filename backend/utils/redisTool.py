@@ -102,7 +102,9 @@ class RedisClient:
 
     def delete(self, key: str) -> int:
         try:
-            return self._client.delete(key)
+            self._client.delete(key)
+            logger.info(f"Successfully delete {key}")
+            return {"code": 200, "message": f"Successfully delete {key}"}
         except Exception as e:
             logger.exception(f"Failed to delete key: {e}")
             raise Exception(f"Failed to delete key: {e}")

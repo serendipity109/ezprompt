@@ -41,6 +41,7 @@ class SQLAlchemyCRUD:
                 return None
         except Exception as e:
             logger.error(f"Error in read: {e}")
+            self.session.rollback()
             raise Exception(e)
 
     def read_user_by_id(self, user_id):
@@ -60,6 +61,7 @@ class SQLAlchemyCRUD:
                 return None
         except Exception as e:
             logger.error(f"Error in read: {e}")
+            self.session.rollback()
             raise Exception(e)
 
     def read_all(self):
@@ -76,6 +78,7 @@ class SQLAlchemyCRUD:
             return result
         except Exception as e:
             logger.error(f"Error in read_all: {e}")
+            self.session.rollback()
             raise Exception(e)
 
     def update(self, _id, **kwargs):

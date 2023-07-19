@@ -259,7 +259,10 @@ export default defineComponent({
           console.log(message);
           socket.value.send(JSON.stringify(message));
         };
-
+        ElMessage.info({
+                message: "Images are generating. Please wait patiently.",
+                duration: 5000
+              });
         socket.value.onmessage = (event) => {
           const data = JSON.parse(event.data);
           if (data.result && data.result.progress) {
@@ -351,7 +354,7 @@ export default defineComponent({
             if (response.data.code === 200) {
               const user_id = response.data.data;
               ElMessage.info({
-                message: `Successfully create account ${user_id}.`,
+                message: `Successfully create account ${user_id}`,
                 duration: 5000
               });
               ElMessage.info({

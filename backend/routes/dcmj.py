@@ -86,8 +86,7 @@ async def imagine_handler(websocket, start, job_id):
             msg = {"code": 400, "message": f"Invalid user_id {user_id} or credits not enough!", "result": ""}
             await websocket.send_text(json.dumps(msg))
             raise Exception(json.dumps(msg))
-        else:
-            credits = await crud.pay_credits(user_id, 4)
+        credits = await crud.pay_credits(user_id, 4)
         prompt = await translator(data["prompt"])
         if "preset" in data.keys():
             prompt = await style_parser(prompt, data["preset"])

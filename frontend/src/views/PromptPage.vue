@@ -90,6 +90,10 @@
               <div class="text-xs opacity-50">Dimensions(wxh)</div>
               <div class="text-sm">{{ size }}</div>
             </div>
+            <div v-if="source_img">
+              <div class="text-xs opacity-50 mb-4">Source Image</div>
+              <img v-bind:src="source_img" style="object-fit:contain;height:100%;max-height:40vh" />
+            </div> 
           </div>
         </div>
         <div class="flex flex-wrap overflow-hidden flex-1 items-start justify-start thin-scrollbar h-auto pb-2"
@@ -124,6 +128,7 @@ export default defineComponent({
     const size = ref("");
     const CFG = ref("");
     const user_id = ref("");
+    const source_img = ref(null);
     const page = ref('home');
     const flag = ref(0);
     const route = useRoute();
@@ -156,6 +161,9 @@ export default defineComponent({
         CFG.value = res.CFG;
       } else {
         flag.value = 1;
+        if ('source_url' in res) {
+          source_img.value = res.source_url
+        }
       }
     };
 
@@ -171,6 +179,7 @@ export default defineComponent({
       size,
       CFG,
       user_id,
+      source_img,
       page,
       showViewer
     };

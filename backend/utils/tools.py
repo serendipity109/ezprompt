@@ -122,7 +122,7 @@ async def download_image(user_id, url):
     file_name = os.path.basename(url)
     file_name = file_name.split("_")[1] + ".png"
     file_path = f"/workspace/output/{user_id}/{file_name}"
-    file_prefix = file_path.split(".")[0]
+    file_prefix = file_path.replace(".png", "")
     with open(file_path, "wb") as f:
         f.write(response.content)
     top_left, top_right, bottom_left, bottom_right = await split_image(file_path)

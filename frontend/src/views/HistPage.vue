@@ -188,7 +188,7 @@ export default defineComponent({
             flag.value = 1;
             const response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/history?user_id=${username.value}`);
             images.value = response.data.data;
-            imageRows.value = chunkArray(images.value, 5);
+            imageRows.value = chunkArray(images.value, 4);
         };
 
         const getImgs = async () => {

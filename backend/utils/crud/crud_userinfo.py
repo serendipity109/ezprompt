@@ -20,6 +20,7 @@ class UserInfoCRUD(SQLAlchemyCRUD):
             }
         except Exception as e:
             logger.error(f"Error in read_by_username: {e}")
+            self.session.rollback()
             raise Exception(f"Error in read_by_username: {e}")
 
     def update_user_credit(self, user_id, new_credit):

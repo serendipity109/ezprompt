@@ -148,18 +148,18 @@ export default defineComponent({
             formData.append('username', username.value)
             formData.append('password', password.value)
             await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/login`, formData)
-            .then(function (response) {
-                if (response.data.code === 200) {
-                    ElMessage.info("Successfully login!")
-                    store.commit(`auth/${SET_AUTHENTICATION}`, true);
-                    store.commit(`auth/${SET_USERNAME}`, username.value);
-                    store.commit(`auth/${SET_EMAIL}`, email.value);
-                    store.commit(`auth/${SET_TOKEN}`, response.data.access_token);
-                    context.emit('login-click');
-                } else {
-                    ElMessage.error(response.data.message);
-                }
-            })
+                .then(function (response) {
+                    if (response.data.code === 200) {
+                        ElMessage.info("Successfully login!")
+                        store.commit(`auth/${SET_AUTHENTICATION}`, true);
+                        store.commit(`auth/${SET_USERNAME}`, username.value);
+                        store.commit(`auth/${SET_EMAIL}`, email.value);
+                        store.commit(`auth/${SET_TOKEN}`, response.data.access_token);
+                        context.emit('login-click');
+                    } else {
+                        ElMessage.error(response.data.message);
+                    }
+                })
         };
 
         const SubmitCreate = async () => {
@@ -170,7 +170,6 @@ export default defineComponent({
             const token = response.data
             await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/send-email?receiver_email=${mail}&token=${token}`)
                 .then(function (response) {
-                    console.log(response.data)
                     if (response.data.code === 200) {
                         ElMessage.info("Already sent an email to confirm the registration.")
                         page.value = 4;
