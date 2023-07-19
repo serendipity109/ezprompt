@@ -155,9 +155,10 @@ import NavBar from '@/components/NavBar.vue';
 import Upload from '@/components/UploadImg.vue';
 import fileDownload from 'js-file-download';
 import { ElMessage } from 'element-plus'
-import { GET_EMAIL, GET_USERNAME } from "@/store/storeconstants";
+import { GET_EMAIL, GET_USERNAME, GET_TOKEN } from "@/store/storeconstants";
 import { useStore } from 'vuex'
 import { useRoute, useRouter } from 'vue-router';
+import { getCredits } from '@/utils/account.js';
 
 export default defineComponent({
   components: {
@@ -181,7 +182,7 @@ export default defineComponent({
     const store = useStore();
     const route = useRoute();
     const router = useRouter();
-    const token = route.query.token;
+    let token = route.query.token;
     let intervalId;
 
     const getImgs = async () => {
@@ -211,82 +212,87 @@ export default defineComponent({
     };
 
     const ezprompt = async (image_url = '') => {
-      if (keyword.value) {
-        flag.value = 0;
-        if (urls.value && urls.value.length > 0) {
-          urls.value = [];
-        }
-        showProgress.value = true;
-        percentage.value = 0;
-
-        if (radio.value === '1') {
-          type.value = '漫畫';
-        } else if (radio.value == '2') {
-          type.value = '電影';
-        } else if (radio.value == '3') {
-          type.value = '水墨畫';
-        } else if (radio.value == '4') {
-          type.value = '油畫';
-        } else if (radio.value == '5') {
-          type.value = '水彩畫';
-        } else if (radio.value == '6') {
-          type.value = '鉛筆畫';
-        } else if (radio.value == '7') {
-          type.value = '寫實';
-        }
-        if (socket.value && socket.value.readyState !== WebSocket.CLOSED) {
-          socket.value.close();
-        }
-        socket.value = new WebSocket(`ws://${process.env.VUE_APP_BACKEND_IP}/dcmj/imagine`);
-        let message;
-        socket.value.onopen = () => {
-          console.log("Connection opened");
-          let user_id = store.getters[`auth/${GET_USERNAME}`]
-          if ((typeof image_url === 'string') && image_url !== '') {
-            message = {
-              "user_id": user_id,
-              "prompt": keyword.value,
-              "image_url": image_url,
-              ...(type.value ? { "preset": type.value } : {})
-            };
-          } else {
-            message = {
-              "user_id": user_id,
-              "prompt": keyword.value,
-              ...(type.value ? { "preset": type.value } : {})
-            };
-          }
-          console.log(message);
-          socket.value.send(JSON.stringify(message));
-        };
-        ElMessage.info({
-                message: "Images are generating. Please wait patiently.",
-                duration: 5000
-              });
-        socket.value.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          if (data.result && data.result.progress) {
-            percentage.value = parseInt(data.result.progress);
-          }
-          if (data.code === 201 && data.data && Array.isArray(data.data.result)) {
-            // 如果 code 是 201，输出 result 列表
-            data.data.result.slice(1).forEach((item) => {
-              urls.value.push(item);
-            });
-          }
-        };
-        socket.value.onerror = (error) => {
-          console.error("Error occurred: ", error);
-          showProgress.value = false;
-        };
-        socket.value.onclose = () => {
-          console.log("Connection closed");
-          showProgress.value = false;
-        };
-      } else {
-        console.error("Prompt is empty!");
-        ElMessage.error("Prompt is empty!")
+      token = store.getters[`auth/${GET_TOKEN}`]
+      const credits = await getCredits(token)
+      if (credits < 4){
+        ElMessage.error("Credits not enough!")
+        return
       }
+      if (!keyword.value) {
+        ElMessage.error("Prompt is empty!")
+        return
+      }
+      flag.value = 0;
+      if (urls.value && urls.value.length > 0) {
+        urls.value = [];
+      }
+      showProgress.value = true;
+      percentage.value = 0;
+
+      if (radio.value === '1') {
+        type.value = '漫畫';
+      } else if (radio.value == '2') {
+        type.value = '電影';
+      } else if (radio.value == '3') {
+        type.value = '水墨畫';
+      } else if (radio.value == '4') {
+        type.value = '油畫';
+      } else if (radio.value == '5') {
+        type.value = '水彩畫';
+      } else if (radio.value == '6') {
+        type.value = '鉛筆畫';
+      } else if (radio.value == '7') {
+        type.value = '寫實';
+      }
+      if (socket.value && socket.value.readyState !== WebSocket.CLOSED) {
+        socket.value.close();
+      }
+      socket.value = new WebSocket(`ws://${process.env.VUE_APP_BACKEND_IP}/dcmj/imagine`);
+      let message;
+      socket.value.onopen = () => {
+        console.log("Connection opened");
+        let user_id = store.getters[`auth/${GET_USERNAME}`]
+        if ((typeof image_url === 'string') && image_url !== '') {
+          message = {
+            "user_id": user_id,
+            "prompt": keyword.value,
+            "image_url": image_url,
+            ...(type.value ? { "preset": type.value } : {})
+          };
+        } else {
+          message = {
+            "user_id": user_id,
+            "prompt": keyword.value,
+            ...(type.value ? { "preset": type.value } : {})
+          };
+        }
+        console.log(message);
+        socket.value.send(JSON.stringify(message));
+      };
+      ElMessage.info({
+              message: "Images are generating. Please wait patiently.",
+              duration: 5000
+            });
+      socket.value.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.result && data.result.progress) {
+          percentage.value = parseInt(data.result.progress);
+        }
+        if (data.code === 201 && data.data && Array.isArray(data.data.result)) {
+          // 如果 code 是 201，输出 result 列表
+          data.data.result.slice(1).forEach((item) => {
+            urls.value.push(item);
+          });
+        }
+      };
+      socket.value.onerror = (error) => {
+        console.error("Error occurred: ", error);
+        showProgress.value = false;
+      };
+      socket.value.onclose = () => {
+        console.log("Connection closed");
+        showProgress.value = false;
+      };
     }
 
     const downloadFile = async (urls, index) => {

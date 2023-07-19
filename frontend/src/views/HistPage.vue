@@ -159,6 +159,7 @@ import fileDownload from 'js-file-download';
 import { GET_EMAIL } from "@/store/storeconstants";
 import { GET_USERNAME } from "@/store/storeconstants";
 import { useStore } from 'vuex'
+import { ElMessage } from 'element-plus'
 
 export default defineComponent({
     components: {
@@ -187,8 +188,12 @@ export default defineComponent({
         const getHistory = async () => {
             flag.value = 1;
             const response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/history?user_id=${username.value}`);
-            images.value = response.data.data;
-            imageRows.value = chunkArray(images.value, 4);
+            if (response.data.code === 200){
+                images.value = response.data.data;
+                imageRows.value = chunkArray(images.value, 4);
+            } else {
+                ElMessage.error(`User has no record.`);
+            }
         };
 
         const getImgs = async () => {

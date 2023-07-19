@@ -223,7 +223,6 @@ export default defineComponent({
         const closePanel = ref(true);
         const topup = async (n) => {
             const token = store.getters[`auth/${GET_TOKEN}`]
-            console.log(token)
             if (token) {
                 const credits = n*100
                 const response = await axios.put(`http://${process.env.VUE_APP_BACKEND_IP}/user/top-up?credits=${credits}`, {}, {
