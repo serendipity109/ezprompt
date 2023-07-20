@@ -4,7 +4,7 @@
     <div
       class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
       <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
-        <div class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" @click="set_init">
+        <div class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
           <div class="flex flex-col items-center py-4 mt-16">
             <div class="font-semibold text-3xl text-gray-100">EZPrompt</div>
             <div class="flex items-center w-full max-w-[600px] mt-8 px-4 pl-5">
@@ -29,8 +29,9 @@
                 <el-button @click="featureSelect(1)" color="#673794">Style</el-button>
                 <el-button @click="featureSelect(2)" color="#66ba81">Size</el-button>
               </div>
-              <div v-if="feature == 1">
+              <div v-show="feature == 1">
                 <div class=" radioRow">
+                  <el-radio v-model="radio" label="0">None</el-radio>
                   <el-radio v-model="radio" label="1">漫畫</el-radio>
                   <el-radio v-model="radio" label="2">電影</el-radio>
                   <el-radio v-model="radio" label="3">水墨畫</el-radio>
@@ -42,7 +43,7 @@
                   <el-radio v-model="radio" label="7">寫實</el-radio>
                 </div>
               </div>
-              <div v-if="feature == 2" class="w-full">
+              <div v-show="feature == 2" class="w-full">
                 <v-slider :ticks="dimLabels" :max="2" step="1" tick-size="3" v-model="dimValue" hide-details></v-slider>
                 <input style="display:none" value="4" />
                 <div class="flex justify-between w-full  select-none mt-1 text-base">
@@ -69,7 +70,7 @@
                 </div>
               </div>
             </div>
-            <div class=" mb-8 flex flex-col items-center">
+            <div class="flex flex-col items-center mt-2 mb-8">
               <div class="flex space-x-2">
                 <button @click="ezprompt"
                   class="w-32 sm:w-36 flex items-center text-xs justify-center text-center  h-9 rounded-full  hover:brightness-110 bg-opacity-0 shadow-sm  mt-4 bg-gradient-to-t from-indigo-900 via-indigo-900 to-indigo-800">Generate</button>
@@ -191,7 +192,7 @@ export default defineComponent({
     const flag = ref(0);
     const showProgress = ref(false);
     const percentage = ref(0);
-    const radio = ref(null);
+    const radio = ref("0");
     const selectedImage = ref(null);
     const type = ref(null);
     const socket = ref(null);
@@ -236,6 +237,10 @@ export default defineComponent({
 
     const ezprompt = async (image_url = '') => {
       token = store.getters[`auth/${GET_TOKEN}`]
+      if (token == "") {
+        ElMessage.error({ showClose: true, message: "Please log in." })
+        return
+      }
       const credits = await getCredits(token)
       if (credits < 4) {
         ElMessage.error({ showClose: true, message: "Credits not enough!" })
@@ -251,23 +256,7 @@ export default defineComponent({
       }
       showProgress.value = true;
       percentage.value = 0;
-
-      // if (radio.value === '1') {
-      //   type.value = '漫畫';
-      // } else if (radio.value == '2') {
-      //   type.value = '電影';
-      // } else if (radio.value == '3') {
-      //   type.value = '水墨畫';
-      // } else if (radio.value == '4') {
-      //   type.value = '油畫';
-      // } else if (radio.value == '5') {
-      //   type.value = '水彩畫';
-      // } else if (radio.value == '6') {
-      //   type.value = '鉛筆畫';
-      // } else if (radio.value == '7') {
-      //   type.value = '寫實';
-      // }
-      styleSelect(radio, type)
+      await styleSelect(radio, type)
       console.log(type.value)
       if (socket.value && socket.value.readyState !== WebSocket.CLOSED) {
         socket.value.close();

@@ -14,6 +14,8 @@ export async function styleSelect (radio, type) {
         type.value = '鉛筆畫';
     } else if (radio.value == '7') {
         type.value = '寫實';
+    } else {
+        type.value = null;
     }
 }
 
