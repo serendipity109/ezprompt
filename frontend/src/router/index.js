@@ -5,6 +5,7 @@ import Test from "@/views/TestPage.vue";
 import Gen from "@/views/GenPage.vue";
 import Hist from "@/views/HistPage.vue";
 import Acc from "@/views/AccountPage.vue";
+import Show from "@/views/ShowPage.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -31,6 +32,11 @@ const router = createRouter({
       path: "/history",
       component: Hist,
       meta: { title: "EZPrompt - History" },
+    },
+    {
+      path: "/showcase",
+      component: Show,
+      meta: { title: "EZPrompt - Showcase" },
     },
     {
       path: "/account",

@@ -1,10 +1,10 @@
 <template>
     <div>
-        <nav-bar page="generate" />
+        <nav-bar page="generate" :closePanel="closePanel"/>
         <div
             class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
             <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
-                <div class="w-screen overflow-x-hidden">
+                <div class="w-screen overflow-x-hidden" @click="set_init">
                     <div class="sm:hidden w-full flex items-center justify-end mr-4 pt-2"></div>
                     <div class="flex justify-center w-full mt-0 sm:pt-4 md:pt-10">
                         <div class="px-2 md:px-10 lg:px-16 flex items-center flex-col max-w-[1300px] w-full">
@@ -189,7 +189,7 @@ export default defineComponent({
         const showProgress = ref(false);
         const percentage = ref(0);
         let intervalId;
-
+        const closePanel = ref(true);
 
         const sdxl = async () => {
             showProgress.value = true;
@@ -248,6 +248,9 @@ export default defineComponent({
             });
         };
 
+        const set_init = async () => {
+            closePanel.value = !closePanel.value;
+        }
         return {
             pmt,
             npmt,
@@ -262,6 +265,8 @@ export default defineComponent({
             showProgress,
             percentage,
             startIncreasing,
+            closePanel,
+            set_init
         };
     },
 });

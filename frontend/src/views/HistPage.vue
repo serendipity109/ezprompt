@@ -1,12 +1,12 @@
 <template>
     <div>
-        <nav-bar page="history" />
+        <nav-bar page="history" :closePanel="closePanel"/>
         <div
             class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
             <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
                 <div class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" @click="set_init">
-                    <div class="flex flex-col items-center py-4 mt-16"><a class="font-semibold text-3xl text-gray-100"
-                            href="/history">History</a>
+                    <div class="flex flex-col items-center py-4 mt-16">
+                        <div class="font-semibold text-3xl text-gray-100">History</div>
                         <div class="flex items-center w-1/3 max-w mt-8">
                             <div class="w-full">
                                 <div class="w-full flex items-center relative"><svg stroke="currentColor" fill="none"
@@ -178,6 +178,7 @@ export default defineComponent({
         const radio = ref(null);
         const selectedImage = ref({row: -1, col: -1});
         const store = useStore()
+        const closePanel = ref(true);
         let intervalId;
 
         const username = computed(() => {
@@ -238,6 +239,10 @@ export default defineComponent({
             return parts[0];
         });
 
+        const set_init = async () => {
+            closePanel.value = !closePanel.value;
+        }
+
         onUnmounted(() => {
             clearInterval(intervalId);
         });
@@ -260,7 +265,9 @@ export default defineComponent({
             radio,
             selectedImage,
             downloadFile,
-            email
+            email,
+            closePanel,
+            set_init 
         };
     },
 });

@@ -5,8 +5,8 @@
       class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
       <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
         <div class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" @click="set_init">
-          <div class="flex flex-col items-center py-4 mt-16"><a class="font-semibold text-3xl text-gray-100"
-              href="/">EZPrompt</a>
+          <div class="flex flex-col items-center py-4 mt-16">
+            <div class="font-semibold text-3xl text-gray-100">EZPrompt</div>
             <div class="flex items-center w-full max-w-[600px] md:ml-[48px] mt-8 px-4 pl-5 md:px-5">
               <div class="w-full">
                 <div class="w-full flex items-center relative"><svg stroke="currentColor" fill="none" stroke-width="2"
