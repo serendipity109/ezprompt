@@ -12,14 +12,23 @@ class TransCRUD(SQLAlchemyCRUD):
     def __init__(self):
         super().__init__(Transaction)
 
-    def read_top_k_rows(self, k):
+    def read_top_n_rows(self, n, user_id=""):
         try:
-            records = (
-                self.session.query(self.model)
-                .order_by(desc(self.model.create_time))
-                .limit(k)
-                .all()
-            )
+            if user_id:
+                records = (
+                    self.session.query(self.model)
+                    .filter(self.model.user_id != user_id)
+                    .order_by(desc(self.model.create_time))
+                    .limit(n)
+                    .all()
+                )
+            else:
+                records = (
+                    self.session.query(self.model)
+                    .order_by(desc(self.model.create_time))
+                    .limit(n)
+                    .all()
+                )
             result = []
             for record in records:
                 result.append(

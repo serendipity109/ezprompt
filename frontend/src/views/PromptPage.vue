@@ -64,7 +64,7 @@
                 <div class="text-sm">{{ CFG }}</div>
               </div>
               <div>
-                <div class="text-xs opacity-50">User</div>
+                <div class="text-xs opacity-50">Owner</div>
                 <div class="text-sm">{{ user_id }}</div>
               </div>
               <div>
@@ -83,7 +83,7 @@
               <div class="text-sm">{{ model }}</div>
             </div>
             <div>
-              <div class="text-xs opacity-50">User</div>
+              <div class="text-xs opacity-50">Owner</div>
               <div class="text-sm">{{ user_id }}</div>
             </div>
             <div>

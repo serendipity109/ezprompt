@@ -5,9 +5,8 @@
             class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
             <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
                 <div class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" @click="set_init">
-                    <div class="flex flex-col items-center py-4 mt-16">
+                    <div class="flex flex-col items-center py-4 mt-16 mb-10">
                         <div class="font-semibold text-3xl text-gray-100">History</div>
-                        <div class="flex w-full max-w-[600px] md:ml-[48px] px-4 pl-5 md:px-5"></div>
                     </div>
                 </div>
                 <div w-full mt-4 px-1 relative>

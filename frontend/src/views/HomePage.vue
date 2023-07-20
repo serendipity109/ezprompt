@@ -7,7 +7,7 @@
         <div class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" @click="set_init">
           <div class="flex flex-col items-center py-4 mt-16">
             <div class="font-semibold text-3xl text-gray-100">EZPrompt</div>
-            <div class="flex items-center w-full max-w-[600px] md:ml-[48px] mt-8 px-4 pl-5 md:px-5">
+            <div class="flex items-center w-full max-w-[600px] mt-8 px-4 pl-5">
               <div class="w-full">
                 <div class="w-full flex items-center relative"><svg stroke="currentColor" fill="none" stroke-width="2"
                     viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"
@@ -17,29 +17,15 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                   </svg><input id="main-search" autoComplete="off" v-model="keyword" type="text"
                     class="bg-zinc-700 flex-1 pl-12 pr-12 rounded-full text-sm px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-700"
-                    placeholder="Give me an EZprompt" />
+                    placeholder="Give me an EZPrompt" />
                   <upload @fileUpload="handleUrl"
                     class="text-base absolute right-2 hover:bg-zinc-800 h-8 w-8 flex items-center justify-center rounded-full"
                     data-state="closed" />
                 </div>
               </div>
-              <div class="flex justify-center"><button @click="styleSwitch"
-                  class="ml-2 h-10 w-10 rounded-full cursor-pointer flex items-center justify-center  bg-transparent hover:bg-zinc-900"><svg
-                    stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
-                    stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                    <line x1="4" y1="21" x2="4" y2="14"></line>
-                    <line x1="4" y1="10" x2="4" y2="3"></line>
-                    <line x1="12" y1="21" x2="12" y2="12"></line>
-                    <line x1="12" y1="8" x2="12" y2="3"></line>
-                    <line x1="20" y1="21" x2="20" y2="16"></line>
-                    <line x1="20" y1="12" x2="20" y2="3"></line>
-                    <line x1="1" y1="14" x2="7" y2="14"></line>
-                    <line x1="9" y1="8" x2="15" y2="8"></line>
-                    <line x1="17" y1="16" x2="23" y2="16"></line>
-                  </svg></button></div>
             </div>
             <div class="flex w-full max-w-[600px] md:ml-[48px] px-4 pl-5 md:px-5"></div>
-            <div v-if="showStyle">
+            <div>
               <div class=" mt-2 flex flex-col items-center">Style Selection</div>
               <div class=" radioRow">
                 <el-radio v-model="radio" label="1">漫畫</el-radio>
@@ -174,7 +160,6 @@ export default defineComponent({
     const flag = ref(0);
     const showProgress = ref(false);
     const percentage = ref(0);
-    const showStyle = ref(false);
     const radio = ref(null);
     const selectedImage = ref(null);
     const type = ref(null);
@@ -386,10 +371,6 @@ export default defineComponent({
       clearInterval(intervalId);
     });
 
-    function styleSwitch() {
-      this.showStyle = !this.showStyle
-    }
-
     return {
       keyword,
       images,
@@ -404,8 +385,6 @@ export default defineComponent({
       showViewer,
       percentage,
       startIncreasing,
-      styleSwitch,
-      showStyle,
       radio,
       selectedImage,
       downloadFile,

@@ -117,6 +117,19 @@ async def get_history(user_id):
         return {"code": 400, "message": str(e)}
 
 
+@app.get("/showcase")
+async def get_showcase(user_id=""):
+    try:
+        showcase = await crud.read_showcase(user_id, 40)
+        return {
+            "code": 200,
+            "message": "Successfully get images",
+            "data": showcase,
+        }
+    except Exception as e:
+        return {"code": 400, "message": str(e)}
+
+
 # 定期刪檔案
 FOLDER_PATH = "/workspace/output"
 DELETE_INTERVAL = timedelta(days=7)

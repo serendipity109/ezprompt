@@ -177,7 +177,45 @@ class IntegratedCRUD:
                     visited.append(pmt_id)
             return history
         else:
-            raise Exception(f"user_id {user_id} doesn't exist.")
+            raise Exception(f"{user_id} has no history.")
+
+    async def read_showcase(self, user_id: str, top_n: int = 40):
+        try:
+            records = self.trans_crud.read_top_n_rows(top_n, user_id)
+            if records:
+                records = sorted(records, key=lambda x: x["create_time"], reverse=True)
+                showcase = []
+                visited = []
+                for record in records:
+                    pmt_id = record["prompt_id"]
+                    if pmt_id not in visited:
+                        pmt_record = self.redis_client.get_hash(pmt_id)
+                        pmt = pmt_record["prompt"]
+                        view1 = pmt.split(",")[0]
+                        view2 = pmt.replace(view1 + ",", "")
+                        img1 = pmt_record["batch"][0]
+                        img2 = pmt_record["batch"][1]
+                        img3 = pmt_record["batch"][2]
+                        img4 = pmt_record["batch"][3]
+                        for img in [img4, img3, img2, img1]:
+                            logger.info(img)
+                            if img:
+                                img = img.replace(".png", ".jpg")
+                                filename = os.path.basename(img)
+                                showcase.append(
+                                    {
+                                        "id": pmt_id,
+                                        "filename": filename,
+                                        "url": img,
+                                        "view1": view1,
+                                        "view2": view2,
+                                    }
+                                )
+                        visited.append(pmt_id)
+                return showcase
+        except Exception as e:
+            logger.error(f"Error in showcase: {e}")
+            raise Exception(f"Error in showcase: {e}")
 
     async def get_credits(self, user_id: str):
         try:
@@ -208,6 +246,3 @@ class IntegratedCRUD:
         except Exception as e:
             logger.error(f"Error in topup: {e}")
             raise Exception(f"Error in topup: {e}")
-
-    # async def read_showcase(self, top_n: int):
-    #     records = self.trans_crud.read_top_k_rows(top_n)
