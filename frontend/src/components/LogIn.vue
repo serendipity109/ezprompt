@@ -150,14 +150,14 @@ export default defineComponent({
             await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/login`, formData)
                 .then(function (response) {
                     if (response.data.code === 200) {
-                        ElMessage.info("Successfully login!")
+                        ElMessage.info({showClose: true, message: "Successfully login!"})
                         store.commit(`auth/${SET_AUTHENTICATION}`, true);
                         store.commit(`auth/${SET_USERNAME}`, username.value);
                         store.commit(`auth/${SET_EMAIL}`, email.value);
                         store.commit(`auth/${SET_TOKEN}`, response.data.access_token);
                         context.emit('login-click');
                     } else {
-                        ElMessage.error(response.data.message);
+                        ElMessage.error({showClose: true, message: response.data.message});
                     }
                 })
         };
@@ -171,10 +171,10 @@ export default defineComponent({
             await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/send-email?receiver_email=${mail}&token=${token}`)
                 .then(function (response) {
                     if (response.data.code === 200) {
-                        ElMessage.info("Already sent an email to confirm the registration.")
+                        ElMessage.info({showClose: true, message: "Already sent an email to confirm the registration."})
                         page.value = 4;
                     } else {
-                        ElMessage.error('Failed to send email');
+                        ElMessage.error({showClose: true, message: 'Failed to send email'});
                     }
                 }
                 )

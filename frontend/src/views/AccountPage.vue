@@ -232,13 +232,13 @@ export default defineComponent({
                 })
                 if (response.data.code == 200) {
                     const remaining_credits = response.data.result.remaining_credits
-                    ElMessage.info("Successfully top-up credits.");
-                    ElMessage.info(`Remaining credits: ${remaining_credits}`)
+                    ElMessage.info({showClose: true, message: "Successfully top-up credits."});
+                    ElMessage.info({showClose: true, message: `Remaining credits: ${remaining_credits}`})
                 } else {
-                    ElMessage.error(response.data.message);
+                    ElMessage.error({showClose: true, message: response.data.message});
                 }
             } else {
-                ElMessage.error("Please log in.");
+                ElMessage.error({showClose: true, message: "Please log in."});
             }
         }
         const set_init = async () => {

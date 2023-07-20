@@ -35,7 +35,7 @@ export default {
       return await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/login`, formData)
         .then(function (response) {
           if (response.data.code === 200) {
-            ElMessage.info("Successfully login!")
+            ElMessage.info({showClose: true, message: "Successfully login!"})
             store.commit(`auth/${SET_AUTHENTICATION}`, true);
             store.commit(`auth/${SET_USERNAME}`, email);
             store.commit(`auth/${SET_EMAIL}`, email);
@@ -54,6 +54,7 @@ export default {
             return true
           } else if (response.data.code === 400) {
             ElMessage.error({
+                showClose: true,
                 message: response.data.message,
                 duration: 5000
               });

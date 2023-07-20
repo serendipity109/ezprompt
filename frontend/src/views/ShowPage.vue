@@ -195,7 +195,7 @@ export default defineComponent({
                 images.value = response.data.data;
                 imageRows.value = chunkArray(images.value, 4);
             } else {
-                ElMessage.error(`User has no record.`);
+                ElMessage.error({showClose: true, message: "User has no record."});
             }
         };
 

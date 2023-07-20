@@ -215,11 +215,11 @@ export default defineComponent({
       token = store.getters[`auth/${GET_TOKEN}`]
       const credits = await getCredits(token)
       if (credits < 4){
-        ElMessage.error("Credits not enough!")
+        ElMessage.error({showClose: true, message: "Credits not enough!"})
         return
       }
       if (!keyword.value) {
-        ElMessage.error("Prompt is empty!")
+        ElMessage.error({showClose: true, message: "Prompt is empty!"})
         return
       }
       flag.value = 0;
@@ -270,6 +270,7 @@ export default defineComponent({
         socket.value.send(JSON.stringify(message));
       };
       ElMessage.info({
+              showClose: true, 
               message: "Images are generating. Please wait patiently.",
               duration: 5000
             });
@@ -332,7 +333,7 @@ export default defineComponent({
         selectedImage.value = null;
       } else {
         console.error("Selected image is not available in urls.value");
-        ElMessage.error("Image not selected or prompt is empty!")
+        ElMessage.error({showClose: true, message: "Image not selected or prompt is empty!"})
       }
     };
 
@@ -360,15 +361,18 @@ export default defineComponent({
             if (response.data.code === 200) {
               const user_id = response.data.data;
               ElMessage.info({
+                showClose: true, 
                 message: `Successfully create account ${user_id}`,
                 duration: 5000
               });
               ElMessage.info({
+                showClose: true,
                 message: `Please login.`,
                 duration: 5000
               });
             } else if (response.data.code === 400) {
               ElMessage.error({
+                showClose: true, 
                 message: response.data.message,
                 duration: 5000
               });
