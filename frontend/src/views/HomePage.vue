@@ -24,19 +24,49 @@
                 </div>
               </div>
             </div>
-            <div class="flex w-full max-w-[600px] md:ml-[48px] px-4 pl-5 md:px-5"></div>
-            <div>
-              <div class=" mt-2 flex flex-col items-center">Style Selection</div>
-              <div class=" radioRow">
-                <el-radio v-model="radio" label="1">漫畫</el-radio>
-                <el-radio v-model="radio" label="2">電影</el-radio>
-                <el-radio v-model="radio" label="3">水墨畫</el-radio>
+            <div class="flex flex-col w-full max-w-[300px] items-center mt-4">
+              <div class="flex items-center mt-4 mb-4">
+                <el-button @click="featureSelect(1)" color="#673794">Style</el-button>
+                <el-button @click="featureSelect(2)" color="#66ba81">Size</el-button>
               </div>
-              <div class=" radioRow">
-                <el-radio v-model="radio" label="4">油畫</el-radio>
-                <el-radio v-model="radio" label="5">水彩畫</el-radio>
-                <el-radio v-model="radio" label="6">鉛筆畫</el-radio>
-                <el-radio v-model="radio" label="7">寫實</el-radio>
+              <div v-if="feature == 1">
+                <div class=" radioRow">
+                  <el-radio v-model="radio" label="1">漫畫</el-radio>
+                  <el-radio v-model="radio" label="2">電影</el-radio>
+                  <el-radio v-model="radio" label="3">水墨畫</el-radio>
+                </div>
+                <div class=" radioRow">
+                  <el-radio v-model="radio" label="4">油畫</el-radio>
+                  <el-radio v-model="radio" label="5">水彩畫</el-radio>
+                  <el-radio v-model="radio" label="6">鉛筆畫</el-radio>
+                  <el-radio v-model="radio" label="7">寫實</el-radio>
+                </div>
+              </div>
+              <div v-if="feature == 2" class="w-full">
+                <v-slider :ticks="dimLabels" :max="2" step="1" tick-size="3" v-model="dimValue" hide-details></v-slider>
+                <input style="display:none" value="4" />
+                <div class="flex justify-between w-full  select-none mt-1 text-base">
+                  <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" class="opacity-40"
+                    height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" style="transform: scale(1.5);">
+                    <path fill-rule="evenodd"
+                      d="M14.5 3h-13a.5.5 0 00-.5.5v9a.5.5 0 00.5.5h13a.5.5 0 00.5-.5v-9a.5.5 0 00-.5-.5zm-13-1A1.5 1.5 0 000 3.5v9A1.5 1.5 0 001.5 14h13a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0014.5 2h-13z"
+                      clip-rule="evenodd"></path>
+                    <path
+                      d="M10.648 7.646a.5.5 0 01.577-.093L15.002 9.5V13h-14v-1l2.646-2.354a.5.5 0 01.63-.062l2.66 1.773 3.71-3.71z">
+                    </path>
+                    <path fill-rule="evenodd" d="M4.502 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd"></path>
+                  </svg>
+                  <div class="text-s flex items-center transition-all text-zinc-200" style="opacity:1">{{
+                    dimLabels[dimValue] }}</div>
+                  <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" class="opacity-40"
+                    height="1em" width="1em" xmlns="http://www.w3.org/2000/svg" style="transform: scale(1.5);">
+                    <path d="M8.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z">
+                    </path>
+                    <path
+                      d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM3 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v8l-2.083-2.083a.5.5 0 0 0-.76.063L8 11 5.835 9.7a.5.5 0 0 0-.611.076L3 12V2z">
+                    </path>
+                  </svg>
+                </div>
               </div>
             </div>
             <div class=" mb-8 flex flex-col items-center">
@@ -145,6 +175,7 @@ import { GET_EMAIL, GET_USERNAME, GET_TOKEN } from "@/store/storeconstants";
 import { useStore } from 'vuex'
 import { useRoute, useRouter } from 'vue-router';
 import { getCredits } from '@/utils/account.js';
+import { styleSelect } from '@/utils/param.js';
 
 export default defineComponent({
   components: {
@@ -167,6 +198,13 @@ export default defineComponent({
     const store = useStore();
     const route = useRoute();
     const router = useRouter();
+    const feature = ref(0);
+    const dimValue = ref(1);
+    const dimLabels = {
+      0: '1456 x 816',
+      1: '1024 x 1024',
+      2: '816 x 1456',
+    };
     let token = route.query.token;
     let intervalId;
 
@@ -199,12 +237,12 @@ export default defineComponent({
     const ezprompt = async (image_url = '') => {
       token = store.getters[`auth/${GET_TOKEN}`]
       const credits = await getCredits(token)
-      if (credits < 4){
-        ElMessage.error({showClose: true, message: "Credits not enough!"})
+      if (credits < 4) {
+        ElMessage.error({ showClose: true, message: "Credits not enough!" })
         return
       }
       if (!keyword.value) {
-        ElMessage.error({showClose: true, message: "Prompt is empty!"})
+        ElMessage.error({ showClose: true, message: "Prompt is empty!" })
         return
       }
       flag.value = 0;
@@ -214,21 +252,23 @@ export default defineComponent({
       showProgress.value = true;
       percentage.value = 0;
 
-      if (radio.value === '1') {
-        type.value = '漫畫';
-      } else if (radio.value == '2') {
-        type.value = '電影';
-      } else if (radio.value == '3') {
-        type.value = '水墨畫';
-      } else if (radio.value == '4') {
-        type.value = '油畫';
-      } else if (radio.value == '5') {
-        type.value = '水彩畫';
-      } else if (radio.value == '6') {
-        type.value = '鉛筆畫';
-      } else if (radio.value == '7') {
-        type.value = '寫實';
-      }
+      // if (radio.value === '1') {
+      //   type.value = '漫畫';
+      // } else if (radio.value == '2') {
+      //   type.value = '電影';
+      // } else if (radio.value == '3') {
+      //   type.value = '水墨畫';
+      // } else if (radio.value == '4') {
+      //   type.value = '油畫';
+      // } else if (radio.value == '5') {
+      //   type.value = '水彩畫';
+      // } else if (radio.value == '6') {
+      //   type.value = '鉛筆畫';
+      // } else if (radio.value == '7') {
+      //   type.value = '寫實';
+      // }
+      styleSelect(radio, type)
+      console.log(type.value)
       if (socket.value && socket.value.readyState !== WebSocket.CLOSED) {
         socket.value.close();
       }
@@ -255,10 +295,10 @@ export default defineComponent({
         socket.value.send(JSON.stringify(message));
       };
       ElMessage.info({
-              showClose: true, 
-              message: "Images are generating. Please wait patiently.",
-              duration: 5000
-            });
+        showClose: true,
+        message: "Images are generating. Please wait patiently.",
+        duration: 5000
+      });
       socket.value.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.result && data.result.progress) {
@@ -318,9 +358,13 @@ export default defineComponent({
         selectedImage.value = null;
       } else {
         console.error("Selected image is not available in urls.value");
-        ElMessage.error({showClose: true, message: "Image not selected or prompt is empty!"})
+        ElMessage.error({ showClose: true, message: "Image not selected or prompt is empty!" })
       }
     };
+
+    const featureSelect = (type) => {
+      feature.value = type;
+    }
 
     const closePanel = ref(true);
 
@@ -346,7 +390,7 @@ export default defineComponent({
             if (response.data.code === 200) {
               const user_id = response.data.data;
               ElMessage.info({
-                showClose: true, 
+                showClose: true,
                 message: `Successfully create account ${user_id}`,
                 duration: 5000
               });
@@ -357,7 +401,7 @@ export default defineComponent({
               });
             } else if (response.data.code === 400) {
               ElMessage.error({
-                showClose: true, 
+                showClose: true,
                 message: response.data.message,
                 duration: 5000
               });
@@ -385,6 +429,8 @@ export default defineComponent({
       showViewer,
       percentage,
       startIncreasing,
+      feature,
+      featureSelect,
       radio,
       selectedImage,
       downloadFile,
@@ -392,7 +438,9 @@ export default defineComponent({
       img2img,
       closePanel,
       set_init,
-      email
+      email,
+      dimValue,
+      dimLabels
     };
   },
 });

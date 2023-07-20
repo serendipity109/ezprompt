@@ -145,10 +145,9 @@ export default defineComponent({
         }
 
         onMounted(async () => {
-            let userName = store.getters[`auth/${GET_USERNAME}`]
             let response;
-            if (userName) {
-                response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/showcase?user_id=${userName.value}`);
+            if (username) {
+                response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/showcase?user_id=${username.value}`);
             } else {
                 response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/showcase`);
             }

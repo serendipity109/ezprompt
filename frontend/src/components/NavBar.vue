@@ -22,7 +22,7 @@
                         <polyline points="9 22 9 12 15 12 15 22"></polyline>
                     </svg>
                 </div>
-            </a><a
+            <!-- </a><a
                 class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
                 id="genpage" :style="{ opacity: getNavOpa('generate') }" style="width:80px;z-index:2;"
                 v-on:click="goToPage('/generate')">
@@ -43,7 +43,7 @@
                         <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
                         <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
                     </svg>
-                </div>
+                </div> -->
             </a><a
                 class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
                 id="genpage" :style="{ opacity: getNavOpa('history') }" style="width:80px;z-index:2;"
