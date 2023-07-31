@@ -143,6 +143,18 @@ class IntegratedCRUD:
             shutil.rmtree(f"/workspace/output/{user_id}")
         logger.info(f"Successfully delete user {user_id}")
 
+    def delete_expires(self, days=7):
+        try:
+            self.imgs_crud.delete_exp_records(days=days)
+            records = self.trans_crud.delete_exp_records(days=days)
+            for record in records:
+                pmt_id = record['prompt_id']
+                logger.info(f"Prompt {pmt_id}")
+                self.redis_client.delete(pmt_id)
+        except Exception as e:
+            logger.error(f"Error in delete expires: {e}")
+            raise Exception(f"Error in delete expires: {e}")
+
     async def read_user_history(self, user_id):
         records = self.imgs_crud.read_user_by_id(user_id)
         if records:

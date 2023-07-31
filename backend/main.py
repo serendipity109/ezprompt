@@ -42,7 +42,6 @@ api_router = APIRouter()
 api_router.include_router(SDXL.router)
 api_router.include_router(dcmj.router)
 api_router.include_router(account.router)
-crud = IntegratedCRUD()
 
 
 @app.get("/")
@@ -106,6 +105,7 @@ async def show_image(folder: str, image_name: str):
 
 @app.get("/history")
 async def get_history(user_id):
+    crud = IntegratedCRUD()
     try:
         history = await crud.read_user_history(user_id)
         return {
@@ -119,6 +119,7 @@ async def get_history(user_id):
 
 @app.get("/showcase")
 async def get_showcase(user_id=""):
+    crud = IntegratedCRUD()
     try:
         showcase = await crud.read_showcase(user_id, 40)
         return {
@@ -149,6 +150,8 @@ def delete_old_files(folder_path: str, max_age: timedelta):
                     logger.info(f"Deleted file: {file_path}")
                 except Exception as e:
                     logger.error(f"Error deleting file: {file_path}, error: {str(e)}")
+    crud = IntegratedCRUD()
+    crud.delete_expires()
 
 
 @app.on_event("startup")
