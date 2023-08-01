@@ -18,7 +18,7 @@ from utils.tools import (
     prompt_censorer,
     schema_validator,
     style_parser,
-    make_user_folder
+    make_user_folder,
 )
 from utils.worker import MidjourneyProxyError, post_imagine
 from utils.integrated_crud import IntegratedCRUD
@@ -83,7 +83,11 @@ async def imagine_handler(websocket, start, job_id):
         data = await schema_validator(websocket)
         user_id = data["user_id"]
         if not await crud.check_trans_valid(user_id, 4):
-            msg = {"code": 400, "message": f"Invalid user_id {user_id} or credits not enough!", "result": ""}
+            msg = {
+                "code": 400,
+                "message": f"Invalid user_id {user_id} or credits not enough!",
+                "result": "",
+            }
             await websocket.send_text(json.dumps(msg))
             raise Exception(json.dumps(msg))
         credits = await crud.pay_credits(user_id, 4)
@@ -114,7 +118,13 @@ async def imagine_handler(websocket, start, job_id):
     image_list = await download_image(user_id, url)
     image_list.insert(0, image_list[0].replace("_1.png", ".png"))
     if "image_url" in data.keys():
-        mjimg = MJImg(user_id=user_id, prompt=prompt, source_url=img_url, size=size, images=image_list[1:])
+        mjimg = MJImg(
+            user_id=user_id,
+            prompt=prompt,
+            source_url=img_url,
+            size=size,
+            images=image_list[1:],
+        )
     else:
         mjimg = MJImg(user_id=user_id, prompt=prompt, size=size, images=image_list[1:])
     await crud.insert_mjimage(mjimg)
@@ -126,7 +136,7 @@ async def imagine_handler(websocket, start, job_id):
             "result": image_list,
             "elapsed_time": elapsed_time,
             "task_id": taskid,
-            "remaining_credits": credits
+            "remaining_credits": credits,
         },
     }
     await websocket.send_text(json.dumps(return_msg))
@@ -307,3 +317,13 @@ async def show_image(user_id: str, image_name: str):
         return FileResponse(image_path)
     else:
         raise HTTPException(status_code=404, detail="Image not found")
+
+
+@router.get("/dcmj/queue_status")
+async def get_queue_status():
+    return {
+        "job_q": list(job_q),
+        "waiting_q": list(waiting_q),
+        "jq1": list(jq1),
+        "jq2": list(jq2),
+    }
