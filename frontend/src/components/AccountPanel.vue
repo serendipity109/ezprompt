@@ -68,6 +68,7 @@ export default defineComponent({
         }
 
         onMounted(getCredits);
+        
         return {
             credits,
             email,

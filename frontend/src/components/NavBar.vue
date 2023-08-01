@@ -46,7 +46,7 @@
                 </div> -->
             </a><a
                 class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
-                id="genpage" :style="{ opacity: getNavOpa('history') }" style="width:80px;z-index:2;"
+                id="histpage" :style="{ opacity: getNavOpa('history') }" style="width:80px;z-index:2;"
                 v-on:click="goToPage('/history')">
                 <div class="relative sm:flex justify-center hidden w-full">
                     <div class="absolute w-full" :style="{ borderBottom: '2.5px ' + getNavStyle('history') }"
@@ -64,7 +64,7 @@
                 </div>
             </a><a
                 class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
-                id="genpage" :style="{ opacity: getNavOpa('showcase') }" style="width:80px;z-index:2;"
+                id="showpage" :style="{ opacity: getNavOpa('showcase') }" style="width:80px;z-index:2;"
                 v-on:click="goToPage('/showcase')">
                 <div class="relative sm:flex justify-center hidden w-full">
                     <div class="absolute w-full" :style="{ borderBottom: '2.5px ' + getNavStyle('showcase') }"
@@ -82,7 +82,7 @@
                 </div>
             </a><a
                 class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
-                id="genpage" :style="{ opacity: getNavOpa('account') }" style="width:80px;z-index:2;"
+                id="accpage" :style="{ opacity: getNavOpa('account') }" style="width:80px;z-index:2;"
                 v-on:click="goToPage('/account')">
                 <div class="relative sm:flex justify-center hidden w-full">
                     <div class="absolute w-full" :style="{ borderBottom: '2.5px ' + getNavStyle('account') }"
@@ -116,7 +116,7 @@
                         </v-btn>
                     </div>
                     <div v-if="show_panel">
-                        <AccountPanel @signout-click="closePanelClick"/>
+                        <AccountPanel ref="accountPanelRef"  @signout-click="closePanelClick"/>
                     </div>
                 </template>
                 <login @login-click="closeLoginClick" />
@@ -147,6 +147,7 @@ export default defineComponent({
         const store = useStore()
         const dialog = ref(false);
         const show_panel = ref(false);
+        const accountPanelRef = ref(null);
         const goToPage = (pagnition) => {
             router.push(pagnition)
         }
@@ -175,6 +176,9 @@ export default defineComponent({
 
         const closePanelClick = () => {
             show_panel.value = false;
+            if (accountPanelRef.value) {
+                accountPanelRef.value.getCredits();
+            }
         };
 
         watch(() => props.closePanel, () => {
@@ -187,6 +191,7 @@ export default defineComponent({
             goToPage,
             dialog,
             openPanel,
+            accountPanelRef,
             closePanelClick,
             show_panel,
             closeLoginClick,

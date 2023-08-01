@@ -26,7 +26,9 @@ describe("NavBar.vue", () => {
 
   it("應該顯示正確的導覽欄標籤", () => {
     expect(wrapper.find("#homepage").text()).toBe("Home");
-    expect(wrapper.find("#genpage").text()).toBe("Generate");
+    expect(wrapper.find("#histpage").text()).toBe("History");
+    expect(wrapper.find("#showpage").text()).toBe("Showcase");
+    expect(wrapper.find("#accpage").text()).toBe("Account");
   });
 
   it("當當前頁面為首頁時，首頁標籤的透明度應為1", () => {

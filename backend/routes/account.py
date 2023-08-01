@@ -13,7 +13,6 @@ from dotenv import load_dotenv
 
 
 router = APIRouter()
-crud = IntegratedCRUD()
 
 load_dotenv()
 OWN_EMAIL = os.getenv("OWN_EMAIL")
@@ -25,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 @router.post("/user/create")
 async def create_user(username: str, password: str):
+    crud = IntegratedCRUD()
     try:
         if username == "" or password == "":
             return {"code": 400, "message": "Invalid username or password"}
@@ -44,6 +44,7 @@ async def create_user(username: str, password: str):
 
 @router.put("/user/top-up")
 async def topup_credits(credits: int, user_id: str = Depends(get_current_user)):
+    crud = IntegratedCRUD()
     try:
         credits = await crud.topup_credits(user_id, credits)
         return {
@@ -58,6 +59,7 @@ async def topup_credits(credits: int, user_id: str = Depends(get_current_user)):
 
 @router.post("/user/login")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    crud = IntegratedCRUD()
     user_id = form_data.username
     hashed_password = hash_password(form_data.password)
     token = await crud.get_token(user_id, hashed_password)
@@ -69,6 +71,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
 
 @router.get("/user/credits")
 async def read_user_credits(user_id: str = Depends(get_current_user)):
+    crud = IntegratedCRUD()
     credits = await crud.get_credits(user_id)
     return {
         "code": 200,
@@ -79,6 +82,7 @@ async def read_user_credits(user_id: str = Depends(get_current_user)):
 
 @router.delete("/user/delete")
 async def delete_user(user_id):
+    crud = IntegratedCRUD()
     try:
         await crud.delete_user_by_id(user_id)
         return {"code": 200, "message": f"Successfully delete user {user_id}"}

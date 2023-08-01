@@ -1,10 +1,10 @@
 <template>
   <div>
-    <nav-bar page="home" :closePanel="closePanel" />
+    <nav-bar page="home" :closePanel="closePanel"/>
     <div
       class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
       <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
-        <div class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
+        <div class="w-screen overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm" @click="set_init">
           <div class="flex flex-col items-center py-4 mt-16">
             <div class="font-semibold text-3xl text-gray-100">EZPrompt</div>
             <div class="flex items-center w-full max-w-[600px] mt-8 px-4 pl-5">
@@ -206,6 +206,11 @@ export default defineComponent({
       1: '1024 x 1024',
       2: '816 x 1456',
     };
+    const sizeLabels = {
+      0: "16:9",
+      1: "1:1",
+      2: "9:16",
+    };
     let token = route.query.token;
     let intervalId;
 
@@ -264,22 +269,14 @@ export default defineComponent({
       socket.value = new WebSocket(`ws://${process.env.VUE_APP_BACKEND_IP}/dcmj/imagine`);
       let message;
       socket.value.onopen = () => {
-        console.log("Connection opened");
         let user_id = store.getters[`auth/${GET_USERNAME}`]
-        if ((typeof image_url === 'string') && image_url !== '') {
-          message = {
-            "user_id": user_id,
-            "prompt": keyword.value,
-            "image_url": image_url,
-            ...(type.value ? { "preset": type.value } : {})
-          };
-        } else {
-          message = {
-            "user_id": user_id,
-            "prompt": keyword.value,
-            ...(type.value ? { "preset": type.value } : {})
-          };
-        }
+        message = {
+          "user_id": user_id,
+          "prompt": keyword.value,
+          "size": sizeLabels[dimValue.value],
+          ...(typeof image_url === 'string' && image_url !== '' ? { "image_url": image_url } : {}),
+          ...(type.value ? { "preset": type.value } : {})
+        };
         console.log(message);
         socket.value.send(JSON.stringify(message));
       };
@@ -358,7 +355,6 @@ export default defineComponent({
     const closePanel = ref(true);
 
     const set_init = async () => {
-      radio.value = null;
       closePanel.value = !closePanel.value;
     }
 
@@ -367,7 +363,6 @@ export default defineComponent({
       const parts = Email.split('@');
       return parts[0];
     });
-
 
     onMounted(async () => {
       if (token) {
@@ -428,6 +423,7 @@ export default defineComponent({
       closePanel,
       set_init,
       email,
+      sizeLabels,
       dimValue,
       dimLabels
     };
