@@ -69,15 +69,15 @@
                 </div>
             </div>
             <div v-else-if="page == 3" v-loading="loading" element-loading-background="rgba(10, 10, 10, 0.2)">
-                <div class="flex flex-1 w-64 text-2xl text-slate-50 justify-center items-center mb-4">
+                <div class="flex flex-1 min-w-64 text-2xl text-slate-50 justify-center items-center mb-4">
                     Create your account
                 </div>
                 <form @submit.prevent="SubmitCreate">
                     <input v-model="email" autocomplete="email" placeholder="Email address"
-                        class="w-64 px-3 py-2 bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-indigo-600 rounded-lg border border-zinc-600 hover:brightness-110 text-zinc-100 pr-20"
+                        class="w-64 px-3 py-2 bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-indigo-600 rounded-lg border border-zinc-600 hover:brightness-110 text-zinc-100 overflow-auto"
                         type="email">
                     <input v-model="password" autocomplete="password" placeholder="Password"
-                        class="w-64 px-3 py-2 bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-indigo-600 rounded-lg border border-zinc-600 hover:brightness-110 text-zinc-100 mt-4  mb-4"
+                        class="w-64 px-3 py-2 bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-indigo-600 rounded-lg border border-zinc-600 hover:brightness-110 text-zinc-100 mt-4  mb-4 overflow-auto"
                         type="password">
                     <button type="submit"
                         class="hover:brightness-110 bg-gradient-to-t from-indigo-800 via-indigo-800 to-indigo-700 border border-indigo-800 px-4 py-1.5 rounded-lg shadow h-9 w-64 drop-shadow flex items-center justify-center text-zinc-100">

@@ -257,14 +257,20 @@ async def job_handler(websocket, prompt, job_id):
     if stream == 1:
         jq1.append(job_id)
         try:
-            res = await post_imagine(websocket, prompt, job_id, "proxy1")
+            res = await asyncio.wait_for(post_imagine(websocket, prompt, job_id, "proxy1"), timeout=600)  # 600 seconds = 10 minutes
+        except asyncio.TimeoutError:
+            logger.error(f"The post_imagine {job_id} took too long to complete.")
+            raise Exception(f"The post_imagine {job_id} took too long to complete.")
         except MidjourneyProxyError as e:
             raise e from None
         jq1.remove(job_id)
     elif stream == 2:
         jq2.append(job_id)
         try:
-            res = await post_imagine(websocket, prompt, job_id, "proxy2")
+            res = await asyncio.wait_for(post_imagine(websocket, prompt, job_id, "proxy2"), timeout=600)  # 600 seconds = 10 minutes
+        except asyncio.TimeoutError:
+            logger.error(f"The post_imagine {job_id} took too long to complete.")
+            raise Exception(f"The post_imagine {job_id} took too long to complete.")
         except MidjourneyProxyError as e:
             raise e from None
         jq2.remove(job_id)
