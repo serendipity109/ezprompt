@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import time
+from datetime import datetime
 from multiprocessing import Manager
 
 from fastapi import APIRouter, HTTPException, Request, UploadFile, WebSocket
@@ -23,10 +24,12 @@ from utils.tools import (
 from utils.worker import MidjourneyProxyError, post_imagine, get_status
 from utils.integrated_crud import IntegratedCRUD
 from utils.crud import MJImg
+from utils.monitor import SQLAlchemyMon
 
 router = APIRouter()
 websocket_connections = set()
 crud = IntegratedCRUD()
+monitor = SQLAlchemyMon()
 manager = Manager()
 
 n_jobs = os.environ.get("CONCURRENT_JOBS", "6")
@@ -114,6 +117,8 @@ async def imagine_handler(websocket, start, job_id):
         if "mode" in data.keys():
             mode = data["mode"]
             prompt += f" --{mode} "
+        else:
+            mode = "fast"
         logger.info(f"prompt: {prompt}")
         await make_user_folder(user_id)
         job_map = {job_id: (websocket, prompt)}
@@ -150,6 +155,12 @@ async def imagine_handler(websocket, start, job_id):
             "remaining_credits": credits,
         },
     }
+    monitor.create(
+        user_id=user_id,
+        prompt=data["prompt"],
+        mode=mode,
+        create_time=datetime.fromtimestamp(start),
+    )
     await websocket.send_text(json.dumps(return_msg))
 
 

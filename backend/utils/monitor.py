@@ -1,19 +1,32 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column, Integer, String, DateTime, Text
+from sqlalchemy.sql import func
+from sqlalchemy.ext.declarative import declarative_base
 import logging
-import os
 
-MYSQL_URI = os.environ.get("MYSQL_URI", "")
-MYSQL_DATABASE = os.environ.get("MYSQL_DATABASE", "")
-DATABASE_URL = f"{MYSQL_URI}/{MYSQL_DATABASE}"
+DATABASE_URL = "mysql+pymysql://root:password@mysql:3306/requests"
+Base = declarative_base()
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class SQLAlchemyCRUD:
-    def __init__(self, model):
-        self.model = model
+class Record(Base):
+    __tablename__ = "records"
+    _id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(1000), nullable=False)
+    prompt = Column(Text, nullable=False)
+    mode = Column(String(10), nullable=False)
+    create_time = Column(DateTime, default=func.now())
+
+
+class SQLAlchemyMon:
+    def __init__(
+        self,
+    ):
+        self.model = Record
         self.engine = create_engine(DATABASE_URL, pool_recycle=86400)  # 一天閒置會斷線
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
@@ -23,6 +36,7 @@ class SQLAlchemyCRUD:
             record = self.model(**kwargs)
             self.session.add(record)
             self.session.commit()
+            logger.info("Successfully saved a record!")
             return record
         except Exception as e:
             logger.error(f"Error in create: {e}")
@@ -41,43 +55,6 @@ class SQLAlchemyCRUD:
                 return None
         except Exception as e:
             logger.error(f"Error in read: {e}")
-            self.session.rollback()
-            raise Exception(e)
-
-    def read_user_by_id(self, user_id):
-        try:
-            records = self.session.query(self.model).filter_by(user_id=user_id).all()
-            if records:
-                result = []
-                for record in records:
-                    result.append(
-                        {
-                            column.key: getattr(record, column.key)
-                            for column in self.model.__table__.columns
-                        }
-                    )
-                return result
-            else:
-                return None
-        except Exception as e:
-            logger.error(f"Error in read: {e}")
-            self.session.rollback()
-            raise Exception(e)
-
-    def read_all(self):
-        try:
-            records = self.session.query(self.model).all()
-            result = []
-            for record in records:
-                result.append(
-                    {
-                        column.key: getattr(record, column.key)
-                        for column in self.model.__table__.columns
-                    }
-                )
-            return result
-        except Exception as e:
-            logger.error(f"Error in read_all: {e}")
             self.session.rollback()
             raise Exception(e)
 
@@ -107,20 +84,5 @@ class SQLAlchemyCRUD:
                 return False
         except Exception as e:
             logger.error(f"Error in delete: {e}")
-            self.session.rollback()
-            raise Exception(e)
-
-    def delete_user_by_id(self, user_id):
-        try:
-            # 这将删除所有 user_id 等于指定值的记录
-            record_count = (
-                self.session.query(self.model).filter_by(user_id=user_id).delete()
-            )
-            self.session.commit()
-
-            # 如果有任何记录被删除，返回 True，否则返回 False
-            return record_count > 0
-        except Exception as e:
-            logger.error(f"Error in delete_user_by_id: {e}")
             self.session.rollback()
             raise Exception(e)
