@@ -14,11 +14,13 @@ logger = logging.getLogger(__name__)
 class SQLAlchemyCRUD:
     def __init__(self, model):
         self.model = model
-        self.engine = create_engine(DATABASE_URL)
+        self.engine = create_engine(DATABASE_URL, pool_recycle=86400)  # 一天閒置會斷線
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
     def create(self, **kwargs):
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
         try:
             record = self.model(**kwargs)
             self.session.add(record)
@@ -28,6 +30,8 @@ class SQLAlchemyCRUD:
             logger.error(f"Error in create: {e}")
             self.session.rollback()
             raise Exception(e)
+        finally:
+            session.close()
 
     def read(self, _id):
         try:
@@ -113,7 +117,9 @@ class SQLAlchemyCRUD:
     def delete_user_by_id(self, user_id):
         try:
             # 这将删除所有 user_id 等于指定值的记录
-            record_count = self.session.query(self.model).filter_by(user_id=user_id).delete()
+            record_count = (
+                self.session.query(self.model).filter_by(user_id=user_id).delete()
+            )
             self.session.commit()
 
             # 如果有任何记录被删除，返回 True，否则返回 False

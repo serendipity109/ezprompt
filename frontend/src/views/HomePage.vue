@@ -274,6 +274,7 @@ export default defineComponent({
           "user_id": user_id,
           "prompt": keyword.value,
           "size": sizeLabels[dimValue.value],
+          "mode": "relax",
           ...(typeof image_url === 'string' && image_url !== '' ? { "image_url": image_url } : {}),
           ...(type.value ? { "preset": type.value } : {})
         };

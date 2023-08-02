@@ -1,5 +1,5 @@
 import asyncio
-import glob
+import websockets
 import io
 import json
 import logging
@@ -20,7 +20,7 @@ from utils.tools import (
     style_parser,
     make_user_folder,
 )
-from utils.worker import MidjourneyProxyError, post_imagine
+from utils.worker import MidjourneyProxyError, post_imagine, get_status
 from utils.integrated_crud import IntegratedCRUD
 from utils.crud import MJImg
 
@@ -51,10 +51,18 @@ else:
     FRONTEND_IP = os.environ.get("F_EXTERNAL_IP")
     BACKEND_IP = os.environ.get("B_EXTERNAL_IP")
 
+PROXY_IP1 = "192.168.2.16:9999"
+PROXY_IP2 = "192.168.2.16:9998"
+
 
 @router.websocket("/dcmj/imagine")
 async def imagine(websocket: WebSocket):
     global job_q, waiting_q, job_map, jq1_exists, jq2_exists
+    client_ip = websocket.client.host
+    allowed_ips = {"192.168.3.16"}
+    if client_ip not in allowed_ips:
+        await websocket.close()
+        return
     start = time.time()
     await websocket.accept()
     websocket_connections.add(websocket)
@@ -112,7 +120,10 @@ async def imagine_handler(websocket, start, job_id):
     except Exception as e:
         await crud.topup_credits(user_id, 4)
         raise Exception(e)
-    res = await job_schedular(job_id)
+    try:
+        res = await job_schedular(user_id, job_id)
+    except websockets.exceptions.ConnectionClosedOK:
+        raise Exception("WebSocket connection was closed with a 'going away' status.")
     taskid = res["id"]
     url = res["imageUrl"]
     image_list = await download_image(user_id, url)
@@ -142,7 +153,7 @@ async def imagine_handler(websocket, start, job_id):
     await websocket.send_text(json.dumps(return_msg))
 
 
-async def job_schedular(job_id):
+async def job_schedular(user_id, job_id):
     global n_jobs, job_q, waiting_q, job_map, jq1_exists, jq2_exists
     websocket, prompt = job_map[job_id]
     n = 1000
@@ -180,7 +191,7 @@ async def job_schedular(job_id):
                 continue
             if websocket.client_state == WebSocketState.CONNECTED:
                 try:
-                    res = await job_handler(websocket, prompt, job_id)
+                    res = await job_handler(websocket, prompt, user_id, job_id)
                 except MidjourneyProxyError as e:
                     if str(e).endswith("run out of hours!"):
                         proxy = str(e).split(" ")[0]
@@ -193,7 +204,7 @@ async def job_schedular(job_id):
                     await kill_zombie(job_id)
                     job_id = await generate_random_id()
                     try:
-                        res = await job_handler(websocket, prompt, job_id)
+                        res = await job_handler(websocket, prompt, user_id, job_id)
                     except MidjourneyProxyError as e:
                         if str(e).endswith("run out of hours!"):
                             await websocket.send_text(
@@ -218,7 +229,7 @@ async def job_schedular(job_id):
             return res
 
 
-async def job_handler(websocket, prompt, job_id):
+async def job_handler(websocket, prompt, user_id, job_id):
     global n_jobs, job_q, jq1, jq2, jq1_exists, jq2_exists
     job_q.append(job_id)
     stream = ""
@@ -257,20 +268,22 @@ async def job_handler(websocket, prompt, job_id):
     if stream == 1:
         jq1.append(job_id)
         try:
-            res = await asyncio.wait_for(post_imagine(websocket, prompt, job_id, "proxy1"), timeout=600)  # 600 seconds = 10 minutes
+            res = await asyncio.wait_for(
+                post_imagine(websocket, prompt, user_id, job_id, "proxy1"), timeout=600
+            )  # 600 seconds = 10 minutes
         except asyncio.TimeoutError:
-            logger.error(f"The post_imagine {job_id} took too long to complete.")
-            raise Exception(f"The post_imagine {job_id} took too long to complete.")
+            raise Exception("The post_imagine function took too long to complete.")
         except MidjourneyProxyError as e:
             raise e from None
         jq1.remove(job_id)
     elif stream == 2:
         jq2.append(job_id)
         try:
-            res = await asyncio.wait_for(post_imagine(websocket, prompt, job_id, "proxy2"), timeout=600)  # 600 seconds = 10 minutes
+            res = await asyncio.wait_for(
+                post_imagine(websocket, prompt, user_id, job_id, "proxy2"), timeout=600
+            )  # 600 seconds = 10 minutes
         except asyncio.TimeoutError:
-            logger.error(f"The post_imagine {job_id} took too long to complete.")
-            raise Exception(f"The post_imagine {job_id} took too long to complete.")
+            raise Exception("The post_imagine function took too long to complete.")
         except MidjourneyProxyError as e:
             raise e from None
         jq2.remove(job_id)
@@ -323,6 +336,55 @@ async def show_image(user_id: str, image_name: str):
         return FileResponse(image_path)
     else:
         raise HTTPException(status_code=404, detail="Image not found")
+
+
+@router.get("/dcmj/get_task")
+async def get_task(user_id: str, task_id: str, proxy: str):
+    progress = 0
+    msg = ""
+    try:
+        while progress != 100:
+            match proxy:
+                case "proxy1":
+                    PROXY_IP = PROXY_IP1
+                case "proxy2":
+                    PROXY_IP = PROXY_IP2
+                case _:
+                    raise Exception("Proxy selection error!")
+            msg = await get_status(task_id, PROXY_IP)
+            if msg["result"]["status"] in [
+                "NOT_START",
+                "SUBMITTED",
+                "SUCCESS",
+                "IN_PROGRESS",
+            ]:
+                progress = msg["result"]["progress"].replace("%", "")
+                progress = int(progress)
+                if progress > 0:
+                    await asyncio.sleep(5)
+                    continue
+            else:
+                return {"code": 400, "message": "Unable to get the task.", "result": ""}
+        imageUrl = msg["result"]["imageUrl"]
+        image_list = await download_image(user_id, imageUrl)
+        image_list.insert(0, image_list[0].replace("_1.png", ".png"))
+        return_msg = {
+            "code": 201,
+            "message": "Successfully get images!",
+            "data": {
+                "result": image_list,
+                "task_id": task_id,
+            },
+        }
+        return return_msg
+    except Exception as e:
+        error_msg = {
+            "code": 400,
+            "message": str(e),
+            "result": "Unable to get the task.",
+        }
+        logger.error(json.dumps(error_msg))
+        return error_msg
 
 
 @router.get("/dcmj/queue_status")

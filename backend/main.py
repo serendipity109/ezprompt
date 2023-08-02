@@ -4,9 +4,12 @@ import time
 from datetime import timedelta
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from fastapi import APIRouter, FastAPI
+from fastapi import Request, APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
+from collections import defaultdict
 from routes import SDXL, dcmj, account
 from utils import minioTool, redisTool
 from utils.integrated_crud import IntegratedCRUD
@@ -26,9 +29,39 @@ else:
     BACKEND_IP = os.environ.get("B_EXTERNAL_IP")
 
 
+class BlockIPMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, max_404=5):
+        super().__init__(app)
+        self.max_404 = max_404
+        self.ip_404_counter = defaultdict(int)
+        self.allowed_ips = {"192.168.3.16", "127.0.0.1"}  # 将其他允许的 IP 地址添加到这里
+
+    async def dispatch(self, request: Request, call_next):
+        client_ip = request.client.host
+
+        # 检查 IP 是否允许
+        if client_ip not in self.allowed_ips:
+            # 如果 IP 不在允许列表中，直接返回 403 Forbidden 响应
+            return Response("IP Blocked", status_code=403)
+
+        response = await call_next(request)
+
+        # 检查响应是否为 404
+        if response.status_code == 404:
+            self.ip_404_counter[client_ip] += 1
+            if self.ip_404_counter[client_ip] >= self.max_404:
+                # 可以在这里添加日志或警报
+                pass
+        else:
+            # 如果请求成功，重置计数器
+            self.ip_404_counter[client_ip] = 0
+
+        return response
+
+
 # Add CORS middleware
 origins = ["*"]
-
+app.add_middleware(BlockIPMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

@@ -45,7 +45,7 @@
                 <form @submit.prevent="SubmitLogin">
                     <div class="relative">
                         <input v-model="email" autocomplete="email" :placeholder="email"
-                            class="w-64 px-3 py-2 bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-indigo-600 rounded-lg border border-zinc-600 hover:brightness-110 text-zinc-100 pr-20"
+                            class="w-64 px-3 py-2 bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-indigo-600 rounded-lg border border-zinc-600 hover:brightness-110 text-zinc-100"
                             type="email" readonly>
                         <label @click.prevent="page = 1"
                             class="absolute inset-y-0 right-3 flex items-center text-purple-600 cursor-pointer">
