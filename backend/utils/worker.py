@@ -9,8 +9,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-PROXY_IP1 = "192.168.2.16:9999"
-PROXY_IP2 = "192.168.2.16:9998"
+PROXY_IP1 = "192.168.130.160:9999"
+PROXY_IP2 = "192.168.130.160:9998"
 
 
 async def post_imagine(websocket, prompt, user_id, job_id, proxy="proxy1"):

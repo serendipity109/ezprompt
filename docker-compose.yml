@@ -27,11 +27,11 @@ services:
       - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
       - MYSQL_URI=mysql+pymysql://root:password@mysql:3306
       - MYSQL_DATABASE=ezprompt
-      - F_INTERNAL_IP=192.168.3.16:8087
+      - F_INTERNAL_IP=0.0.0.0:8087
       - F_EXTERNAL_IP=61.216.75.236:8087
-      - B_INTERNAL_IP=192.168.3.16:9527
+      - B_INTERNAL_IP=0.0.0.0:9527
       - B_EXTERNAL_IP=61.216.75.236:9528
-      - PROXY_IP=192.168.2.16:9999
+      - PROXY_IP=192.168.130.160:9999
       - BUILD_VERSION=${BUILD_VERSION}
     ports:
         - 9527:9527
@@ -72,13 +72,28 @@ services:
       TZ: UTC
       MYSQLD__wait_timeout: 86400
       MYSQLD__interactive_timeout: 86400
-  # midjourney-proxy:
-  #   image: chazzcheung/midjourney-proxy:latest
-  #   environment:
-      # - mj.discord.guild-id=1115834494818209844
-      # - mj.discord.channel-id=1115834495313117216
-      # - mj.discord.user-token=MTExNTE3MjE4Nzc4ODI5MjE1Ng.G7IU23.nxS4oYHlQkqIohYzuiMa5E4FyXfpWofcB2D2a4  #   ports:
-  #     - 9999:8080
+  midjourney-proxy:
+    image: chazzcheung/midjourney-proxy:latest
+    environment:
+      - mj.discord.guild-id=1115834541643403284
+      - mj.discord.channel-id=1115834541643403287
+      - mj.discord.user-token=MTA4MTA0MjM4MjQ3NDE4Mjc2OQ.Gn5kNJ.DGv6QNmaQtf8NoRHwDKe97yA3roysbCwdl24Dw
+      - mj.queue.core-size=12
+      - mj.queue.timeout-minutes=10
+    restart: always
+    ports:
+      - 9999:8080
+  midjourney-proxy2:
+    image: chazzcheung/midjourney-proxy:latest
+    environment:
+      - mj.discord.guild-id=1115834494818209844
+      - mj.discord.channel-id=1115834495313117216
+      - mj.discord.user-token=MTExNTE3MjE4Nzc4ODI5MjE1Ng.G7IU23.nxS4oYHlQkqIohYzuiMa5E4FyXfpWofcB2D2a4
+      - mj.queue.core-size=12
+      - mj.queue.timeout-minutes=10
+    restart: always
+    ports:
+      - 9998:8080  
   nginx:
     container_name: nginx
     build:

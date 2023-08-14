@@ -44,8 +44,8 @@ job_map = manager.dict()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-INTERNAL_IP = "192.168.3.16:9527"
-EXTERNAL_IP = "61.216.75.236:9528"
+INTERNAL_IP = "0.0.0.0:9527"
+EXTERNAL_IP = "0.0.0.0:9528"
 BUILD_VERSION = os.environ.get("BUILD_VERSION", "internal")
 if BUILD_VERSION == "internal":
     FRONTEND_IP = os.environ.get("F_INTERNAL_IP")
@@ -54,15 +54,15 @@ else:
     FRONTEND_IP = os.environ.get("F_EXTERNAL_IP")
     BACKEND_IP = os.environ.get("B_EXTERNAL_IP")
 
-PROXY_IP1 = "192.168.2.16:9999"
-PROXY_IP2 = "192.168.2.16:9998"
+PROXY_IP1 = "192.168.130.160:9999"
+PROXY_IP2 = "192.168.130.160:9998"
 
 
 @router.websocket("/dcmj/imagine")
 async def imagine(websocket: WebSocket):
     global job_q, waiting_q, job_map, jq1_exists, jq2_exists
     client_ip = websocket.client.host
-    allowed_ips = {"192.168.3.16"}
+    allowed_ips = {"172.24.0.1", "0.0.0.0"}
     if client_ip not in allowed_ips:
         await websocket.close()
         return

@@ -16,8 +16,8 @@ from utils.gpt import translator
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-INTERNAL_IP = "192.168.3.16:9527"
-EXTERNAL_IP = "61.216.75.236:9528"
+INTERNAL_IP = "0.0.0.0:9527"
+EXTERNAL_IP = "0.0.0.0:9528"
 BUILD_VERSION = os.environ.get("BUILD_VERSION", "internal")
 if BUILD_VERSION == "internal":
     BACKEND_IP = os.environ.get("B_INTERNAL_IP")
@@ -39,7 +39,7 @@ async def schema_validator(websocket):
         raise Exception(e)
     if "image_url" in data.keys():
         if isinstance(data["image_url"], str) and len(data["image_url"]) > 0:
-            url = data["image_url"].replace("61.216.75.236:9528", "192.168.3.16:9527")
+            url = data["image_url"].replace("61.216.75.236:9528", "0.0.0.0:9527")
             async with httpx.AsyncClient() as client:
                 res = await client.get(url)
             if res.status_code == 404:

@@ -34,7 +34,7 @@ class BlockIPMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.max_404 = max_404
         self.ip_404_counter = defaultdict(int)
-        self.allowed_ips = {"192.168.3.16", "127.0.0.1"}  # 将其他允许的 IP 地址添加到这里
+        self.allowed_ips = {"172.24.0.1", "127.0.0.1"}  # 将其他允许的 IP 地址添加到这里
 
     async def dispatch(self, request: Request, call_next):
         client_ip = request.client.host
@@ -119,7 +119,7 @@ async def get_images():
         res.append(
             {
                 "img": img,
-                "url": f"http://192.168.3.16:9527/media/mock/{img}.jpg",
+                "url": f"http://0.0.0.0:9527/media/mock/{img}.jpg",
                 "view1": view1,
                 "view2": view2,
             }
