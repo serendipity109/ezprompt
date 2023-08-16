@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: NodePort
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend-container
+        image: harbor.emotibot.com/emotimage/ezpmt-frontend:1c571fc-20230802-1632
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: frontend-volume
+          mountPath: /workspace
+      volumes:
+      - name: frontend-volume
+        hostPath:
+          path: ./frontend
