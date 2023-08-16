@@ -2,7 +2,8 @@ import { createRouter, createWebHistory } from "vue-router";
 import Home from "@/views/HomePage.vue";
 import Prompt from "@/views/PromptPage.vue";
 import Test from "@/views/TestPage.vue";
-import Gen from "@/views/GenPage.vue";
+// import Gen from "@/views/GenPage.vue";
+import CGen from "@/views/ControlGenPage.vue";
 import Hist from "@/views/HistPage.vue";
 import Acc from "@/views/AccountPage.vue";
 import Show from "@/views/ShowPage.vue";
@@ -25,8 +26,8 @@ const router = createRouter({
     },
     {
       path: "/generate",
-      component: Gen,
-      meta: { title: "EZPrompt - Generate" },
+      component: CGen,
+      meta: { title: "EZPrompt - ControlGenerate" },
     },
     {
       path: "/history",
