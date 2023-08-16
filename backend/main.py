@@ -61,7 +61,7 @@ class BlockIPMiddleware(BaseHTTPMiddleware):
 
 # Add CORS middleware
 origins = ["*"]
-app.add_middleware(BlockIPMiddleware)
+# app.add_middleware(BlockIPMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

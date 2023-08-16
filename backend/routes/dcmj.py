@@ -54,18 +54,18 @@ else:
     FRONTEND_IP = os.environ.get("F_EXTERNAL_IP")
     BACKEND_IP = os.environ.get("B_EXTERNAL_IP")
 
-PROXY_IP1 = "192.168.2.16:9999"
-PROXY_IP2 = "192.168.2.16:9998"
+PROXY_IP1 = "192.168.3.16:9999"
+PROXY_IP2 = "192.168.3.16:9998"
 
 
 @router.websocket("/dcmj/imagine")
 async def imagine(websocket: WebSocket):
     global job_q, waiting_q, job_map, jq1_exists, jq2_exists
-    client_ip = websocket.client.host
-    allowed_ips = {"192.168.3.16"}
-    if client_ip not in allowed_ips:
-        await websocket.close()
-        return
+    # client_ip = websocket.client.host
+    # allowed_ips = {"192.168.3.16"}
+    # if client_ip not in allowed_ips:
+    #     await websocket.close()
+    #     return
     start = time.time()
     await websocket.accept()
     websocket_connections.add(websocket)
