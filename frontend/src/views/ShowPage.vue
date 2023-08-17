@@ -186,13 +186,7 @@ export default defineComponent({
 });
 </script>
   
-<style>
-.image-gallery {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-}
+<style scoped>
 
 .image-row {
     display: flex;
@@ -212,62 +206,4 @@ export default defineComponent({
     max-width: 100%;
     height: auto;
 }
-
-.selected-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.overlay-button {
-    margin: 5px;
-}
-
-.overlay-button:hover {
-    color: rgb(100, 69, 130);
-}
-
-.selected-container.selected {
-    padding: 3px;
-    background-color: rgb(89, 62, 157);
-}
-
-.image-overlay {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    height: 0;
-    overflow: visible;
-}
-
-.el-progress-bar__innerText {
-    color: black;
-}
-
-.el-progress--line {
-    width: 500px;
-    margin: 0 auto;
-    display: off;
-}
-
-.el-radio__input.is-checked .el-radio__inner {
-    border-color: #a153e6;
-    background: #a153e6;
-}
-
-.el-radio__input.is-checked+.el-radio__label {
-    color: #a153e6;
-}
-
-.el-radio__inner {
-    background-color: #ffffff12;
-}
-
-.el-radio__label {
-    color: #ffffff6e;
-}
-
-.radioRow {
-    display: flex;
-    justify-content: center;
-}</style>
+</style>

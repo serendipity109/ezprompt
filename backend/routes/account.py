@@ -91,7 +91,7 @@ async def delete_user(user_id):
 
 
 @router.post("/user/send-email")
-def send_email(receiver_email, token, verification_link="http://localhost:8080/"):
+def send_email(receiver_email, token, verification_link="http://192.168.3.16:8080/"):
     try:
         email_server = SMTP_SSL("smtp.gmail.com", 465)
         email_server.login(OWN_EMAIL, OWN_EMAIL_PASSWORD)

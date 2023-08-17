@@ -1,103 +1,398 @@
 <template>
-    <div class="container">
-        <input type="file" @change="onFileChange" class="file-input">
-        <div class="canvas-wrapper">
-            <div class="canvas-container">
-                <canvas v-if="image" ref="canvas" @mousedown="drawPoint" @contextmenu.prevent></canvas>
+    <div>
+        <div class="container">
+            <input type="file" @change="onFileChange" class="file-input">
+            <div class="canvas-wrapper">
+                <div class="canvas-container">
+                    <canvas v-if="image" ref="canvas" @mousedown="drawPoint" @contextmenu.prevent></canvas>
+                </div>
+                <div v-loading="loading" element-loading-text="Loading..." class="canvas-container empty flex items-center justify-center">
+                    <div v-if="type===0" class="flex overflow-x-auto align-center justify-start thin-scrollbar h-auto pb-2"
+                        style="height:fit-content; overscroll-behavior-x:contain; white-space: nowrap;">
+                        <div v-for="(img_url, index) in img_res" :key="index" style="display: inline-block; margin-right: 5px;">
+                            <img v-bind:src="img_url" v-on:click="showViewer([img_url])"
+                            style="object-fit:contain; width:100%; height:auto; display: block;" />
+                            <input type="checkbox" class="image-checkbox" @change="handleCheckboxChange(index, $event)">
+                        </div>
+                    </div>
+                    <div v-if="type===1" class="canvas-container empty flex items-center justify-center">
+                        <canvas ref="maskCanvas" v-show="type===1"></canvas>
+                    </div>
+                </div>
             </div>
-            <div class="canvas-container empty"></div>
+            <div class="button-line">
+                <button class="reset-button" @click="resetPoints">Reset</button>
+                <button class="sam-button" @click="() => sam(blacks, reds)">SAM</button>
+                <button class="sm-button" @click="() => select_mask()">Select Mask</button>
+            </div>
         </div>
-        <button class="reset-button" @click="resetPoints">Reset</button>
+        <div class="model container" style="margin-top: 5ch;">
+            <h2 style="font-size: 2em; margin-bottom: 1ch;">Model Selection</h2>
+            <div v-for="(model, index) in models" :key="index" class="location-item">
+                <el-radio v-model="radio_m" :label="index.toString()" size="large">麦橘写实</el-radio>
+                <img :src="model" style="width: 151px; height: 151px;">
+                </div>
+        </div>
+        <div class="loc container" style="margin-top: 3ch; margin-bottom: 5ch;">
+            <h2 style="font-size: 2em; margin-bottom: 1ch;">Location Selection</h2>
+            <div class="locations-wrapper">
+                <div v-for="(location, index) in locations" :key="index" class="location-item">
+                    <el-radio v-model="radio_l" :label="index.toString()" size="large">{{ location }}</el-radio>
+                    <img :src="loc_urls[index]" style="width: 151px; height: 151px; margin-right: 3ch;">
+                </div>
+            </div>
+        </div>
+        <div class="generate container" style="margin-top: 3ch; margin-bottom: 3ch;">
+            <button class="gen-button" @click="generate">Generate</button>
+            <div v-if="show_res===1" class="generate image" style="margin-top: 3ch;">
+                <img :src="res_url" v-on:click="showViewer([res_url])">
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
-import { ref, toRefs } from 'vue';
+import { ref, reactive } from 'vue';
+import { api as viewerApi } from 'v-viewer'
+import axios from "axios";
+import { ElMessage } from 'element-plus'
 
 export default {
   setup() {
+    const state = reactive({
+      image: null,
+      pointCount: 0,
+      points: [],
+    });
+    let userId = ref(null);
+    let img = ref(null);
     const image = ref(null);
+    const image_url = ref(null);
+    const mask_url = ref(null);
+    const maskCanvas = ref(null);
+    const img_res = ref([]);
+    const models = ref(["http://192.168.3.20:9527/media/footage/image/mjic.png"]);
+    const locations = ref(["beach", "street", "cafe"]);
+    const loc_urls = ref(["https://ai-global-image.weshop.com/ad30c49b-0c28-458b-be06-4b1f73a10965.png_256x256.jpeg", "https://ai-global-image.weshop.com/20c29716-f083-41f1-8c26-db9df6f37135.png_256x256.jpeg", "https://ai-global-image.weshop.com/64207f3d-c144-4197-88b1-df6843359394.png_256x256.jpeg"]);
     const pointCount = ref(0);
     const points = ref([]);
     const canvas = ref(null);
+    const blacks = ref([]);
+    const reds = ref([]);
+    const checkedIndices = ref([]);
+    const loading = ref(false);
+    const type = ref(0);
+    const radio_m = ref("0");
+    const radio_l = ref("0");
+    const socket = ref(null);
+    const LOC = ref("");
+    const res_url = ref("");
+    const show_res = ref("0");
+    
+    const onFileChange = async (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            image.value = new Image();
+            image.value.onload = () => {
+                drawImageToCanvas();
+            }
+            image.value.src = e.target.result;
 
-    const onFileChange = (event) => {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        image.value = new Image();
-        image.value.onload = () => {
-          drawImageToCanvas();
+            const formData = new FormData();
+            formData.append('rawfile', file, 'image.png'); // Assuming the name of the file should be 'image.png'
+
+            try {
+                const response = await axios.post('http://192.168.3.20:9527/upload?user_id=adam', formData, {
+                    headers: {
+                        'accept': 'application/json',
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+                image_url.value = response.data.data
+            } catch (error) {
+                console.error("Error uploading the image:", error);
+            }
         }
-        image.value.src = e.target.result;
-      }
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
     };
 
     const drawImageToCanvas = () => {
-      const ctx = canvas.value.getContext('2d');
-      const scaleX = 512 / image.value.width;
-      const scaleY = 512 / image.value.height;
-      const scale = Math.min(scaleX, scaleY);
-      
-      const width = image.value.width * scale;
-      const height = image.value.height * scale;
-      const offsetX = (512 - width) / 2;
-      const offsetY = (512 - height) / 2;
-      
-      canvas.value.width = 512;
-      canvas.value.height = 512;
-      ctx.drawImage(image.value, offsetX, offsetY, width, height);
+        const ctx = canvas.value.getContext('2d');
+        const scaleX = 512 / image.value.width;
+        const scaleY = 512 / image.value.height;
+        const scale = Math.min(scaleX, scaleY);
+        
+        const width = image.value.width * scale;
+        const height = image.value.height * scale;
+        const offsetX = (512 - width) / 2;
+        const offsetY = (512 - height) / 2;
+        
+        canvas.value.width = 512;
+        canvas.value.height = 512;
+        ctx.drawImage(image.value, offsetX, offsetY, width, height);
     };
 
     const drawPoint = (event) => {
-      if (pointCount.value >= 4) return;
+        if (pointCount.value >= 8) return;
 
-      const x = event.offsetX;
-      const y = event.offsetY;
+        // Get canvas-relative coordinates
+        const xCanvas = event.offsetX;
+        const yCanvas = event.offsetY;
 
-      const color = event.button === 0 ? 'black' : (event.button === 2 ? 'red' : null);
+        // Calculate the scale used to draw the image
+        const scaleX = 512 / image.value.width;
+        const scaleY = 512 / image.value.height;
+        const scale = Math.min(scaleX, scaleY);
 
-      if (!color) return;
+        // Calculate the image's offsets
+        const width = image.value.width * scale;
+        const height = image.value.height * scale;
+        const offsetX = (512 - width) / 2;
+        const offsetY = (512 - height) / 2;
 
-      points.value.push({ x, y, color });
-      console.log(x, y, color);
-      const ctx = canvas.value.getContext('2d');
-      ctx.fillStyle = color;
-      const radius = 5;
+        // Convert canvas-relative coordinates to image-relative
+        const xImage = Math.round((xCanvas - offsetX) / scale);
+        const yImage = Math.round((yCanvas - offsetY) / scale);
 
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, 2 * Math.PI);
-      ctx.fill();
+        let targetArray = null;
+        let color = null;
 
-      pointCount.value++;
+        if (event.button === 0) {
+            color = 'black';
+            targetArray = blacks;
+        } else if (event.button === 2) {
+            color = 'red';
+            targetArray = reds;
+        }
+
+        if (!color) return;
+
+        targetArray.value.push({ x: xImage, y: yImage });
+        const ctx = canvas.value.getContext('2d');
+        ctx.fillStyle = color;
+        const radius = 5;
+
+        ctx.beginPath();
+        ctx.arc(xCanvas, yCanvas, radius, 0, 2 * Math.PI);
+        ctx.fill();
+
+        pointCount.value++;
     };
+
 
     const resetPoints = () => {
-      pointCount.value = 0;
-      points.value = [];
-      drawImageToCanvas();
+        pointCount.value = 0;
+        blacks.value = [];
+        reds.value = [];
+        drawImageToCanvas();
     };
 
+    const sam = async (blacks, reds) => {
+        const match = image_url.value.match(/\/media\/(.*?)\/input\/(.*?)$/);
+        if (!match) {
+            console.error("Invalid image_url format");
+            return;
+        }
+        userId = match[1];
+        img = match[2];
+
+        // Construct the URL
+        const formatPoints = (points) => {
+            return points.map(point => `(${point.x}, ${point.y})`).join(', ');
+        };
+
+        const formattedBlacks = encodeURIComponent(`[${formatPoints(blacks)}]`);
+        const formattedReds = encodeURIComponent(`[${formatPoints(reds)}]`);
+
+        // Construct the URL
+        const url = `http://192.168.3.20:9527/sam?user_id=${encodeURIComponent(userId)}&img=${encodeURIComponent(img)}&blacks=${formattedBlacks}&reds=${formattedReds}`;
+
+        try {
+            const [_, response] = await Promise.all([
+                loading_switch(),
+                await axios.post(url, null, {
+                    headers: {
+                        'accept': 'application/json'
+                    }
+                })
+            ]);
+            console.log(_)
+            loading_switch()
+            img_res.value = response.data.data;
+        } catch (error) {
+            console.error("Error in SAM function:", error);
+        }
+        resetPoints();
+    };
+
+    const loading_switch = () => {
+        loading.value = !loading.value;
+    }
+    
+    const handleCheckboxChange = (index, event) => {
+        if (event.target.checked) {
+        // Add the index to the array if it's not already present
+            if (!checkedIndices.value.includes(index)) {
+                checkedIndices.value.push(index);
+            }
+        } else {
+            // Remove the index from the array
+            checkedIndices.value = checkedIndices.value.filter(i => i !== index);
+        }
+    };
+
+    const select_mask = async () => {
+        const mask_ids = encodeURIComponent(checkedIndices.value.join(","));
+    
+        // Construct the URL
+        const url = `http://192.168.3.20:9527/select_mask/${mask_ids}?user_id=${userId}`;
+        try {
+            const response = await axios.post(url, null, {
+                headers: {
+                    'accept': 'application/json'
+                }
+            });
+            img_res.value = response.data.data;
+            type.value = 1;
+            mask_url.value = `http://192.168.3.20:9527/media/${userId}/input/msk.png`;
+
+            // Load mask image and draw it to maskCanvas
+            const maskImage = new Image();
+            maskImage.onload = () => {
+                drawMaskImageToCanvas(maskImage);
+            };
+            maskImage.src = mask_url.value;
+        } catch (error) {
+            console.error("Error in Select Mask:", error);
+        }
+    };
+
+    const drawMaskImageToCanvas = (maskImage) => {
+        const maskCtx = maskCanvas.value.getContext('2d');
+
+        // Clear the canvas
+        maskCtx.clearRect(0, 0, maskCanvas.value.width, maskCanvas.value.height);
+
+        // Calculate the scale used to draw the mask image
+        const maskScaleX = 512 / maskImage.width;
+        const maskScaleY = 512 / maskImage.height;
+        const maskScale = Math.min(maskScaleX, maskScaleY);
+
+        // Calculate the image's offsets
+        const maskWidth = maskImage.width * maskScale;
+        const maskHeight = maskImage.height * maskScale;
+        const maskOffsetX = (512 - maskWidth) / 2;
+        const maskOffsetY = (512 - maskHeight) / 2;
+
+        maskCanvas.value.width = 512;
+        maskCanvas.value.height = 512;
+        maskCtx.drawImage(maskImage, maskOffsetX, maskOffsetY, maskWidth, maskHeight);
+    };
+
+    const generate = async () => {
+        if (socket.value && socket.value.readyState !== WebSocket.CLOSED) {
+            socket.value.close();
+        }
+        socket.value = new WebSocket("ws://192.168.3.20:9527/img2img");
+        let message;
+
+        switch(radio_l.value) {
+            case "0":
+            LOC.value = "on the beach";
+            break;
+            case "1":
+            LOC.value = "on the street";
+            break;
+            case "2":
+            LOC.value = "in a cafe";
+            break;
+        }
+        socket.value.onopen = () => {
+            message = {
+                "user_id": userId,
+                "image": img,
+                "prompt":`best quality, masterpiece, (photorealistic:1.4), 1girl, depth of field, ${LOC.value}`,
+                "nprompt":"nsfw, ng_deepnegative_v1_75t,badhandv4, (worst quality:2), (low quality:2), (normal quality:2), lowres,watermark, monochrome"
+            };
+            console.log(message);
+            socket.value.send(JSON.stringify(message));
+        };
+        ElMessage.info({
+            showClose: true,
+            message: "Images are generating. Please wait patiently.",
+            duration: 5000
+        });
+        show_res.value = 1;
+        socket.value.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.code === 201 && data.data) {
+                res_url.value = data.data.image;
+                scrollToBottom()
+            }
+        };
+    }
+
+    const scrollToBottom = () => {
+      window.scrollTo({
+        top: document.body.scrollHeight, // 滾動到頁面的最大高度
+        behavior: 'smooth' // 使用平滑滾動效果
+      });
+    };
+    
+    const showViewer = (img_res) => {
+      viewerApi({
+        options: {
+          toolbar: true,
+        },
+        images: img_res
+      })
+    }
+
     return {
-      ...toRefs({ image, pointCount, points }),
-      canvas,
-      onFileChange,
-      drawPoint,
-      resetPoints
+        state, 
+        loading,
+        image, 
+        pointCount, 
+        points,
+        img_res,
+        image_url,
+        mask_url,
+        models,
+        locations,
+        loc_urls,
+        maskCanvas,
+        canvas,
+        blacks,
+        reds,
+        type,
+        onFileChange,
+        drawPoint,
+        resetPoints,
+        sam,
+        select_mask,
+        showViewer,
+        checkedIndices,
+        handleCheckboxChange,
+        radio_m,
+        radio_l,
+        generate,
+        res_url,
+        show_res,
+        scrollToBottom
     };
   }
 }
 </script>
 
 
-<style scoped>
+<style>
 .container {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center; /* vertically align the container */
     flex-direction: column;
-    width: 80%; /* or whatever width you prefer */
+    width: 50%; /* or whatever width you prefer */
     margin: 0 auto; /* horizontally center the container */
 }
 
@@ -135,8 +430,21 @@ canvas {
     margin-bottom: 5px; /* space above the file input */
 }
 
+.image-checkbox {
+        display: block;
+        margin: 5px auto;
+}
+
+.button-line {
+        display: flex;
+        justify-content: center; /* Horizontally center the buttons */
+        gap: 10px; /* Add a gap between the buttons */
+        margin-top: 5px;
+}
+
 .reset-button {
     margin-top: 5px;
+    margin-right: 30px;
     background-color: #ff4757;
     border: none;
     border-radius: 25px;
@@ -159,5 +467,109 @@ canvas {
 
 .reset-button:focus {
     box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.5);
+}
+
+.sam-button {
+    margin-top: 5px;
+    margin-right: 330px;
+    background-color: #466928;
+    border: none;
+    border-radius: 25px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 10px 20px;
+    outline: none;
+    transition: background-color 0.3s, transform 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sam-button:hover {
+    background-color: #466928;
+}
+
+.sam-button:active {
+    transform: scale(0.95);
+}
+
+.sam-button:focus {
+    box-shadow: 0 0 0 2px rgba(71, 255, 129, 0.5);
+}
+
+.sm-button {
+    margin-top: 5px;
+    background-color: #277071;
+    border: none;
+    border-radius: 25px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 10px 20px;
+    outline: none;
+    transition: background-color 0.3s, transform 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sm-button:hover {
+    background-color: #284e69;
+}
+
+.sm-button:active {
+    transform: scale(0.95);
+}
+
+.sm-button:focus {
+    box-shadow: 0 0 0 2px rgba(71, 197, 255, 0.5);
+}
+
+.gen-button {
+    margin-top: 5px;
+    background-color: #bac04b;
+    border: none;
+    border-radius: 25px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 28px;  /* Increase from 16px to 32px */
+    padding: 17px 36px;  /* Increase from 10px 20px to 20px 40px */
+    outline: none;
+    transition: background-color 0.3s, transform 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.gen-button:hover {
+    background-color: #919d3e;
+}
+
+.gen-button:active {
+    transform: scale(0.95);
+}
+
+.gen-button:focus {
+    box-shadow: 0 0 0 2px #7d863d;
+}
+
+.el-radio__input.is-checked+.el-radio__label {
+    color: #277b56;
+}
+
+.el-radio__input.is-checked .el-radio__inner {
+    border-color: #69726e;
+    background: #69726e5c;
+}
+
+.el-radio.el-radio--large .el-radio__label {
+    font-size: 18px;
+}
+
+.locations-wrapper {
+    display: flex; /* Use Flexbox */
+    flex-wrap: wrap; /* If items exceed container width, they will wrap to the next line */
+    gap: 10px; /* Optional: Add a gap between items */
+}
+
+.location-item {
+    display: flex; /* Use Flexbox */
+    align-items: center; /* Vertically align items in the center */
+    gap: 5px; /* Optional: Add a gap between radio and image */
 }
 </style>

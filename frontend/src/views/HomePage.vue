@@ -432,14 +432,7 @@ export default defineComponent({
 });
 </script>
 
-<style>
-.image-gallery {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-}
-
+<style scoped>
 .image-row {
   display: flex;
   justify-content: center;
@@ -484,33 +477,6 @@ export default defineComponent({
   width: 100%;
   height: 0;
   overflow: visible;
-}
-
-.el-progress-bar__innerText {
-  color: black;
-}
-
-.el-progress--line {
-  width: 500px;
-  margin: 0 auto;
-  display: off;
-}
-
-.el-radio__input.is-checked .el-radio__inner {
-  border-color: #a153e6;
-  background: #a153e6;
-}
-
-.el-radio__input.is-checked+.el-radio__label {
-  color: #a153e6;
-}
-
-.el-radio__inner {
-  background-color: #ffffff12;
-}
-
-.el-radio__label {
-  color: #ffffff6e;
 }
 
 .radioRow {
