@@ -44,8 +44,11 @@
         </div>
         <div class="generate container" style="margin-top: 3ch; margin-bottom: 3ch;">
             <button class="gen-button" @click="generate">Generate</button>
-            <div v-if="show_res===1" class="generate image" style="margin-top: 3ch;">
-                <img :src="res_url" v-on:click="showViewer([res_url])">
+            <div class="generate image" style="margin-top: 3ch;">
+                <!-- <img :src="res_url" v-on:click="showViewer([res_url])"> -->
+                <div v-loading="loading2" element-loading-text="Loading..." class="res-canvas-container">
+                    <canvas ref="resCanvas" v-on:click="showViewer([res_url])"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -69,25 +72,26 @@ export default {
     const image = ref(null);
     const image_url = ref(null);
     const mask_url = ref(null);
+    const canvas = ref(null);
     const maskCanvas = ref(null);
+    const resCanvas = ref(null);
     const img_res = ref([]);
     const models = ref(["http://192.168.3.20:9527/media/footage/image/mjic.png"]);
     const locations = ref(["beach", "street", "cafe"]);
     const loc_urls = ref(["https://ai-global-image.weshop.com/ad30c49b-0c28-458b-be06-4b1f73a10965.png_256x256.jpeg", "https://ai-global-image.weshop.com/20c29716-f083-41f1-8c26-db9df6f37135.png_256x256.jpeg", "https://ai-global-image.weshop.com/64207f3d-c144-4197-88b1-df6843359394.png_256x256.jpeg"]);
     const pointCount = ref(0);
     const points = ref([]);
-    const canvas = ref(null);
     const blacks = ref([]);
     const reds = ref([]);
     const checkedIndices = ref([]);
     const loading = ref(false);
+    const loading2 = ref(false);
     const type = ref(0);
     const radio_m = ref("0");
     const radio_l = ref("0");
     const socket = ref(null);
     const LOC = ref("");
     const res_url = ref("");
-    const show_res = ref("0");
     
     const onFileChange = async (event) => {
         const file = event.target.files[0];
@@ -95,8 +99,8 @@ export default {
         reader.onload = async (e) => {
             image.value = new Image();
             image.value.onload = () => {
-                drawImageToCanvas();
-            }
+                drawImageToCanvas(image.value, canvas, 512);
+            };
             image.value.src = e.target.result;
 
             const formData = new FormData();
@@ -117,21 +121,23 @@ export default {
         reader.readAsDataURL(file);
     };
 
-    const drawImageToCanvas = () => {
-        const ctx = canvas.value.getContext('2d');
-        const scaleX = 512 / image.value.width;
-        const scaleY = 512 / image.value.height;
+    const drawImageToCanvas = (targetImage, targetCanvas, size) => {
+        const ctx = targetCanvas.value.getContext('2d');
+        ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+        const scaleX = size / targetImage.width;
+        const scaleY = size / targetImage.height;
         const scale = Math.min(scaleX, scaleY);
         
-        const width = image.value.width * scale;
-        const height = image.value.height * scale;
-        const offsetX = (512 - width) / 2;
-        const offsetY = (512 - height) / 2;
+        const width = targetImage.width * scale;
+        const height = targetImage.height * scale;
+        const offsetX = (size - width) / 2;
+        const offsetY = (size - height) / 2;
         
-        canvas.value.width = 512;
-        canvas.value.height = 512;
-        ctx.drawImage(image.value, offsetX, offsetY, width, height);
+        targetCanvas.value.width = size;
+        targetCanvas.value.height = size;
+        ctx.drawImage(targetImage, offsetX, offsetY, width, height);
     };
+
 
     const drawPoint = (event) => {
         if (pointCount.value >= 8) return;
@@ -185,10 +191,11 @@ export default {
         pointCount.value = 0;
         blacks.value = [];
         reds.value = [];
-        drawImageToCanvas();
+        drawImageToCanvas(image.value, canvas, 512);
     };
 
     const sam = async (blacks, reds) => {
+        type.value = 0;
         const match = image_url.value.match(/\/media\/(.*?)\/input\/(.*?)$/);
         if (!match) {
             console.error("Invalid image_url format");
@@ -210,7 +217,7 @@ export default {
 
         try {
             const [_, response] = await Promise.all([
-                loading_switch(),
+                loading_switch(loading),
                 await axios.post(url, null, {
                     headers: {
                         'accept': 'application/json'
@@ -218,7 +225,7 @@ export default {
                 })
             ]);
             console.log(_)
-            loading_switch()
+            loading_switch(loading)
             img_res.value = response.data.data;
         } catch (error) {
             console.error("Error in SAM function:", error);
@@ -226,7 +233,7 @@ export default {
         resetPoints();
     };
 
-    const loading_switch = () => {
+    const loading_switch = (loading) => {
         loading.value = !loading.value;
     }
     
@@ -260,7 +267,7 @@ export default {
             // Load mask image and draw it to maskCanvas
             const maskImage = new Image();
             maskImage.onload = () => {
-                drawMaskImageToCanvas(maskImage);
+                drawImageToCanvas(maskImage, maskCanvas, 512);
             };
             maskImage.src = mask_url.value;
         } catch (error) {
@@ -268,29 +275,8 @@ export default {
         }
     };
 
-    const drawMaskImageToCanvas = (maskImage) => {
-        const maskCtx = maskCanvas.value.getContext('2d');
-
-        // Clear the canvas
-        maskCtx.clearRect(0, 0, maskCanvas.value.width, maskCanvas.value.height);
-
-        // Calculate the scale used to draw the mask image
-        const maskScaleX = 512 / maskImage.width;
-        const maskScaleY = 512 / maskImage.height;
-        const maskScale = Math.min(maskScaleX, maskScaleY);
-
-        // Calculate the image's offsets
-        const maskWidth = maskImage.width * maskScale;
-        const maskHeight = maskImage.height * maskScale;
-        const maskOffsetX = (512 - maskWidth) / 2;
-        const maskOffsetY = (512 - maskHeight) / 2;
-
-        maskCanvas.value.width = 512;
-        maskCanvas.value.height = 512;
-        maskCtx.drawImage(maskImage, maskOffsetX, maskOffsetY, maskWidth, maskHeight);
-    };
-
     const generate = async () => {
+        loading_switch(loading2)
         if (socket.value && socket.value.readyState !== WebSocket.CLOSED) {
             socket.value.close();
         }
@@ -323,23 +309,21 @@ export default {
             message: "Images are generating. Please wait patiently.",
             duration: 5000
         });
-        show_res.value = 1;
         socket.value.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data.code === 201 && data.data) {
                 res_url.value = data.data.image;
-                scrollToBottom()
+                // Load response image and draw it to resCanvas
+                const resImage = new Image();
+                resImage.onload = () => {
+                    drawImageToCanvas(resImage, resCanvas, 1024);
+                };
+                resImage.src = data.data.image;
+                loading_switch(loading2)
             }
         };
     }
 
-    const scrollToBottom = () => {
-      window.scrollTo({
-        top: document.body.scrollHeight, // 滾動到頁面的最大高度
-        behavior: 'smooth' // 使用平滑滾動效果
-      });
-    };
-    
     const showViewer = (img_res) => {
       viewerApi({
         options: {
@@ -352,6 +336,7 @@ export default {
     return {
         state, 
         loading,
+        loading2,
         image, 
         pointCount, 
         points,
@@ -361,8 +346,9 @@ export default {
         models,
         locations,
         loc_urls,
-        maskCanvas,
         canvas,
+        maskCanvas,
+        resCanvas,
         blacks,
         reds,
         type,
@@ -377,9 +363,7 @@ export default {
         radio_m,
         radio_l,
         generate,
-        res_url,
-        show_res,
-        scrollToBottom
+        res_url
     };
   }
 }
@@ -406,6 +390,16 @@ export default {
     width: 512px;
     height: 512px;
     border: 2px solid purple; /* purple border */
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box; /* ensure the border doesn't increase the container size */
+    margin-right: 5px; /* add margin to the right */
+}
+
+.res-canvas-container {
+    width: 1024px;
+    height: 1024px;
+    border: 2px solid rgb(52, 92, 132); /* purple border */
     overflow: hidden;
     position: relative;
     box-sizing: border-box; /* ensure the border doesn't increase the container size */
