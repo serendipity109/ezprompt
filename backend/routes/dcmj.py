@@ -44,18 +44,13 @@ job_map = manager.dict()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-INTERNAL_IP = "192.168.3.16:9527"
-EXTERNAL_IP = "61.216.75.236:9528"
-BUILD_VERSION = os.environ.get("BUILD_VERSION", "internal")
-if BUILD_VERSION == "internal":
-    FRONTEND_IP = os.environ.get("F_INTERNAL_IP")
-    BACKEND_IP = os.environ.get("B_INTERNAL_IP")
-else:
-    FRONTEND_IP = os.environ.get("F_EXTERNAL_IP")
-    BACKEND_IP = os.environ.get("B_EXTERNAL_IP")
+IP = os.environ.get("IP")
+BACKEND_IP = f"{IP}:9527"
 
-PROXY_IP1 = "192.168.3.16:9999"
-PROXY_IP2 = "192.168.3.16:9998"
+p1 = os.environ.get("PROXY1")
+p2 = os.environ.get("PROXY2")
+PROXY_IP1 = f"{IP}:{p1}"
+PROXY_IP2 = f"{IP}:{p2}"
 
 
 @router.websocket("/dcmj/imagine")
@@ -103,8 +98,13 @@ async def imagine_handler(websocket, start, job_id):
             raise Exception(json.dumps(msg))
         credits = await crud.pay_credits(user_id, 4)
         prompt = await translator(data["prompt"])
+        if "nprompt" in data.keys():
+            nprompt = data["nprompt"]
+            nprompt = await translator(nprompt)
+        else:
+            nprompt = ""
         if "preset" in data.keys():
-            prompt = await style_parser(prompt, data["preset"])
+            prompt = await style_parser(prompt, nprompt, data["preset"])
         if "image_url" in data.keys():
             img_url = data["image_url"]
             prompt = img_url + " " + prompt
@@ -319,11 +319,7 @@ async def kill_zombie(job_id):
 
 @router.post("/dcmj/upload")
 async def upload_file(request: Request, user_id: str, file: UploadFile):
-    client_ip = request.client.host
-    if "192.168" in client_ip:
-        IP = INTERNAL_IP
-    else:
-        IP = EXTERNAL_IP
+    IP = BACKEND_IP
     folder = f"/workspace/output/{user_id}"
     if not os.path.exists(folder):
         os.makedirs(folder)

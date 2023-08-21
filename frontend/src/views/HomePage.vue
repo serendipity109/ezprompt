@@ -452,6 +452,33 @@ export default defineComponent({
   height: auto;
 }
 
+::v-deep .el-progress-bar__innerText {
+  color: #000;
+}
+
+::v-deep .el-progress--line {
+  width: 500px;
+  margin: 0 auto;
+  display: off;
+}
+
+::v-deep .el-radio__input.is-checked .el-radio__inner {
+  border-color: #a153e6;
+  background: #a153e6;
+}
+
+::v-deep .el-radio__input.is-checked+.el-radio__label {
+  color: #a153e6;
+}
+
+::v-deep .el-radio__inner {
+  background-color: #ffffff12;
+}
+::v-deep .el-radio__label {
+  color: #ffffff6e;
+}
+
+
 .selected-container {
   display: flex;
   flex-direction: column;

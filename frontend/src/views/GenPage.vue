@@ -272,14 +272,7 @@ export default defineComponent({
 });
 </script>
 
-<style>
-.image-gallery {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-}
-
+<style scoped>
 .image-row {
     display: flex;
     justify-content: center;
@@ -299,7 +292,7 @@ export default defineComponent({
     height: auto;
 }
 
-.el-progress--line {
+::v-deep .el-progress--line {
     width: 800px;
     margin: 0 auto;
     display: off;

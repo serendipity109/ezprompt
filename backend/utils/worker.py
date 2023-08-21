@@ -2,15 +2,18 @@ import asyncio
 import json
 import logging
 import websockets
-
+import os
 import httpx
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-PROXY_IP1 = "192.168.3.16:9999"
-PROXY_IP2 = "192.168.3.16:9998"
+IP = os.environ.get("IP")
+p1 = os.environ.get("PROXY1")
+p2 = os.environ.get("PROXY2")
+PROXY_IP1 = f"{IP}:{p1}"
+PROXY_IP2 = f"{IP}:{p2}"
 
 
 async def post_imagine(websocket, prompt, user_id, job_id, proxy="proxy1"):

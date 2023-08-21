@@ -20,13 +20,9 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 minio_client = minioTool.MinioClient()
 redis_client = redisTool.RedisClient()
-BUILD_VERSION = os.environ.get("BUILD_VERSION", "internal")
-if BUILD_VERSION == "internal":
-    FRONTEND_IP = os.environ.get("F_INTERNAL_IP")
-    BACKEND_IP = os.environ.get("B_INTERNAL_IP")
-else:
-    FRONTEND_IP = os.environ.get("F_EXTERNAL_IP")
-    BACKEND_IP = os.environ.get("B_EXTERNAL_IP")
+
+IP = os.environ.get("IP")
+BACKEND_IP = f"{IP}:9527"
 
 
 class BlockIPMiddleware(BaseHTTPMiddleware):

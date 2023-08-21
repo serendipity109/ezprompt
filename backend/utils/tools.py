@@ -11,18 +11,14 @@ import json
 import pickle
 from json import JSONDecodeError
 
-from utils.gpt import translator
+from utils.mj_styles import apply_style
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-INTERNAL_IP = "192.168.3.16:9527"
-EXTERNAL_IP = "61.216.75.236:9528"
-BUILD_VERSION = os.environ.get("BUILD_VERSION", "internal")
-if BUILD_VERSION == "internal":
-    BACKEND_IP = os.environ.get("B_INTERNAL_IP")
-else:
-    BACKEND_IP = os.environ.get("B_EXTERNAL_IP")
+IP = os.environ.get("IP")
+BACKEND_IP = f"{IP}:9527"
+
 
 with open("utils/midjourney-banned-prompt.pickle", "rb") as f:
     banned_words = pickle.load(f)
@@ -79,30 +75,11 @@ async def schema_validator(websocket):
     return data
 
 
-async def style_parser(prompt, style):
+async def style_parser(prompt, nprompt, style):
     cc = OpenCC("t2s")
     try:
         style = cc.convert(style)
-        match style:
-            case "漫画":
-                prompt += ", anime --niji 5"
-            case "电影":
-                prompt += (
-                    ", photorealistic, cinematic, shot on kodak detailed cinematic hbo"
-                )
-            case "水墨画":
-                prompt += ", chinese ink painting"
-            case "油画":
-                prompt += ", oil painting"
-            case "水彩画":
-                prompt += ", watercolor painting"
-            case "铅笔画":
-                prompt += ", pencil drawing"
-            case "写实":
-                prompt += ", realistic, depth of field"
-            case _:
-                postfix = await translator(style)
-                prompt += f", {postfix}"
+        prompt = await apply_style(style, prompt, nprompt)
     except:
         raise Exception("Style Parsing error")
     return prompt

@@ -22,13 +22,10 @@ openai_keys = [
     os.getenv("OPENAI_KEY2"),
     os.getenv("OPENAI_KEY3"),
 ]
-BUILD_VERSION = os.environ.get("BUILD_VERSION", "internal")
-if BUILD_VERSION == "internal":
-    FRONTEND_IP = os.environ.get("F_INTERNAL_IP")
-    BACKEND_IP = os.environ.get("B_INTERNAL_IP")
-else:
-    FRONTEND_IP = os.environ.get("F_EXTERNAL_IP")
-    BACKEND_IP = os.environ.get("B_EXTERNAL_IP")
+
+IP = os.environ.get("IP")
+FRONTEND_IP = f"{IP}:8087"
+BACKEND_IP = f"{IP}:9527"
 
 router = APIRouter()
 minio_client = minioTool.MinioClient()
