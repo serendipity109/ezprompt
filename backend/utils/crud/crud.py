@@ -14,7 +14,9 @@ logger = logging.getLogger(__name__)
 class SQLAlchemyCRUD:
     def __init__(self, model):
         self.model = model
-        self.engine = create_engine(DATABASE_URL, pool_recycle=86400)  # 一天閒置會斷線
+        self.engine = create_engine(
+            DATABASE_URL, pool_pre_ping=True
+        )  # 如果連線不再活躍，則會自動回收，回收完會重連。
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
 

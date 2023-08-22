@@ -28,8 +28,8 @@ services:
       - MYSQL_URI=mysql+pymysql://root:password@mysql:3306
       - MYSQL_DATABASE=ezprompt
       - IP=192.168.3.16
-      - PROXY1=9999
-      - PROXY2=9998
+      - PROXY1=9998
+      - PROXY2=9999
     ports:
         - 9527:9527
   minio:

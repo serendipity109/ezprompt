@@ -1,6 +1,7 @@
 <template>
     <div>
-        <div class="container">
+        <nav-bar page="generate" :closePanel="closePanel"/>
+        <div class="container min-h-screen min-w-screen">
             <input type="file" @change="onFileChange" class="file-input">
             <div class="canvas-wrapper">
                 <div class="canvas-container">
@@ -59,313 +60,324 @@ import { ref, reactive } from 'vue';
 import { api as viewerApi } from 'v-viewer'
 import axios from "axios";
 import { ElMessage } from 'element-plus'
+import NavBar from '@/components/NavBar.vue';
 
 export default {
-  setup() {
-    const state = reactive({
-      image: null,
-      pointCount: 0,
-      points: [],
-    });
-    let userId = ref(null);
-    let img = ref(null);
-    const image = ref(null);
-    const image_url = ref(null);
-    const mask_url = ref(null);
-    const canvas = ref(null);
-    const maskCanvas = ref(null);
-    const resCanvas = ref(null);
-    const img_res = ref([]);
-    const models = ref(["http://192.168.3.20:9527/media/footage/image/mjic.png"]);
-    const locations = ref(["beach", "street", "cafe"]);
-    const loc_urls = ref(["https://ai-global-image.weshop.com/ad30c49b-0c28-458b-be06-4b1f73a10965.png_256x256.jpeg", "https://ai-global-image.weshop.com/20c29716-f083-41f1-8c26-db9df6f37135.png_256x256.jpeg", "https://ai-global-image.weshop.com/64207f3d-c144-4197-88b1-df6843359394.png_256x256.jpeg"]);
-    const pointCount = ref(0);
-    const points = ref([]);
-    const blacks = ref([]);
-    const reds = ref([]);
-    const checkedIndices = ref([]);
-    const loading = ref(false);
-    const loading2 = ref(false);
-    const type = ref(0);
-    const radio_m = ref("0");
-    const radio_l = ref("0");
-    const socket = ref(null);
-    const LOC = ref("");
-    const res_url = ref("");
-    
-    const onFileChange = async (event) => {
-        const file = event.target.files[0];
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            image.value = new Image();
-            image.value.onload = () => {
-                drawImageToCanvas(image.value, canvas, 512);
-            };
-            image.value.src = e.target.result;
+    components: {
+        NavBar
+    },
+    setup() {
+        const state = reactive({
+        image: null,
+        pointCount: 0,
+        points: [],
+        });
+        let userId = ref(null);
+        let img = ref(null);
+        const image = ref(null);
+        const image_url = ref(null);
+        const mask_url = ref(null);
+        const canvas = ref(null);
+        const maskCanvas = ref(null);
+        const resCanvas = ref(null);
+        const img_res = ref([]);
+        const models = ref(["http://192.168.3.20:9527/media/footage/image/mjic.png"]);
+        const locations = ref(["beach", "street", "cafe"]);
+        const loc_urls = ref(["https://ai-global-image.weshop.com/ad30c49b-0c28-458b-be06-4b1f73a10965.png_256x256.jpeg", "https://ai-global-image.weshop.com/20c29716-f083-41f1-8c26-db9df6f37135.png_256x256.jpeg", "https://ai-global-image.weshop.com/64207f3d-c144-4197-88b1-df6843359394.png_256x256.jpeg"]);
+        const pointCount = ref(0);
+        const points = ref([]);
+        const blacks = ref([]);
+        const reds = ref([]);
+        const checkedIndices = ref([]);
+        const loading = ref(false);
+        const loading2 = ref(false);
+        const type = ref(0);
+        const radio_m = ref("0");
+        const radio_l = ref("0");
+        const socket = ref(null);
+        const LOC = ref("");
+        const res_url = ref("");
+        const closePanel = ref(true);
 
-            const formData = new FormData();
-            formData.append('rawfile', file, 'image.png'); // Assuming the name of the file should be 'image.png'
-
-            try {
-                const response = await axios.post('http://192.168.3.20:9527/upload?user_id=adam', formData, {
-                    headers: {
-                        'accept': 'application/json',
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
-                image_url.value = response.data.data
-            } catch (error) {
-                console.error("Error uploading the image:", error);
+        const set_init = async () => {
+                closePanel.value = !closePanel.value;
             }
-        }
-        reader.readAsDataURL(file);
-    };
-
-    const drawImageToCanvas = (targetImage, targetCanvas, size) => {
-        const ctx = targetCanvas.value.getContext('2d');
-        ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
-        const scaleX = size / targetImage.width;
-        const scaleY = size / targetImage.height;
-        const scale = Math.min(scaleX, scaleY);
         
-        const width = targetImage.width * scale;
-        const height = targetImage.height * scale;
-        const offsetX = (size - width) / 2;
-        const offsetY = (size - height) / 2;
-        
-        targetCanvas.value.width = size;
-        targetCanvas.value.height = size;
-        ctx.drawImage(targetImage, offsetX, offsetY, width, height);
-    };
+        const onFileChange = async (event) => {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                image.value = new Image();
+                image.value.onload = () => {
+                    drawImageToCanvas(image.value, canvas, 512);
+                };
+                image.value.src = e.target.result;
 
+                const formData = new FormData();
+                formData.append('rawfile', file, 'image.png'); // Assuming the name of the file should be 'image.png'
 
-    const drawPoint = (event) => {
-        if (pointCount.value >= 8) return;
-
-        // Get canvas-relative coordinates
-        const xCanvas = event.offsetX;
-        const yCanvas = event.offsetY;
-
-        // Calculate the scale used to draw the image
-        const scaleX = 512 / image.value.width;
-        const scaleY = 512 / image.value.height;
-        const scale = Math.min(scaleX, scaleY);
-
-        // Calculate the image's offsets
-        const width = image.value.width * scale;
-        const height = image.value.height * scale;
-        const offsetX = (512 - width) / 2;
-        const offsetY = (512 - height) / 2;
-
-        // Convert canvas-relative coordinates to image-relative
-        const xImage = Math.round((xCanvas - offsetX) / scale);
-        const yImage = Math.round((yCanvas - offsetY) / scale);
-
-        let targetArray = null;
-        let color = null;
-
-        if (event.button === 0) {
-            color = 'black';
-            targetArray = blacks;
-        } else if (event.button === 2) {
-            color = 'red';
-            targetArray = reds;
-        }
-
-        if (!color) return;
-
-        targetArray.value.push({ x: xImage, y: yImage });
-        const ctx = canvas.value.getContext('2d');
-        ctx.fillStyle = color;
-        const radius = 5;
-
-        ctx.beginPath();
-        ctx.arc(xCanvas, yCanvas, radius, 0, 2 * Math.PI);
-        ctx.fill();
-
-        pointCount.value++;
-    };
-
-
-    const resetPoints = () => {
-        pointCount.value = 0;
-        blacks.value = [];
-        reds.value = [];
-        drawImageToCanvas(image.value, canvas, 512);
-    };
-
-    const sam = async (blacks, reds) => {
-        type.value = 0;
-        const match = image_url.value.match(/\/media\/(.*?)\/input\/(.*?)$/);
-        if (!match) {
-            console.error("Invalid image_url format");
-            return;
-        }
-        userId = match[1];
-        img = match[2];
-
-        // Construct the URL
-        const formatPoints = (points) => {
-            return points.map(point => `(${point.x}, ${point.y})`).join(', ');
+                try {
+                    const response = await axios.post('http://192.168.3.20:9527/upload?user_id=adam', formData, {
+                        headers: {
+                            'accept': 'application/json',
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
+                    image_url.value = response.data.data
+                } catch (error) {
+                    console.error("Error uploading the image:", error);
+                }
+            }
+            reader.readAsDataURL(file);
         };
 
-        const formattedBlacks = encodeURIComponent(`[${formatPoints(blacks)}]`);
-        const formattedReds = encodeURIComponent(`[${formatPoints(reds)}]`);
+        const drawImageToCanvas = (targetImage, targetCanvas, size) => {
+            const ctx = targetCanvas.value.getContext('2d');
+            ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+            const scaleX = size / targetImage.width;
+            const scaleY = size / targetImage.height;
+            const scale = Math.min(scaleX, scaleY);
+            
+            const width = targetImage.width * scale;
+            const height = targetImage.height * scale;
+            const offsetX = (size - width) / 2;
+            const offsetY = (size - height) / 2;
+            
+            targetCanvas.value.width = size;
+            targetCanvas.value.height = size;
+            ctx.drawImage(targetImage, offsetX, offsetY, width, height);
+        };
 
-        // Construct the URL
-        const url = `http://192.168.3.20:9527/sam?user_id=${encodeURIComponent(userId)}&img=${encodeURIComponent(img)}&blacks=${formattedBlacks}&reds=${formattedReds}`;
 
-        try {
-            const [_, response] = await Promise.all([
-                loading_switch(loading),
-                await axios.post(url, null, {
+        const drawPoint = (event) => {
+            if (pointCount.value >= 8) return;
+
+            // Get canvas-relative coordinates
+            const xCanvas = event.offsetX;
+            const yCanvas = event.offsetY;
+
+            // Calculate the scale used to draw the image
+            const scaleX = 512 / image.value.width;
+            const scaleY = 512 / image.value.height;
+            const scale = Math.min(scaleX, scaleY);
+
+            // Calculate the image's offsets
+            const width = image.value.width * scale;
+            const height = image.value.height * scale;
+            const offsetX = (512 - width) / 2;
+            const offsetY = (512 - height) / 2;
+
+            // Convert canvas-relative coordinates to image-relative
+            const xImage = Math.round((xCanvas - offsetX) / scale);
+            const yImage = Math.round((yCanvas - offsetY) / scale);
+
+            let targetArray = null;
+            let color = null;
+
+            if (event.button === 0) {
+                color = 'black';
+                targetArray = blacks;
+            } else if (event.button === 2) {
+                color = 'red';
+                targetArray = reds;
+            }
+
+            if (!color) return;
+
+            targetArray.value.push({ x: xImage, y: yImage });
+            const ctx = canvas.value.getContext('2d');
+            ctx.fillStyle = color;
+            const radius = 5;
+
+            ctx.beginPath();
+            ctx.arc(xCanvas, yCanvas, radius, 0, 2 * Math.PI);
+            ctx.fill();
+
+            pointCount.value++;
+        };
+
+
+        const resetPoints = () => {
+            pointCount.value = 0;
+            blacks.value = [];
+            reds.value = [];
+            drawImageToCanvas(image.value, canvas, 512);
+        };
+
+        const sam = async (blacks, reds) => {
+            type.value = 0;
+            const match = image_url.value.match(/\/media\/(.*?)\/input\/(.*?)$/);
+            if (!match) {
+                console.error("Invalid image_url format");
+                return;
+            }
+            userId = match[1];
+            img = match[2];
+
+            // Construct the URL
+            const formatPoints = (points) => {
+                return points.map(point => `(${point.x}, ${point.y})`).join(', ');
+            };
+
+            const formattedBlacks = encodeURIComponent(`[${formatPoints(blacks)}]`);
+            const formattedReds = encodeURIComponent(`[${formatPoints(reds)}]`);
+
+            // Construct the URL
+            const url = `http://192.168.3.20:9527/sam?user_id=${encodeURIComponent(userId)}&img=${encodeURIComponent(img)}&blacks=${formattedBlacks}&reds=${formattedReds}`;
+
+            try {
+                const [_, response] = await Promise.all([
+                    loading_switch(loading),
+                    await axios.post(url, null, {
+                        headers: {
+                            'accept': 'application/json'
+                        }
+                    })
+                ]);
+                console.log(_)
+                loading_switch(loading)
+                img_res.value = response.data.data;
+            } catch (error) {
+                console.error("Error in SAM function:", error);
+            }
+            resetPoints();
+        };
+
+        const loading_switch = (loading) => {
+            loading.value = !loading.value;
+        }
+        
+        const handleCheckboxChange = (index, event) => {
+            if (event.target.checked) {
+            // Add the index to the array if it's not already present
+                if (!checkedIndices.value.includes(index)) {
+                    checkedIndices.value.push(index);
+                }
+            } else {
+                // Remove the index from the array
+                checkedIndices.value = checkedIndices.value.filter(i => i !== index);
+            }
+        };
+
+        const select_mask = async () => {
+            const mask_ids = encodeURIComponent(checkedIndices.value.join(","));
+        
+            // Construct the URL
+            const url = `http://192.168.3.20:9527/select_mask/${mask_ids}?user_id=${userId}`;
+            try {
+                const response = await axios.post(url, null, {
                     headers: {
                         'accept': 'application/json'
                     }
-                })
-            ]);
-            console.log(_)
-            loading_switch(loading)
-            img_res.value = response.data.data;
-        } catch (error) {
-            console.error("Error in SAM function:", error);
-        }
-        resetPoints();
-    };
+                });
+                img_res.value = response.data.data;
+                type.value = 1;
+                mask_url.value = `http://192.168.3.20:9527/media/${userId}/input/msk.png`;
 
-    const loading_switch = (loading) => {
-        loading.value = !loading.value;
-    }
-    
-    const handleCheckboxChange = (index, event) => {
-        if (event.target.checked) {
-        // Add the index to the array if it's not already present
-            if (!checkedIndices.value.includes(index)) {
-                checkedIndices.value.push(index);
-            }
-        } else {
-            // Remove the index from the array
-            checkedIndices.value = checkedIndices.value.filter(i => i !== index);
-        }
-    };
-
-    const select_mask = async () => {
-        const mask_ids = encodeURIComponent(checkedIndices.value.join(","));
-    
-        // Construct the URL
-        const url = `http://192.168.3.20:9527/select_mask/${mask_ids}?user_id=${userId}`;
-        try {
-            const response = await axios.post(url, null, {
-                headers: {
-                    'accept': 'application/json'
-                }
-            });
-            img_res.value = response.data.data;
-            type.value = 1;
-            mask_url.value = `http://192.168.3.20:9527/media/${userId}/input/msk.png`;
-
-            // Load mask image and draw it to maskCanvas
-            const maskImage = new Image();
-            maskImage.onload = () => {
-                drawImageToCanvas(maskImage, maskCanvas, 512);
-            };
-            maskImage.src = mask_url.value;
-        } catch (error) {
-            console.error("Error in Select Mask:", error);
-        }
-    };
-
-    const generate = async () => {
-        loading_switch(loading2)
-        if (socket.value && socket.value.readyState !== WebSocket.CLOSED) {
-            socket.value.close();
-        }
-        socket.value = new WebSocket("ws://192.168.3.20:9527/img2img");
-        let message;
-
-        switch(radio_l.value) {
-            case "0":
-            LOC.value = "on the beach";
-            break;
-            case "1":
-            LOC.value = "on the street";
-            break;
-            case "2":
-            LOC.value = "in a cafe";
-            break;
-        }
-        socket.value.onopen = () => {
-            message = {
-                "user_id": userId,
-                "image": img,
-                "prompt":`best quality, masterpiece, (photorealistic:1.4), 1girl, depth of field, ${LOC.value}`,
-                "nprompt":"nsfw, ng_deepnegative_v1_75t,badhandv4, (worst quality:2), (low quality:2), (normal quality:2), lowres,watermark, monochrome"
-            };
-            console.log(message);
-            socket.value.send(JSON.stringify(message));
-        };
-        ElMessage.info({
-            showClose: true,
-            message: "Images are generating. Please wait patiently.",
-            duration: 5000
-        });
-        socket.value.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.code === 201 && data.data) {
-                res_url.value = data.data.image;
-                // Load response image and draw it to resCanvas
-                const resImage = new Image();
-                resImage.onload = () => {
-                    drawImageToCanvas(resImage, resCanvas, 1024);
+                // Load mask image and draw it to maskCanvas
+                const maskImage = new Image();
+                maskImage.onload = () => {
+                    drawImageToCanvas(maskImage, maskCanvas, 512);
                 };
-                resImage.src = data.data.image;
-                loading_switch(loading2)
+                maskImage.src = mask_url.value;
+            } catch (error) {
+                console.error("Error in Select Mask:", error);
             }
         };
-    }
 
-    const showViewer = (img_res) => {
-      viewerApi({
-        options: {
-          toolbar: true,
-        },
-        images: img_res
-      })
-    }
+        const generate = async () => {
+            loading_switch(loading2)
+            if (socket.value && socket.value.readyState !== WebSocket.CLOSED) {
+                socket.value.close();
+            }
+            socket.value = new WebSocket("ws://192.168.3.20:9527/img2img");
+            let message;
 
-    return {
-        state, 
-        loading,
-        loading2,
-        image, 
-        pointCount, 
-        points,
-        img_res,
-        image_url,
-        mask_url,
-        models,
-        locations,
-        loc_urls,
-        canvas,
-        maskCanvas,
-        resCanvas,
-        blacks,
-        reds,
-        type,
-        onFileChange,
-        drawPoint,
-        resetPoints,
-        sam,
-        select_mask,
-        showViewer,
-        checkedIndices,
-        handleCheckboxChange,
-        radio_m,
-        radio_l,
-        generate,
-        res_url
-    };
-  }
+            switch(radio_l.value) {
+                case "0":
+                LOC.value = "on the beach";
+                break;
+                case "1":
+                LOC.value = "on the street";
+                break;
+                case "2":
+                LOC.value = "in a cafe";
+                break;
+            }
+            socket.value.onopen = () => {
+                message = {
+                    "user_id": userId,
+                    "image": img,
+                    "prompt":`best quality, masterpiece, (photorealistic:1.4), 1girl, depth of field, ${LOC.value}`,
+                    "nprompt":"nsfw, ng_deepnegative_v1_75t,badhandv4, (worst quality:2), (low quality:2), (normal quality:2), lowres,watermark, monochrome"
+                };
+                console.log(message);
+                socket.value.send(JSON.stringify(message));
+            };
+            ElMessage.info({
+                showClose: true,
+                message: "Images are generating. Please wait patiently.",
+                duration: 5000
+            });
+            socket.value.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.code === 201 && data.data) {
+                    res_url.value = data.data.image;
+                    // Load response image and draw it to resCanvas
+                    const resImage = new Image();
+                    resImage.onload = () => {
+                        drawImageToCanvas(resImage, resCanvas, 1024);
+                    };
+                    resImage.src = data.data.image;
+                    loading_switch(loading2)
+                }
+            };
+        }
+
+        const showViewer = (img_res) => {
+        viewerApi({
+            options: {
+            toolbar: true,
+            },
+            images: img_res
+        })
+        }
+
+        return {
+            state, 
+            loading,
+            loading2,
+            image, 
+            pointCount, 
+            points,
+            img_res,
+            image_url,
+            mask_url,
+            models,
+            locations,
+            loc_urls,
+            canvas,
+            maskCanvas,
+            resCanvas,
+            blacks,
+            reds,
+            type,
+            onFileChange,
+            drawPoint,
+            resetPoints,
+            sam,
+            select_mask,
+            showViewer,
+            checkedIndices,
+            handleCheckboxChange,
+            radio_m,
+            radio_l,
+            generate,
+            closePanel,
+            set_init,
+            res_url
+        };
+    }
 }
 </script>
 
