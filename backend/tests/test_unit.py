@@ -39,8 +39,9 @@ async def test_schema_validator():
 @pytest.mark.asyncio
 async def test_style_parser():
     prompt = "some prompt"
+    nprompt = "some nprompt"
     style = "漫画"
-    result = await style_parser(prompt, style)
+    result = await style_parser(prompt, nprompt, style)
     assert result == "some prompt, anime --niji 5"
 
 

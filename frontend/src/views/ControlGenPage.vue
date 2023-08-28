@@ -1,23 +1,23 @@
 <template>
     <div>
         <nav-bar page="generate" :closePanel="closePanel"/>
-        <div class="container min-h-screen min-w-screen">
+        <div class="container min-w-screen" style="margin-top: 8ch;">
             <input type="file" @change="onFileChange" class="file-input">
             <div class="canvas-wrapper">
                 <div class="canvas-container">
                     <canvas v-if="image" ref="canvas" @mousedown="drawPoint" @contextmenu.prevent></canvas>
                 </div>
                 <div v-loading="loading" element-loading-text="Loading..." class="canvas-container empty flex items-center justify-center">
-                    <div v-if="type===0" class="flex overflow-x-auto align-center justify-start thin-scrollbar h-auto pb-2"
+                    <div v-if="msk_type===0" class="flex overflow-x-auto align-center justify-start thin-scrollbar h-auto pb-2"
                         style="height:fit-content; overscroll-behavior-x:contain; white-space: nowrap;">
                         <div v-for="(img_url, index) in img_res" :key="index" style="display: inline-block; margin-right: 5px;">
                             <img v-bind:src="img_url" v-on:click="showViewer([img_url])"
-                            style="object-fit:contain; width:100%; height:auto; display: block;" />
-                            <input type="checkbox" class="image-checkbox" @change="handleCheckboxChange(index, $event)">
+                            style="object-fit:contain; width:100%; max-height: 80%; display: block;" />
+                            <input type="checkbox" style="position: relative;" class="image-checkbox" @change="handleCheckboxChange(index, $event)">
                         </div>
                     </div>
-                    <div v-if="type===1" class="canvas-container empty flex items-center justify-center">
-                        <canvas ref="maskCanvas" v-show="type===1"></canvas>
+                    <div v-if="msk_type===1" class="canvas-container empty flex items-center justify-center">
+                        <canvas ref="maskCanvas" v-show="msk_type===1"></canvas>
                     </div>
                 </div>
             </div>
@@ -27,26 +27,34 @@
                 <button class="sm-button" @click="() => select_mask()">Select Mask</button>
             </div>
         </div>
-        <div class="model container" style="margin-top: 5ch;">
+        <div class="model container min-w-screen" style="margin-top: 5ch;">
             <h2 style="font-size: 2em; margin-bottom: 1ch;">Model Selection</h2>
-            <div v-for="(model, index) in models" :key="index" class="location-item">
-                <el-radio v-model="radio_m" :label="index.toString()" size="large">麦橘写实</el-radio>
-                <img :src="model" style="width: 151px; height: 151px;">
+            <el-cascader placeholder="Gender Selection" :options="options" @change="handleChange" />
+            <div v-if="gender===0" class="selection-wrapper" style="margin-top: 3ch;">
+                <div v-for="(model, index) in models" :key="index" class="selection-item">
+                    <el-radio v-model="radio_m" :label="index.toString()" size="large">{{ model }}</el-radio>
+                    <img :src="md0_urls[index]" style="width: 151px; height: 151px; margin-right: 5ch;">
                 </div>
+            </div>
+            <div v-if="gender===1" class="selection-wrapper" style="margin-top: 3ch;">
+                <div v-for="(model, index) in models" :key="index" class="selection-item">
+                    <el-radio v-model="radio_m" :label="index.toString()" size="large">{{ model }}</el-radio>
+                    <img :src="md1_urls[index]" style="width: 151px; height: 151px; margin-right: 5ch;">
+                </div>
+            </div>
         </div>
         <div class="loc container" style="margin-top: 3ch; margin-bottom: 5ch;">
             <h2 style="font-size: 2em; margin-bottom: 1ch;">Location Selection</h2>
-            <div class="locations-wrapper">
-                <div v-for="(location, index) in locations" :key="index" class="location-item">
+            <div class="selection-wrapper">
+                <div v-for="(location, index) in locations" :key="index" class="selection-item">
                     <el-radio v-model="radio_l" :label="index.toString()" size="large">{{ location }}</el-radio>
-                    <img :src="loc_urls[index]" style="width: 151px; height: 151px; margin-right: 3ch;">
+                    <img :src="loc_urls[index]" style="width: 151px; height: 151px; margin-right: 5ch;">
                 </div>
             </div>
         </div>
         <div class="generate container" style="margin-top: 3ch; margin-bottom: 3ch;">
             <button class="gen-button" @click="generate">Generate</button>
             <div class="generate image" style="margin-top: 3ch;">
-                <!-- <img :src="res_url" v-on:click="showViewer([res_url])"> -->
                 <div v-loading="loading2" element-loading-text="Loading..." class="res-canvas-container">
                     <canvas ref="resCanvas" v-on:click="showViewer([res_url])"></canvas>
                 </div>
@@ -56,11 +64,13 @@
 </template>
 
 <script>
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { api as viewerApi } from 'v-viewer'
 import axios from "axios";
 import { ElMessage } from 'element-plus'
 import NavBar from '@/components/NavBar.vue';
+import { GET_USERNAME } from "@/store/storeconstants";
+import { useStore } from 'vuex'
 
 export default {
     components: {
@@ -72,8 +82,8 @@ export default {
         pointCount: 0,
         points: [],
         });
-        let userId = ref(null);
         let img = ref(null);
+        const mask = ref(null);
         const image = ref(null);
         const image_url = ref(null);
         const mask_url = ref(null);
@@ -81,7 +91,9 @@ export default {
         const maskCanvas = ref(null);
         const resCanvas = ref(null);
         const img_res = ref([]);
-        const models = ref(["http://192.168.3.20:9527/media/footage/image/mjic.png"]);
+        const models = ref(["A", "B", "C", "D"]);
+        const md0_urls = ref(["http://192.168.3.16:9527/media/mock/0_a.png", "http://192.168.3.16:9527/media/mock/0_b.png", "http://192.168.3.16:9527/media/mock/0_c.png", "http://192.168.3.16:9527/media/mock/0_d.png"])
+        const md1_urls = ref(["http://192.168.3.16:9527/media/mock/1_a.png", "http://192.168.3.16:9527/media/mock/1_b.png", "http://192.168.3.16:9527/media/mock/1_c.png", "http://192.168.3.16:9527/media/mock/1_d.png"])
         const locations = ref(["beach", "street", "cafe"]);
         const loc_urls = ref(["https://ai-global-image.weshop.com/ad30c49b-0c28-458b-be06-4b1f73a10965.png_256x256.jpeg", "https://ai-global-image.weshop.com/20c29716-f083-41f1-8c26-db9df6f37135.png_256x256.jpeg", "https://ai-global-image.weshop.com/64207f3d-c144-4197-88b1-df6843359394.png_256x256.jpeg"]);
         const pointCount = ref(0);
@@ -91,19 +103,44 @@ export default {
         const checkedIndices = ref([]);
         const loading = ref(false);
         const loading2 = ref(false);
-        const type = ref(0);
+        const msk_type = ref(0);
+        const gender = ref("0");
         const radio_m = ref("0");
         const radio_l = ref("0");
         const socket = ref(null);
         const LOC = ref("");
         const res_url = ref("");
         const closePanel = ref(true);
+        const store = useStore()
+
+        const handleChange = (value) => {
+            gender.value = value[0]
+        }
+
+        const options = [
+        {
+            value: 0,
+            label: 'Man'
+        },
+        {
+            value: 1,
+            label: 'Woman'
+        }]
+
+        const username = computed(() => {
+            let userName = store.getters[`auth/${GET_USERNAME}`]
+            return userName;
+        });
 
         const set_init = async () => {
                 closePanel.value = !closePanel.value;
             }
         
         const onFileChange = async (event) => {
+            if (username.value == ""){
+                ElMessage.error("Please login.")
+                return
+            }
             const file = event.target.files[0];
             const reader = new FileReader();
             reader.onload = async (e) => {
@@ -117,7 +154,7 @@ export default {
                 formData.append('rawfile', file, 'image.png'); // Assuming the name of the file should be 'image.png'
 
                 try {
-                    const response = await axios.post('http://192.168.3.20:9527/upload?user_id=adam', formData, {
+                    const response = await axios.post(`http://192.168.3.20:9527/upload?user_id=${username.value}`, formData, {
                         headers: {
                             'accept': 'application/json',
                             'Content-Type': 'multipart/form-data'
@@ -129,6 +166,7 @@ export default {
                 }
             }
             reader.readAsDataURL(file);
+            checkedIndices.value = []
         };
 
         const drawImageToCanvas = (targetImage, targetCanvas, size) => {
@@ -205,13 +243,12 @@ export default {
         };
 
         const sam = async (blacks, reds) => {
-            type.value = 0;
+            msk_type.value = 0;
             const match = image_url.value.match(/\/media\/(.*?)\/input\/(.*?)$/);
             if (!match) {
                 console.error("Invalid image_url format");
                 return;
             }
-            userId = match[1];
             img = match[2];
 
             // Construct the URL
@@ -223,7 +260,7 @@ export default {
             const formattedReds = encodeURIComponent(`[${formatPoints(reds)}]`);
 
             // Construct the URL
-            const url = `http://192.168.3.20:9527/sam?user_id=${encodeURIComponent(userId)}&img=${encodeURIComponent(img)}&blacks=${formattedBlacks}&reds=${formattedReds}`;
+            const url = `http://192.168.3.20:9527/sam?user_id=${encodeURIComponent(username.value)}&img=${encodeURIComponent(img)}&blacks=${formattedBlacks}&reds=${formattedReds}`;
 
             try {
                 const [_, response] = await Promise.all([
@@ -263,16 +300,16 @@ export default {
             const mask_ids = encodeURIComponent(checkedIndices.value.join(","));
         
             // Construct the URL
-            const url = `http://192.168.3.20:9527/select_mask/${mask_ids}?user_id=${userId}`;
+            const url = `http://192.168.3.20:9527/select_mask/${mask_ids}?user_id=${username.value}`;
             try {
                 const response = await axios.post(url, null, {
                     headers: {
                         'accept': 'application/json'
                     }
                 });
-                img_res.value = response.data.data;
-                type.value = 1;
-                mask_url.value = `http://192.168.3.20:9527/media/${userId}/input/msk.png`;
+                mask.value = response.data.data;
+                msk_type.value = 1;
+                mask_url.value = `http://192.168.3.20:9527/media/${username.value}/input/${mask.value}`;
 
                 // Load mask image and draw it to maskCanvas
                 const maskImage = new Image();
@@ -285,8 +322,30 @@ export default {
             }
         };
 
+        const extractedLora = computed(() => {
+            const index = parseInt(radio_m.value, 10);
+            let md_urls;
+            if (gender.value == 0) {
+                md_urls = md0_urls;
+            } else {
+                md_urls = md1_urls;
+            }
+            if (index >= 0 && index < md_urls.value.length) {
+                const url = md_urls.value[index];
+                const parts = url.split('/');
+                const filename = parts[parts.length - 1];
+                const name = filename.split('.')[0];
+                return name;
+            }
+            return '';  // Return empty string if index is out of bounds
+        });
+
         const generate = async () => {
-            loading_switch(loading2)
+            if (checkedIndices.value.length === 0){
+                ElMessage.error("Please select mask.")
+                return
+            }
+            loading2.value = true;
             if (socket.value && socket.value.readyState !== WebSocket.CLOSED) {
                 socket.value.close();
             }
@@ -295,21 +354,24 @@ export default {
 
             switch(radio_l.value) {
                 case "0":
-                LOC.value = "on the beach";
+                LOC.value = "(on the beach:1.5)";
                 break;
                 case "1":
-                LOC.value = "on the street";
+                LOC.value = "(on the street:1.5)";
                 break;
                 case "2":
-                LOC.value = "in a cafe";
+                LOC.value = "(in a cafe:1.5)";
                 break;
             }
+
             socket.value.onopen = () => {
                 message = {
-                    "user_id": userId,
+                    "user_id": username.value,
                     "image": img,
-                    "prompt":`best quality, masterpiece, (photorealistic:1.4), 1girl, depth of field, ${LOC.value}`,
-                    "nprompt":"nsfw, ng_deepnegative_v1_75t,badhandv4, (worst quality:2), (low quality:2), (normal quality:2), lowres,watermark, monochrome"
+                    "mask": mask.value,
+                    "prompt":`best quality, masterpiece, (photorealistic:1.4), depth of field, ${LOC.value}`,
+                    "nprompt":"(worst quality:2), (low quality:2), (normal quality:2), lowres,watermark, monochrome",
+                    "model": extractedLora.value
                 };
                 console.log(message);
                 socket.value.send(JSON.stringify(message));
@@ -329,7 +391,7 @@ export default {
                         drawImageToCanvas(resImage, resCanvas, 1024);
                     };
                     resImage.src = data.data.image;
-                    loading_switch(loading2)
+                    loading2.value = false;
                 }
             };
         }
@@ -344,6 +406,7 @@ export default {
         }
 
         return {
+            username,
             state, 
             loading,
             loading2,
@@ -354,6 +417,8 @@ export default {
             image_url,
             mask_url,
             models,
+            md0_urls,
+            md1_urls,
             locations,
             loc_urls,
             canvas,
@@ -361,7 +426,8 @@ export default {
             resCanvas,
             blacks,
             reds,
-            type,
+            gender,
+            msk_type,
             onFileChange,
             drawPoint,
             resetPoints,
@@ -372,10 +438,13 @@ export default {
             handleCheckboxChange,
             radio_m,
             radio_l,
+            extractedLora,
             generate,
             closePanel,
             set_init,
-            res_url
+            res_url,
+            handleChange,
+            options
         };
     }
 }
@@ -388,8 +457,8 @@ export default {
     align-items: flex-start;
     justify-content: center; /* vertically align the container */
     flex-direction: column;
-    width: 50%; /* or whatever width you prefer */
-    margin: 0 auto; /* horizontally center the container */
+    width: 60%; /* or whatever width you prefer */
+    margin-left: 410px; /* horizontally center the container */
 }
 
 .canvas-wrapper {
@@ -409,8 +478,8 @@ export default {
 }
 
 .res-canvas-container {
-    width: 1024px;
-    height: 1024px;
+    width: 728px;
+    height: 728px;
     border: 2px solid rgb(52, 92, 132); /* purple border */
     overflow: hidden;
     position: relative;
@@ -567,15 +636,13 @@ canvas {
     font-size: 18px;
 }
 
-.locations-wrapper {
+.selection-wrapper {
     display: flex; /* Use Flexbox */
     flex-wrap: wrap; /* If items exceed container width, they will wrap to the next line */
-    gap: 10px; /* Optional: Add a gap between items */
 }
 
-.location-item {
+.selection-item {
     display: flex; /* Use Flexbox */
     align-items: center; /* Vertically align items in the center */
-    gap: 5px; /* Optional: Add a gap between radio and image */
 }
 </style>
