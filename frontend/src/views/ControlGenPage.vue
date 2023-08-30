@@ -64,13 +64,11 @@
 </template>
 
 <script>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { api as viewerApi } from 'v-viewer'
 import axios from "axios";
 import { ElMessage } from 'element-plus'
 import NavBar from '@/components/NavBar.vue';
-import { GET_USERNAME } from "@/store/storeconstants";
-import { useStore } from 'vuex'
 
 export default {
     components: {
@@ -111,7 +109,16 @@ export default {
         const LOC = ref("");
         const res_url = ref("");
         const closePanel = ref(true);
-        const store = useStore()
+        const username = ref("");
+
+        onMounted(() => {
+            const sessionUser = sessionStorage.getItem('vuex'); // 'vuex' 是默认的键名
+            if (sessionUser) {
+                const parsedUser = JSON.parse(sessionUser);
+                username.value = parsedUser.user;
+                console.log(username.value);
+            }
+        });
 
         const handleChange = (value) => {
             gender.value = value[0]
@@ -127,20 +134,12 @@ export default {
             label: 'Woman'
         }]
 
-        const username = computed(() => {
-            let userName = store.getters[`auth/${GET_USERNAME}`]
-            return userName;
-        });
 
         const set_init = async () => {
                 closePanel.value = !closePanel.value;
             }
         
         const onFileChange = async (event) => {
-            if (username.value == ""){
-                ElMessage.error("Please login.")
-                return
-            }
             const file = event.target.files[0];
             const reader = new FileReader();
             reader.onload = async (e) => {
@@ -160,6 +159,7 @@ export default {
                             'Content-Type': 'multipart/form-data'
                         }
                     });
+                    console.log(response)
                     image_url.value = response.data.data
                 } catch (error) {
                     console.error("Error uploading the image:", error);

@@ -17,44 +17,43 @@
 <script>
 import axios from 'axios'
 import { defineComponent, computed, ref } from 'vue'
-import { GET_EMAIL, GET_USERNAME, SET_AUTHENTICATION, SET_USERNAME, SET_EMAIL, SET_TOKEN, GET_TOKEN } from "@/store/storeconstants";
-import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { onMounted } from 'vue';
+import store from '@/utils/store'; 
 
 export default defineComponent({
     setup(_, context) {
+        const username = ref("");
+        const email = ref("");
+        const token = ref("");
+
         const router = useRouter()
         const credits = ref(0);
-        const store = useStore()
-        const email = computed(() => {
-            let Email = store.getters[`auth/${GET_EMAIL}`]
-            return Email;
-        });
+        
         const goToPage = (pagnition) => {
             router.push(pagnition)
         }
-        const username = computed(() => {
-            let userName = store.getters[`auth/${GET_USERNAME}`]
-            return userName;
-        });
+
         const username_first_letter = computed(() => {
             let userName = username.value;
             return (typeof userName === 'string' && userName.length > 0) ? userName[0] : '';
         });
+
         const handleSignout = () => {
-            store.commit(`auth/${SET_AUTHENTICATION}`, false);
-            store.commit(`auth/${SET_USERNAME}`, "");
-            store.commit(`auth/${SET_EMAIL}`, "");
-            store.commit(`auth/${SET_TOKEN}`, "");
+            store.commit('setUser', '')
+            store.commit('setAuth', false)
+            store.commit('setEmail', '')
+            store.commit('setToken', '')
             context.emit('signout-click');
+            window.location.reload();
         };
+
         const getCredits = async () => {
-            const token = store.getters[`auth/${GET_TOKEN}`]
+            console.log(token.value)
             try {
                 const response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/user/credits`, {
                     headers: {
-                        Authorization: `Bearer ${token}`
+                        Authorization: `Bearer ${token.value}`
                     }
                 })
                 if (response.data.data && 'credits' in response.data.data) {
@@ -67,15 +66,26 @@ export default defineComponent({
             }
         }
 
-        onMounted(getCredits);
+        onMounted(() => {
+            const sessionUser = sessionStorage.getItem('vuex'); // 'vuex' 是默认的键名
+            if (sessionUser) {
+                const parsedUser = JSON.parse(sessionUser);
+                username.value = parsedUser.user;
+                email.value = parsedUser.email;
+                token.value = parsedUser.token;
+                if (token.value){
+                    getCredits();
+                }
+            }
+        });
         
         return {
             credits,
+            getCredits,
             email,
             username,
             username_first_letter,
             handleSignout,
-            getCredits,
             goToPage
         }
     }

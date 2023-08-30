@@ -112,19 +112,18 @@
 
 <script>
 import axios from "axios";
-import { SET_AUTHENTICATION, SET_USERNAME, SET_EMAIL, SET_TOKEN } from "@/store/storeconstants";
+// import { SET_AUTHENTICATION, SET_USERNAME, SET_EMAIL, SET_TOKEN } from "@/store/storeconstants";
 import { defineComponent, ref } from 'vue';
 import 'viewerjs/dist/viewer.css';
 import Auth from '@/components/GoogleAuth.vue';
 import { ElMessage } from 'element-plus'
-import { useStore } from 'vuex'
+import store from '@/utils/store'; 
 
 export default defineComponent({
     components: {
         Auth
     },
     setup(_, context) {
-        const store = useStore()
         const email = ref('');
         const page = ref(1);
         const username = ref('');
@@ -151,11 +150,12 @@ export default defineComponent({
                 .then(function (response) {
                     if (response.data.code === 200) {
                         ElMessage.info({showClose: true, message: "Successfully login!"})
-                        store.commit(`auth/${SET_AUTHENTICATION}`, true);
-                        store.commit(`auth/${SET_USERNAME}`, username.value);
-                        store.commit(`auth/${SET_EMAIL}`, email.value);
-                        store.commit(`auth/${SET_TOKEN}`, response.data.access_token);
+                        store.commit('setUser', username.value)
+                        store.commit('setAuth', true)
+                        store.commit('setEmail', email.value)
+                        store.commit('setToken', response.data.access_token)
                         context.emit('login-click');
+                        window.location.reload();
                     } else {
                         ElMessage.error({showClose: true, message: response.data.message});
                     }
@@ -182,6 +182,7 @@ export default defineComponent({
         }
 
         return {
+            store,
             page,
             gotoCreate,
             closeModal,

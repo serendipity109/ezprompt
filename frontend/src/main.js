@@ -5,7 +5,6 @@ import { createVuetify } from "vuetify";
 import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
 import router from "./router";
-import store from './store'
 import vue3GoogleLogin from 'vue3-google-login'
 
 const vuetify = createVuetify({});
@@ -22,4 +21,4 @@ app.use(vue3GoogleLogin, {
   clientId: '734101254265-37fk1rd4de279jecj99m6l78pq8rqljh.apps.googleusercontent.com'
 });
 
-app.use(store).use(router).use(vuetify).use(ElementPlus).mount("#app");
+app.use(router).use(vuetify).use(ElementPlus).mount("#app");

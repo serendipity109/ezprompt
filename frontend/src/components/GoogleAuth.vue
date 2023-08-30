@@ -4,16 +4,14 @@
 
 <script>
 import axios from "axios";
-import { SET_AUTHENTICATION, SET_USERNAME, SET_EMAIL, SET_TOKEN } from "@/store/storeconstants";
 import { decodeCredential } from 'vue3-google-login'
 import { useRouter } from 'vue-router'
-import { useStore } from 'vuex'
+import store from '@/utils/store'; 
 import { ElMessage } from 'element-plus'
 
 export default {
   setup(_, context) {
     const router = useRouter()
-    const store = useStore()
     const callback = async (response) => {
       const userData = decodeCredential(response.credential)
       const user = userData.name;
@@ -36,10 +34,11 @@ export default {
         .then(function (response) {
           if (response.data.code === 200) {
             ElMessage.info({showClose: true, message: "Successfully login!"})
-            store.commit(`auth/${SET_AUTHENTICATION}`, true);
-            store.commit(`auth/${SET_USERNAME}`, email);
-            store.commit(`auth/${SET_EMAIL}`, email);
-            store.commit(`auth/${SET_TOKEN}`, response.data.access_token);
+            store.commit('setUser', email)
+            store.commit('setAuth', true)
+            store.commit('setEmail', email)
+            store.commit('setToken', response.data.access_token)
+            window.location.reload();
             return true
           } else {
             return false

@@ -125,12 +125,10 @@
     </div>
 </template>
 <script>
-import { defineComponent, ref, computed, watch } from 'vue'
+import { defineComponent, ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Login from '@/components/LogIn.vue';
 import AccountPanel from '@/components/AccountPanel.vue';
-import { GET_USERNAME } from "@/store/storeconstants";
-import { useStore } from 'vuex'
 
 export default defineComponent({
     name: 'NavBar',
@@ -143,8 +141,8 @@ export default defineComponent({
         closePanel: Boolean
     },
     setup(props) {
+        const user_id = ref("");
         const router = useRouter()
-        const store = useStore()
         const dialog = ref(false);
         const show_panel = ref(false);
         const accountPanelRef = ref(null);
@@ -160,9 +158,9 @@ export default defineComponent({
         const closeLoginClick = () => {
             dialog.value = false;
         };
+
         const username = computed(() => {
-            let userName = store.getters[`auth/${GET_USERNAME}`]
-            return userName;
+            return user_id.value;
         });
 
         const username_first_letter = computed(() => {
@@ -185,6 +183,15 @@ export default defineComponent({
             show_panel.value = false; // 收到消息就關掉
         });
 
+        onMounted(() => {
+            const sessionUser = sessionStorage.getItem('vuex'); // 'vuex' 是默认的键名
+            if (sessionUser) {
+                const parsedUser = JSON.parse(sessionUser);
+                user_id.value = parsedUser.user;
+                console.log(username.value);
+            }
+        });
+
         return {
             getNavStyle,
             getNavOpa,
@@ -195,6 +202,7 @@ export default defineComponent({
             closePanelClick,
             show_panel,
             closeLoginClick,
+            user_id,
             username,
             username_first_letter,
         };

@@ -292,8 +292,9 @@ export default defineComponent({
     height: auto;
 }
 
-::v-deep .el-progress--line {
+.parent :deep(.el-progress--line) {
     width: 800px;
     margin: 0 auto;
-    display: off;
-}</style>
+    display: none; /* 注意这里将 "off" 改成了 "none" */
+}
+</style>

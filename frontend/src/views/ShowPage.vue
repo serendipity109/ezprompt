@@ -72,14 +72,11 @@
     
 <script>
 import axios from "axios";
-import { defineComponent, ref, onMounted, onUnmounted, computed } from 'vue'
+import { defineComponent, ref, onMounted, onUnmounted } from 'vue'
 import 'viewerjs/dist/viewer.css'
 import { api as viewerApi } from 'v-viewer'
 import NavBar from '@/components/NavBar.vue';
 import fileDownload from 'js-file-download';
-import { GET_EMAIL } from "@/store/storeconstants";
-import { GET_USERNAME } from "@/store/storeconstants";
-import { useStore } from 'vuex'
 import { ElMessage } from 'element-plus'
 
 export default defineComponent({
@@ -87,6 +84,8 @@ export default defineComponent({
         NavBar
     },
     setup() {
+        const username = ref("");
+        const email = ref("");
         const keyword = ref('');
         const images = ref([]);
         const imageRows = ref([]);
@@ -97,14 +96,9 @@ export default defineComponent({
         const showStyle = ref(false);
         const radio = ref(null);
         const selectedImage = ref({row: -1, col: -1});
-        const store = useStore()
         const closePanel = ref(true);
         let intervalId;
 
-        const username = computed(() => {
-            let userName = store.getters[`auth/${GET_USERNAME}`]
-            return userName;
-        });
 
         const chunkArray = (array, size) => {
             const chunkedArray = [];
@@ -134,19 +128,19 @@ export default defineComponent({
             });
         }
 
-        const email = computed(() => {
-            let Email = store.getters[`auth/${GET_EMAIL}`]
-            const parts = Email.split('@');
-            return parts[0];
-        });
-
         const set_init = async () => {
             closePanel.value = !closePanel.value;
         }
 
         onMounted(async () => {
+            const sessionUser = sessionStorage.getItem('vuex'); // 'vuex' 是默认的键名
+            if (sessionUser) {
+                const parsedUser = JSON.parse(sessionUser);
+                username.value = parsedUser.user;
+                email.value = parsedUser.email;
+            }
             let response;
-            if (username) {
+            if (username.value) {
                 response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/showcase?user_id=${username.value}`);
             } else {
                 response = await axios.get(`http://${process.env.VUE_APP_BACKEND_IP}/showcase`);

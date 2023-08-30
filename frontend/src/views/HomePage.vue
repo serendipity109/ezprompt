@@ -165,15 +165,13 @@
   
 <script>
 import axios from "axios";
-import { defineComponent, ref, onMounted, onUnmounted, computed } from 'vue'
+import { defineComponent, ref, onMounted, onUnmounted } from 'vue'
 import 'viewerjs/dist/viewer.css'
 import { api as viewerApi } from 'v-viewer'
 import NavBar from '@/components/NavBar.vue';
 import Upload from '@/components/UploadImg.vue';
 import fileDownload from 'js-file-download';
 import { ElMessage } from 'element-plus'
-import { GET_EMAIL, GET_USERNAME, GET_TOKEN } from "@/store/storeconstants";
-import { useStore } from 'vuex'
 import { useRoute, useRouter } from 'vue-router';
 import { getCredits } from '@/utils/account.js';
 import { styleSelect } from '@/utils/param.js';
@@ -184,6 +182,10 @@ export default defineComponent({
     Upload
   },
   setup() {
+    const token = ref('');
+    const user_id = ref('');
+    const email = ref('');
+    const auth = ref('');
     const keyword = ref('');
     const images = ref([]);
     const imageRows = ref([]);
@@ -196,7 +198,6 @@ export default defineComponent({
     const selectedImage = ref(null);
     const type = ref(null);
     const socket = ref(null);
-    const store = useStore();
     const route = useRoute();
     const router = useRouter();
     const feature = ref(0);
@@ -211,7 +212,7 @@ export default defineComponent({
       1: "1:1",
       2: "9:16",
     };
-    let token = route.query.token;
+    let create_account_token = route.query.token;
     let intervalId;
 
     const getImgs = async () => {
@@ -241,12 +242,12 @@ export default defineComponent({
     };
 
     const ezprompt = async (image_url = '') => {
-      token = store.getters[`auth/${GET_TOKEN}`]
-      if (token == "") {
+      // token = store.getters[`auth/${GET_TOKEN}`]
+      if (token.value == "") {
         ElMessage.error({ showClose: true, message: "Please log in." })
         return
       }
-      const credits = await getCredits(token)
+      const credits = await getCredits(token.value)
       if (credits < 4) {
         ElMessage.error({ showClose: true, message: "Credits not enough!" })
         return
@@ -269,9 +270,8 @@ export default defineComponent({
       socket.value = new WebSocket(`ws://${process.env.VUE_APP_BACKEND_IP}/dcmj/imagine`);
       let message;
       socket.value.onopen = () => {
-        let user_id = store.getters[`auth/${GET_USERNAME}`]
         message = {
-          "user_id": user_id,
+          "user_id": user_id.value,
           "prompt": keyword.value,
           "size": sizeLabels[dimValue.value],
           "mode": "relax",
@@ -359,24 +359,26 @@ export default defineComponent({
       closePanel.value = !closePanel.value;
     }
 
-    const email = computed(() => {
-      let Email = store.getters[`auth/${GET_EMAIL}`]
-      const parts = Email.split('@');
-      return parts[0];
-    });
-
     onMounted(async () => {
-      if (token) {
-        const user_res = await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/decode?token=${token}`)
+      const sessionUser = sessionStorage.getItem('vuex'); // 'vuex' 是默认的键名
+          if (sessionUser) {
+              const parsedUser = JSON.parse(sessionUser);
+              token.value = parsedUser.token;
+              user_id.value = parsedUser.user;
+              email.value = parsedUser.email;
+              auth.value = parsedUser.auth;
+          }
+      if (create_account_token) {
+        const user_res = await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/decode?token=${create_account_token}`)
         const user = user_res.data.user_id
         const pwd = user_res.data.password
         axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/create?username=${user}&password=${pwd}`)
           .then(function (response) {
             if (response.data.code === 200) {
-              const user_id = response.data.data;
+              const uid = response.data.data;
               ElMessage.info({
                 showClose: true,
-                message: `Successfully create account ${user_id}`,
+                message: `Successfully create account ${uid}`,
                 duration: 5000
               });
               ElMessage.info({
@@ -452,29 +454,28 @@ export default defineComponent({
   height: auto;
 }
 
-::v-deep .el-progress-bar__innerText {
+.parent :deep(.el-progress-bar__innerText) {
   color: #000;
 }
 
-::v-deep .el-progress--line {
+.parent :deep(.el-progress--line) {
   width: 500px;
   margin: 0 auto;
   display: off;
 }
 
-::v-deep .el-radio__input.is-checked .el-radio__inner {
+.parent :deep(.el-radio__input.is-checked .el-radio__inner) {
   border-color: #a153e6;
   background: #a153e6;
 }
 
-::v-deep .el-radio__input.is-checked+.el-radio__label {
+.parent :deep(.el-radio__input.is-checked+.el-radio__label) {
   color: #a153e6;
 }
 
-::v-deep .el-radio__inner {
+.parent :deep(.el-radio__inner) {
   background-color: #ffffff12;
-}
-::v-deep .el-radio__label {
+}.parent :deep(.el-radio__label) {
   color: #ffffff6e;
 }
 

@@ -207,10 +207,8 @@
 
 <script>
 import axios from "axios";
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, onMounted } from 'vue'
 import NavBar from '@/components/NavBar.vue';
-import { GET_TOKEN } from "@/store/storeconstants";
-import { useStore } from 'vuex'
 import { ElMessage } from 'element-plus'
 
 export default defineComponent({
@@ -218,16 +216,17 @@ export default defineComponent({
         NavBar
     },
     setup() {
+        const username = ref("");
+        const email = ref("");
+        const token = ref("");
         const plan = ref(1);
-        const store = useStore()
         const closePanel = ref(true);
         const topup = async (n) => {
-            const token = store.getters[`auth/${GET_TOKEN}`]
-            if (token) {
+            if (token.value) {
                 const credits = n*100
                 const response = await axios.put(`http://${process.env.VUE_APP_BACKEND_IP}/user/top-up?credits=${credits}`, {}, {
                     headers: {
-                        Authorization: `Bearer ${token}`
+                        Authorization: `Bearer ${token.value}`
                     }
                 })
                 if (response.data.code == 200) {
@@ -244,6 +243,15 @@ export default defineComponent({
         const set_init = async () => {
             closePanel.value = !closePanel.value;
         }
+        onMounted(() => {
+            const sessionUser = sessionStorage.getItem('vuex'); // 'vuex' 是默认的键名
+            if (sessionUser) {
+                const parsedUser = JSON.parse(sessionUser);
+                username.value = parsedUser.user;
+                email.value = parsedUser.email;
+                token.value = parsedUser.token;
+            }
+        });
         return { plan, topup, closePanel, set_init }
     }
 })
