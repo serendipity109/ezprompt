@@ -42,7 +42,7 @@ async def test_style_parser():
     nprompt = "some nprompt"
     style = "漫画"
     result = await style_parser(prompt, nprompt, style)
-    assert result == "some prompt, anime --niji 5"
+    assert result == "some prompt, anime --niji 5 --no some nprompt"
 
 
 @pytest.mark.asyncio
