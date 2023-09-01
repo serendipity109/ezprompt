@@ -3,6 +3,7 @@
         <nav-bar page="generate" :closePanel="closePanel"/>
         <div class="container min-w-screen" style="margin-top: 8ch;">
             <input type="file" @change="onFileChange" class="file-input">
+            <div class="text-xl" style="margin-bottom: 1ch;">（上傳尺寸需小於1024x1024）</div>
             <div class="canvas-wrapper">
                 <div class="canvas-container">
                     <canvas v-if="image" ref="canvas" @mousedown="drawPoint" @contextmenu.prevent></canvas>
@@ -24,7 +25,9 @@
             <div class="button-line">
                 <button class="reset-button" @click="resetPoints">Reset</button>
                 <button class="sam-button" @click="() => sam(blacks, reds)">SAM</button>
+                <div class="text-xl" style="margin-top: 1ch;">（左鍵要，右鍵不要）</div>
                 <button class="sm-button" @click="() => select_mask()">Select Mask</button>
+                <div class="text-xl" style="margin-top: 1ch;">（可複選 masks）</div>
             </div>
         </div>
         <div class="model container min-w-screen" style="margin-top: 5ch;">
@@ -236,6 +239,10 @@ export default {
 
 
         const resetPoints = () => {
+            if (!image.value){
+                ElMessage.error("Please upload image.")
+                return
+            }
             pointCount.value = 0;
             blacks.value = [];
             reds.value = [];
@@ -243,6 +250,10 @@ export default {
         };
 
         const sam = async (blacks, reds) => {
+            if (!image.value){
+                ElMessage.error("Please upload image.")
+                return
+            }
             msk_type.value = 0;
             const match = image_url.value.match(/\/media\/(.*?)\/input\/(.*?)$/);
             if (!match) {
@@ -297,6 +308,10 @@ export default {
         };
 
         const select_mask = async () => {
+            if (!image.value){
+                ElMessage.error("Please upload image.")
+                return
+            }
             const mask_ids = encodeURIComponent(checkedIndices.value.join(","));
         
             // Construct the URL
@@ -546,7 +561,6 @@ canvas {
 
 .sam-button {
     margin-top: 5px;
-    margin-right: 330px;
     background-color: #466928;
     border: none;
     border-radius: 25px;
@@ -573,6 +587,7 @@ canvas {
 
 .sm-button {
     margin-top: 5px;
+    margin-left: 100px;
     background-color: #277071;
     border: none;
     border-radius: 25px;
