@@ -1,51 +1,100 @@
-<!-- <template>
+<template>
     <div>
-        <div
-            class="w-64 bg-gray-800 fixed z-50 right-0 top-5 rounded-md shadow text-sm flex flex-col items-start overflow-hidden border border-gray-700">
-            <div class="px-4 py-2 bg-gray-700 w-full flex items-center">
-                <div class="rounded-full h-7 w-7 flex items-center justify-center bg-gray-800 mr-2 text-white">
-                    <p>{{ username_first_letter }}</p>
-                </div>
-                <span class="font-medium truncate text-white">{{ email }}</span>
-            </div>
-            <a class="w-full px-4 py-2 hover:bg-gray-700 flex justify-center text-white" href="/account">Account</a>
-            <button @click="handleSignout" class="w-full px-4 py-2 hover:bg-gray-700 text-white">Sign out</button>
-        </div>
+        <button class="reset-button" @click="dialog_switch">Switch</button>
+        <v-dialog v-model="dialog" width="auto">
+            <canvas ref="canvasRef" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave" @mousedown="handleMouseDown"></canvas>
+        </v-dialog>
     </div>
 </template>
-  
-<script>
-import { defineComponent, computed } from 'vue'
-import { GET_EMAIL, GET_USERNAME, SET_AUTHENTICATION, SET_USERNAME, SET_EMAIL } from "@/store/storeconstants";
-import { useStore } from 'vuex'
 
-export default defineComponent({
+<script>
+import { ref, computed, reactive, nextTick } from 'vue';
+
+export default {
+    name: 'ImageCanvas',
     setup() {
-        const store = useStore()
-        const email = computed(() => {
-            let Email = store.getters[`auth/${GET_EMAIL}`]
-            return Email;
-        });
-        const username = computed(() => {
-            let userName = store.getters[`auth/${GET_USERNAME}`]
-            return userName;
-        });
-        const username_first_letter = computed(() => {
-            let userName = username.value;
-            return (typeof userName === 'string' && userName.length > 0) ? userName[0] : '';
-        });
-        const handleSignout = () => {
-            store.commit(`auth/${SET_AUTHENTICATION}`, false);
-            store.commit(`auth/${SET_USERNAME}`, "");
-            store.commit(`auth/${SET_EMAIL}`, "");
+        const dialog = ref(false);
+        const canvasRef = ref(null);
+        const baseImageUrl = 'http://192.168.3.20:9527/media/adamwang@emotibot.com/input/image.png';
+
+        const initializeCanvas = () => {
+            const canvas = canvasRef.value;
+            const ctx = canvas.getContext('2d');
+            canvas.width = baseImg.width;
+            canvas.height = baseImg.height;
+            ctx.drawImage(baseImg, 0, 0);
         };
-        return {
-            email,
-            username,
-            username_first_letter,
-            handleSignout
+
+        const dialog_switch = () => {
+            console.log("Switch button clicked");
+            dialog.value = !dialog.value;
+            if (dialog.value) {
+                nextTick(() => {
+                    initializeCanvas();
+                });
+            }
         }
-    }
-})
+
+        const maskImageConfig = reactive({
+            baseUrl: 'http://192.168.3.20:9527/sam/select_mask?user_id=adamwang@emotibot.com',
+            x: 0,
+            y: 0
+        });
+
+        const maskImageUrl = computed(() => {
+            return `${maskImageConfig.baseUrl}&x=${maskImageConfig.x}&y=${maskImageConfig.y}`;
+        });
+
+        const baseImg = new Image();
+        baseImg.crossOrigin = "anonymous";
+        baseImg.src = baseImageUrl;
+
+        const handleMouseMove = (event) => {
+            const rect = canvasRef.value.getBoundingClientRect();
+            maskImageConfig.x = Math.round(event.clientX - rect.left);
+            maskImageConfig.y = Math.round(event.clientY - rect.top);
+
+            const ctx = canvasRef.value.getContext('2d');
+            const maskImg = new Image();
+            maskImg.crossOrigin = "anonymous";
+            maskImg.src = maskImageUrl.value;
+            maskImg.onload = () => {
+                ctx.drawImage(baseImg, 0, 0);  // redraw the base image
+                ctx.drawImage(maskImg, 0, 0);  // draw the new mask image
+            };
+        };
+        
+        const handleMouseLeave = () => {
+            const ctx = canvasRef.value.getContext('2d');
+
+            // Clear the entire canvas
+            ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+
+            // Check if baseImg has loaded
+            if (baseImg.complete) {
+                // Redraw the baseImg
+                ctx.drawImage(baseImg, 0, 0);
+            }
+        };
+
+        return {
+            dialog,
+            dialog_switch,
+            canvasRef,
+            handleMouseMove,
+            handleMouseLeave
+        };
+    },
+};
 </script>
-   -->
+
+<style scoped>
+canvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    height: auto;
+}
+</style>
