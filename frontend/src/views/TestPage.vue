@@ -2,13 +2,15 @@
     <div>
         <button class="reset-button" @click="dialog_switch">Switch</button>
         <v-dialog v-model="dialog" width="auto">
-            <canvas ref="canvasRef" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave" @mousedown="handleMouseDown"></canvas>
+            <canvas ref="canvasRef" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave"
+                @mousedown="handleMouseDown"></canvas>
         </v-dialog>
     </div>
 </template>
 
 <script>
 import { ref, computed, reactive, nextTick } from 'vue';
+import axios from "axios";
 
 export default {
     name: 'ImageCanvas',
@@ -26,7 +28,6 @@ export default {
         };
 
         const dialog_switch = () => {
-            console.log("Switch button clicked");
             dialog.value = !dialog.value;
             if (dialog.value) {
                 nextTick(() => {
@@ -49,6 +50,11 @@ export default {
         baseImg.crossOrigin = "anonymous";
         baseImg.src = baseImageUrl;
 
+        const selectedMaskUrl = 'http://192.168.3.20:9527/media/adamwang@emotibot.com/mask/selected_mask.png';
+        const selectedMaskImg = new Image();
+        selectedMaskImg.crossOrigin = "anonymous";
+        selectedMaskImg.src = selectedMaskUrl;
+
         const handleMouseMove = (event) => {
             const rect = canvasRef.value.getBoundingClientRect();
             maskImageConfig.x = Math.round(event.clientX - rect.left);
@@ -63,7 +69,30 @@ export default {
                 ctx.drawImage(maskImg, 0, 0);  // draw the new mask image
             };
         };
-        
+
+        const handleMouseDown = async (event) => {
+            if (event.button !== 0) return;  // 如果不是左鍵，直接返回
+
+            try {
+                // 執行 Axios POST 請求
+                const response = await axios.post(`http://192.168.3.20:9527/sam/mix_mask?user_id=adamwang@emotibot.com`);
+                
+                // POST 請求成功後，重新載入 selectedMaskImg.src
+                selectedMaskImg.src = response.data;
+
+                const ctx = canvasRef.value.getContext('2d');
+                if (selectedMaskImg.complete) { // 如果圖片已經加載
+                    ctx.drawImage(selectedMaskImg, 0, 0);  // 繪製 selected mask
+                } else {
+                    selectedMaskImg.onload = () => { // 如果圖片還沒加載
+                        ctx.drawImage(selectedMaskImg, 0, 0);  // 繪製 selected mask
+                    };
+                }
+            } catch (error) {
+                console.error('POST 請求失敗', error);
+            }
+        };
+
         const handleMouseLeave = () => {
             const ctx = canvasRef.value.getContext('2d');
 
@@ -82,6 +111,7 @@ export default {
             dialog_switch,
             canvasRef,
             handleMouseMove,
+            handleMouseDown,
             handleMouseLeave
         };
     },
