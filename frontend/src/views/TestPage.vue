@@ -1,23 +1,36 @@
 <template>
     <div>
-        <button class="reset-button" @click="dialog_switch">Switch</button>
-        <v-dialog v-model="dialog" width="auto">
-            <canvas ref="canvasRef" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave"
-                @mousedown="handleMouseDown"></canvas>
-        </v-dialog>
+        <el-button class="switch-button" @click="dialog_switch">Switch</el-button>
+        <el-dialog v-model="dialog" height="auto" align-top>
+            <div class="canvas-container">
+                <canvas ref="canvasRef" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave"
+                    @mousedown="handleMouseDown"></canvas>
+                <el-button-group class="mt-10" size="large">
+                    <el-button class="reset-button" :icon="Refresh" @click="resetMask" >Reset</el-button>
+                    <el-button class="reset-button" :icon="CircleCheck" @click="resetMask">Done</el-button>
+                </el-button-group>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
+  
 <script>
 import { ref, computed, reactive, nextTick } from 'vue';
-import axios from "axios";
+import axios from 'axios';
+import {
+  Refresh,
+  CircleCheck
+} from '@element-plus/icons-vue'
 
 export default {
     name: 'ImageCanvas',
     setup() {
         const dialog = ref(false);
         const canvasRef = ref(null);
-        const baseImageUrl = 'http://192.168.3.20:9527/media/adamwang@emotibot.com/input/image.png';
+        const baseImageUrl =
+            'http://192.168.3.20:9527/media/adamwang@emotibot.com/input/image.png';
+        let selectedMaskImg = new Image(); 
 
         const initializeCanvas = () => {
             const canvas = canvasRef.value;
@@ -27,6 +40,35 @@ export default {
             ctx.drawImage(baseImg, 0, 0);
         };
 
+        const resetMask = async () => {
+            try {
+                await axios.post('http://192.168.3.20:9527/sam/reset_mask?user_id=adamwang%40emotibot.com', {
+                    user_id: 'adamwang@emotibot.com'
+                });
+                console.log('Reset successful');
+                
+                const ctx = canvasRef.value.getContext('2d');
+
+                // Update the src of selectedMaskImg
+                selectedMaskImg.src = `${selectedMaskImgUrl.value}?t=${new Date().getTime()}`;
+
+                selectedMaskImg.onload = () => {
+                    // Clear the entire canvas
+                    ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+
+                    // Redraw baseImg and selectedMaskImg
+                    if (baseImg.complete) {
+                        ctx.drawImage(baseImg, 0, 0);
+                    }
+                    if (selectedMaskImg.complete) {
+                        ctx.drawImage(selectedMaskImg, 0, 0);
+                    }
+                };
+            } catch (error) {
+                console.error('Failed to reset mask', error);
+            }
+        };
+
         const dialog_switch = () => {
             dialog.value = !dialog.value;
             if (dialog.value) {
@@ -34,26 +76,25 @@ export default {
                     initializeCanvas();
                 });
             }
-        }
+        };
 
         const maskImageConfig = reactive({
             baseUrl: 'http://192.168.3.20:9527/sam/select_mask?user_id=adamwang@emotibot.com',
             x: 0,
-            y: 0
+            y: 0,
         });
 
         const maskImageUrl = computed(() => {
             return `${maskImageConfig.baseUrl}&x=${maskImageConfig.x}&y=${maskImageConfig.y}`;
         });
 
-        const baseImg = new Image();
-        baseImg.crossOrigin = "anonymous";
-        baseImg.src = baseImageUrl;
+        const selectedMaskImgUrl = computed(() => {
+            return `http://192.168.3.20:9527/sam/media/adamwang@emotibot.com/selected_mask`;
+        });
 
-        const selectedMaskUrl = 'http://192.168.3.20:9527/media/adamwang@emotibot.com/mask/selected_mask.png';
-        const selectedMaskImg = new Image();
-        selectedMaskImg.crossOrigin = "anonymous";
-        selectedMaskImg.src = selectedMaskUrl;
+        const baseImg = new Image();
+        baseImg.crossOrigin = 'anonymous';
+        baseImg.src = baseImageUrl;
 
         const handleMouseMove = (event) => {
             const rect = canvasRef.value.getBoundingClientRect();
@@ -62,32 +103,38 @@ export default {
 
             const ctx = canvasRef.value.getContext('2d');
             const maskImg = new Image();
-            maskImg.crossOrigin = "anonymous";
+            maskImg.crossOrigin = 'anonymous';
             maskImg.src = maskImageUrl.value;
+
             maskImg.onload = () => {
-                ctx.drawImage(baseImg, 0, 0);  // redraw the base image
-                ctx.drawImage(maskImg, 0, 0);  // draw the new mask image
+                ctx.drawImage(baseImg, 0, 0); // redraw the base image
+                ctx.drawImage(maskImg, 0, 0); // draw the new mask image
+                if (selectedMaskImg.complete) {  // Check if the image has loaded
+                    ctx.drawImage(selectedMaskImg, 0, 0);  // Draw the selected mask image
+                }
             };
         };
 
         const handleMouseDown = async (event) => {
-            if (event.button !== 0) return;  // 如果不是左鍵，直接返回
+            if (event.button !== 0) return; // 如果不是左鍵，直接返回
 
             try {
                 // 執行 Axios POST 請求
-                const response = await axios.post(`http://192.168.3.20:9527/sam/mix_mask?user_id=adamwang@emotibot.com`);
+                await axios.post(`http://192.168.3.20:9527/sam/mix_mask?user_id=adamwang@emotibot.com`, null, {
+                    responseType: 'blob', // 設置 responseType 為 'blob'
+                });
                 
-                // POST 請求成功後，重新載入 selectedMaskImg.src
-                selectedMaskImg.src = response.data;
-
                 const ctx = canvasRef.value.getContext('2d');
-                if (selectedMaskImg.complete) { // 如果圖片已經加載
-                    ctx.drawImage(selectedMaskImg, 0, 0);  // 繪製 selected mask
-                } else {
-                    selectedMaskImg.onload = () => { // 如果圖片還沒加載
-                        ctx.drawImage(selectedMaskImg, 0, 0);  // 繪製 selected mask
-                    };
-                }
+                selectedMaskImg.crossOrigin = 'anonymous';
+                
+                // Add a timestamp to the URL to avoid caching
+                selectedMaskImg.src = `${selectedMaskImgUrl.value}?t=${new Date().getTime()}`;
+                        
+                // Set the onload event before setting the src
+                selectedMaskImg.onload = () => {
+                    ctx.drawImage(baseImg, 0, 0); // redraw the base image
+                    ctx.drawImage(selectedMaskImg, 0, 0); // draw the new mask image on top
+                };
             } catch (error) {
                 console.error('POST 請求失敗', error);
             }
@@ -104,27 +151,55 @@ export default {
                 // Redraw the baseImg
                 ctx.drawImage(baseImg, 0, 0);
             }
+            if (selectedMaskImg.complete) {
+                ctx.drawImage(selectedMaskImg, 0, 0);  // Draw the selected mask image
+            }
         };
 
         return {
             dialog,
+            Refresh,
+            CircleCheck,
             dialog_switch,
+            resetMask,
             canvasRef,
             handleMouseMove,
             handleMouseDown,
-            handleMouseLeave
+            handleMouseLeave,
         };
     },
 };
 </script>
-
+  
 <style scoped>
-canvas {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: auto;
-    height: auto;
+.canvas-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center the children horizontally */
+}
+.switch-button {
+    margin-top: 5px;
+    background-color: #141515;
+    border: none;
+    border-radius: 25px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 28px;  /* Increase from 16px to 32px */
+    outline: none;
+    transition: background-color 0.3s, transform 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.reset-button {
+    margin-top: 5px;
+    background-color: #141515;
+    border: none;
+    border-radius: 25px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 28px;  /* Increase from 16px to 32px */
+    outline: none;
+    transition: background-color 0.3s, transform 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 </style>
+  
