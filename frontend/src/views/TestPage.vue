@@ -1,7 +1,12 @@
 <template>
     <div>
         <el-button class="switch-button" @click="dialog_switch">Switch</el-button>
-        <el-dialog v-model="dialog" height="auto" align-top>
+        <el-dialog v-model="dialog" height="auto" width="70%" top="0px">
+            <template #header>
+                <h4 style="text-align:center">
+                    Click to select unchanged areas in the original image (purple denotes the area, color depth irrelevant)
+                </h4>
+            </template>
             <div class="canvas-container">
                 <canvas ref="canvasRef" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave"
                     @mousedown="handleMouseDown"></canvas>
