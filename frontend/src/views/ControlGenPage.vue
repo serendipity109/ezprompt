@@ -8,7 +8,7 @@
                 <div class="canvas-container">
                     <canvas v-if="image" ref="canvas" @mousedown="drawPoint" @contextmenu.prevent></canvas>
                 </div>
-                <div v-loading="loading" element-loading-text="Loading..." class="canvas-container empty flex items-center justify-center">
+                <!-- <div v-loading="loading" element-loading-text="Loading..." class="canvas-container empty flex items-center justify-center">
                     <div v-if="msk_type===0" class="flex overflow-x-auto align-center justify-start thin-scrollbar h-auto pb-2"
                         style="height:fit-content; overscroll-behavior-x:contain; white-space: nowrap;">
                         <div v-for="(img_url, index) in img_res" :key="index" style="display: inline-block; margin-right: 5px;">
@@ -20,6 +20,14 @@
                     <div v-if="msk_type===1" class="canvas-container empty flex items-center justify-center">
                         <canvas ref="maskCanvas" v-show="msk_type===1"></canvas>
                     </div>
+                </div> -->
+                <div class="canvas-container empty flex items-center justify-center flex-col">
+                    <el-icon :size="50">
+                        <Avatar />
+                    </el-icon>
+                    <p class="edit header">Edit Area</p>
+                    <p class="edit content">Click to edit areas in the original image that do not require any changes</p>
+                    <el-button class="edit-button" @click="edit" :icon="EditPen">Edit</el-button>
                 </div>
             </div>
             <div class="button-line">
@@ -72,6 +80,10 @@ import { api as viewerApi } from 'v-viewer'
 import axios from "axios";
 import { ElMessage } from 'element-plus'
 import NavBar from '@/components/NavBar.vue';
+import {
+  Avatar,
+  EditPen
+} from '@element-plus/icons-vue'
 
 export default {
     components: {
@@ -425,6 +437,8 @@ export default {
             state, 
             loading,
             loading2,
+            Avatar,
+            EditPen,
             image, 
             pointCount, 
             points,
@@ -516,20 +530,44 @@ canvas {
     margin-right: 0; /* remove margin from the empty container */
 }
 
+.edit.header {
+    font-size: 24px;
+    text-align: center;
+}
+
+.edit.content {
+    font-size: 20px;
+    text-align: center;
+}
+
+.edit-button {
+    margin-top: 50px;
+    background-color: #141515;
+    border: none;
+    border-radius: 25px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 28px;  /* Increase from 16px to 32px */
+    padding: 20px 30px;
+    outline: none;
+    transition: background-color 0.3s, transform 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 .file-input {
     margin-bottom: 5px; /* space above the file input */
 }
 
 .image-checkbox {
-        display: block;
-        margin: 5px auto;
+    display: block;
+    margin: 5px auto;
 }
 
 .button-line {
-        display: flex;
-        justify-content: center; /* Horizontally center the buttons */
-        gap: 10px; /* Add a gap between the buttons */
-        margin-top: 5px;
+    display: flex;
+    justify-content: center; /* Horizontally center the buttons */
+    gap: 10px; /* Add a gap between the buttons */
+    margin-top: 5px;
 }
 
 .reset-button {
