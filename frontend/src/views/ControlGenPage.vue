@@ -163,6 +163,10 @@ export default {
         }
 
         const handlechange = async (file) => {
+            if (!username.value) {
+                ElMessage.error("Please login.")
+                return
+            }
             const reader = new FileReader();
             reader.onload = async (e) => {
                 image.value = new Image();
