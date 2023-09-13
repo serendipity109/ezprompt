@@ -4,7 +4,7 @@
         <div class="hidden sm:flex items-center cursor-pointer px-4 pl-6 left-0 h-full w-32 ">
             <div class="font-semibold text-3xl text-slate-50 justify-center items-center">EZPrompt</div>
         </div>
-        <div class="flex relative items-center h-full -mt-1 w-full sm:w-auto">
+        <div class="hidden sm:flex justify-center items-center h-full -mt-1 w-full sm:w-auto">
             <div style="height:32px;top:15px;display:absolute" class="absolute  rounded bg-zinc-700"></div><a
                 class="flex flex-row items-center cursor-pointer h-full py-1.5 pb-0 px-2 justify-center transition-all flex-1"
                 id="homepage" :style="{ opacity: getNavOpa('home') }" style="width:80px;z-index:2;"

@@ -4,10 +4,9 @@
             <nav-bar page="generate" :closePanel="closePanel" />
             <div class="container min-w-screen" style="margin-top: 8ch;">
                 <div class="intro-line">
-                    <div style="margin-left: 8ch;">Original image</div>
-                    <div style="margin-left: 18.5ch;">Edit area</div>
+                    <div style="margin-right: 13vw;">Original image</div> <div>Edit area</div>
                 </div>
-                <div class="canvas-wrapper">
+                <div class="canvas-wrapper flex">
                     <div class="canvas-container flex items-center justify-center flex-col">
                         <div v-if="image === null" class="upload area">
                             <el-upload action="" :on-success="handleSuccess" :on-change="handlechange"
@@ -46,7 +45,7 @@
                 </div>
                 <div class="button-line">
                     <button class="re-button" @click="reupload">Reupload</button>
-                    <button class="re-button" @click="reedit" style="margin-left: 41ch;">Reedit</button>
+                    <button class="re-button" @click="reedit" style="margin-left: 18vw;">Reedit</button>
                 </div>
             </div>
         </div>
@@ -416,14 +415,13 @@ export default {
 
 .canvas-wrapper {
     display: flex;
-    align-items: center;
+    justify-content: space-between; /* This will maximize the space between the two containers and the container's boundaries */
     margin-bottom: 5px;
-    /* space below the canvas-wrapper */
 }
 
 .canvas-container {
-    width: 512px;
-    height: 512px;
+    width: 26.67vw;
+    height: 26.67vw;
     border: 2px solid purple;
     /* purple border */
     overflow: hidden;
@@ -436,8 +434,8 @@ export default {
 }
 
 .res-canvas-container {
-    width: 728px;
-    height: 728px;
+    width: 32vw;
+    height: 32vw;
     border: 2px solid rgb(52, 92, 132);
     /* purple border */
     overflow: hidden;
