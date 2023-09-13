@@ -3,53 +3,54 @@
         <div>
             <nav-bar page="generate" :closePanel="closePanel" />
             <div class="container min-w-screen" style="margin-top: 8ch;">
-                <div class="intro-line">
-                    <div style="margin-right: 13vw;">Original image</div> <div>Edit area</div>
-                </div>
                 <div class="canvas-wrapper flex">
-                    <div class="canvas-container flex items-center justify-center flex-col">
-                        <div v-if="image === null" class="upload area">
-                            <el-upload action="" :on-success="handleSuccess" :on-change="handlechange"
-                                :before-upload="beforeUpload" name="rawfile">
-                                <div>
-                                    <el-icon :size="50">
-                                        <Picture />
-                                    </el-icon>
-                                </div>
-                                <div>
-                                    <p class="edit header">Upload Image</p>
-                                </div>
-                                <p class="edit content">Drag and drop file here or upload here</p>
-                                <div class="text-xl" style="margin-bottom: 1ch;">（上傳尺寸需小於1024x1024）</div>
-                            </el-upload>
+                    <div class="flex items-center justify-center flex-col">
+                        <div style="font-size: 2em; font-weight: bold;">Original image</div>
+                        <div class="canvas-container flex items-center justify-center flex-col">
+                            <div v-if="image === null" class="upload area">
+                                <el-upload action="" :on-success="handleSuccess" :on-change="handlechange"
+                                    :before-upload="beforeUpload" name="rawfile">
+                                    <div>
+                                        <el-icon :size="50">
+                                            <Picture />
+                                        </el-icon>
+                                    </div>
+                                    <div>
+                                        <p class="edit header">Upload Image</p>
+                                    </div>
+                                    <p class="edit content">Drag and drop file here or upload here</p>
+                                    <div class="text-xl" style="margin-bottom: 1ch;">（上傳尺寸需小於1024x1024）</div>
+                                </el-upload>
+                            </div>
+                            <canvas v-if="image" ref="canvas" @mousedown="drawPoint" @contextmenu.prevent></canvas>
                         </div>
-                        <canvas v-if="image" ref="canvas" @mousedown="drawPoint" @contextmenu.prevent></canvas>
+                        <button class="re-button" @click="reupload">Reupload</button>
                     </div>
-                    <div class="canvas-container empty flex items-center justify-center flex-col">
-                        <canvas v-if="blendurl" ref="blendCanvas"></canvas>
-                        <div v-if="blendurl === null" class="flex items-center justify-center flex-col">
-                            <el-icon :size="50">
-                                <Avatar />
-                            </el-icon>
-                            <p class="edit header">Edit Area</p>
-                            <p class="edit content">Click to edit areas in the original image that do not require any
-                                changes
-                            </p>
-                            <el-button class="edit-button" @click="edit_switch" :icon="EditPen">Edit</el-button>
-                            <div v-if="edit">
-                                <EditImg ref="editRef" :username="username" :filename="filename"
-                                    @blend-url="handleblendUrl" />
+                    <div class="flex items-center justify-center flex-col">
+                        <div style="font-size: 2em; font-weight: bold;">Edit area</div>
+                        <div class="canvas-container empty flex items-center justify-center flex-col">
+                            <canvas v-if="blendurl" ref="blendCanvas"></canvas>
+                            <div v-if="blendurl === null" class="flex items-center justify-center flex-col">
+                                <el-icon :size="50">
+                                    <Avatar />
+                                </el-icon>
+                                <p class="edit header">Edit Area</p>
+                                <p class="edit content">Click to edit areas in the original image that do not require any
+                                    changes
+                                </p>
+                                <el-button class="edit-button" @click="edit_switch" :icon="EditPen">Edit</el-button>
+                                <div v-if="edit">
+                                    <EditImg ref="editRef" :username="username" :filename="filename"
+                                        @blend-url="handleblendUrl" />
+                                </div>
                             </div>
                         </div>
+                        <button class="re-button" @click="reedit" >Reedit</button>
                     </div>
-                </div>
-                <div class="button-line">
-                    <button class="re-button" @click="reupload">Reupload</button>
-                    <button class="re-button" @click="reedit" style="margin-left: 18vw;">Reedit</button>
                 </div>
             </div>
         </div>
-        <div class="model container min-w-screen" style="margin-top: 5ch;">
+        <div class="model container min-w-screen" style="margin-top: 1vw;">
             <h2 style="font-size: 2em; margin-bottom: 1ch;">Model Selection</h2>
             <el-cascader placeholder="Gender Selection" :options="options" @change="handleChange" />
             <div v-if="gender === 0" class="selection-wrapper" style="margin-top: 3ch;">
@@ -390,20 +391,12 @@ export default {
 <style scoped>
 .container {
     display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    /* vertically align the container */
     flex-direction: column;
-    width: 60%;
-    /* or whatever width you prefer */
-    margin-left: 410px;
+    width: 80%;
+    margin-left: 10%;
     /* horizontally center the container */
-}
-
-.intro-line div {
-    display: inline-block;
-    font-size: 2em;
-    font-weight: bold;
+    align-items: center;
+    /* justify-content: center; */
 }
 
 :deep(.el-upload.el-upload--text) {
@@ -487,16 +480,6 @@ canvas {
     outline: none;
     transition: background-color 0.3s, transform 0.3s;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-
-.button-line {
-    display: flex;
-    justify-content: center;
-    /* Horizontally center the buttons */
-    gap: 10px;
-    /* Add a gap between the buttons */
-    margin-top: 5px;
 }
 
 .re-button {
