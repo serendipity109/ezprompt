@@ -444,9 +444,9 @@ canvas {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 508px;
+    width: 98%;
     /* reduce by 2px * 2 due to border */
-    height: 508px;
+    height: 98%;
     /* reduce by 2px * 2 due to border */
 }
 
