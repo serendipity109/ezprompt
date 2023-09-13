@@ -104,10 +104,8 @@ export default {
             pointCount: 0,
             points: [],
         });
-        let img = ref(null);
         const filename = ref(null);
         const image = ref(null);
-        const mask = ref(null);
         const image_url = ref(null);
         const mask_url = ref(null);
         const blendurl = ref(null);
@@ -120,7 +118,6 @@ export default {
         const md1_urls = ref(["http://192.168.3.16:9527/media/mock/1_a.png", "http://192.168.3.16:9527/media/mock/1_b.png", "http://192.168.3.16:9527/media/mock/1_c.png", "http://192.168.3.16:9527/media/mock/1_d.png"])
         const locations = ref(["beach", "street", "cafe"]);
         const loc_urls = ref(["https://ai-global-image.weshop.com/ad30c49b-0c28-458b-be06-4b1f73a10965.png_256x256.jpeg", "https://ai-global-image.weshop.com/20c29716-f083-41f1-8c26-db9df6f37135.png_256x256.jpeg", "https://ai-global-image.weshop.com/64207f3d-c144-4197-88b1-df6843359394.png_256x256.jpeg"]);
-        const checkedIndices = ref([]);
         const loading = ref(false);
         const msk_type = ref(0);
         const gender = ref("0");
@@ -186,7 +183,6 @@ export default {
                 }
             }
             reader.readAsDataURL(file.raw);
-            checkedIndices.value = [];
         };
 
         const handleSuccess = (response) => {
@@ -240,6 +236,7 @@ export default {
 
         const reupload = () => {
             image.value = null
+            redit();
         };
 
         const redit = () => {
@@ -266,8 +263,8 @@ export default {
         });
 
         const generate = async () => {
-            if (checkedIndices.value.length === 0) {
-                ElMessage.error("Please select mask.")
+            if (blendurl.value === null) {
+                ElMessage.error("Please create mask.")
                 return
             }
             loading.value = true;
@@ -292,8 +289,7 @@ export default {
             socket.value.onopen = () => {
                 message = {
                     "user_id": username.value,
-                    "image": img,
-                    "mask": mask.value,
+                    "image": filename.value,
                     "prompt": `best quality, masterpiece, (photorealistic:1.4), depth of field, ${LOC.value}`,
                     "nprompt": "(worst quality:2), (low quality:2), (normal quality:2), lowres,watermark, monochrome",
                     "model": extractedLora.value
@@ -363,7 +359,6 @@ export default {
             redit,
             handleblendUrl,
             showViewer,
-            checkedIndices,
             radio_m,
             radio_l,
             extractedLora,

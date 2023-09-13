@@ -40,6 +40,8 @@ export default {
         const baseImageUrl = computed(() => {
             return `http://192.168.3.20:9527/media/${props.username}/input/${filename.value}`;
         });
+        const baseImg = new Image();
+        baseImg.crossOrigin = 'anonymous';
 
         let selectedMaskImg = new Image(); 
 
@@ -145,10 +147,6 @@ export default {
         const selectedMaskImgUrl = computed(() => {
             return `http://192.168.3.20:9527/sam/media/${props.username}/selected_mask`;
         });
-
-        const baseImg = new Image();
-        baseImg.crossOrigin = 'anonymous';
-        baseImg.src = baseImageUrl;
 
         const handleMouseMove = (event) => {
             const rect = canvasRef.value.getBoundingClientRect();
