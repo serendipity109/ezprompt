@@ -3,9 +3,13 @@
         <div>
             <nav-bar page="generate" :closePanel="closePanel" />
             <div class="container min-w-screen" style="margin-top: 8ch;">
+                <div class="intro-line">
+                    <div style="margin-left: 9ch;">Original image</div>
+                    <div style="margin-left: 17.5ch;">Edit area</div>
+                </div>
                 <div class="canvas-wrapper">
                     <div class="canvas-container flex items-center justify-center flex-col">
-                        <div v-if="image === null" class="upload area  flex items-center justify-center flex-col">
+                        <div v-if="image === null" class="upload area">
                             <el-upload action="" :on-success="handleSuccess" :on-change="handlechange"
                                 :before-upload="beforeUpload" name="rawfile">
                                 <div>
@@ -16,9 +20,9 @@
                                 <div>
                                     <p class="edit header">Upload Image</p>
                                 </div>
+                                <p class="edit content">Drag and drop file here or upload here</p>
+                                <div class="text-xl" style="margin-bottom: 1ch;">（上傳尺寸需小於1024x1024）</div>
                             </el-upload>
-                            <p class="edit content">Drag and drop file here or upload here</p>
-                            <div class="text-xl" style="margin-bottom: 1ch;">（上傳尺寸需小於1024x1024）</div>
                         </div>
                         <canvas v-if="image" ref="canvas" @mousedown="drawPoint" @contextmenu.prevent></canvas>
                     </div>
@@ -29,18 +33,20 @@
                                 <Avatar />
                             </el-icon>
                             <p class="edit header">Edit Area</p>
-                            <p class="edit content">Click to edit areas in the original image that do not require any changes
+                            <p class="edit content">Click to edit areas in the original image that do not require any
+                                changes
                             </p>
                             <el-button class="edit-button" @click="edit_switch" :icon="EditPen">Edit</el-button>
                             <div v-if="edit">
-                                <EditImg ref="editRef" :username="username" :filename="filename" @blend-url="handleblendUrl" />
+                                <EditImg ref="editRef" :username="username" :filename="filename"
+                                    @blend-url="handleblendUrl" />
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="button-line">
                     <button class="re-button" @click="reupload">Reupload</button>
-                    <button class="re-button" @click="redit" style="margin-left: 41ch;">Redit</button>
+                    <button class="re-button" @click="reedit" style="margin-left: 41ch;">Reedit</button>
                 </div>
             </div>
         </div>
@@ -216,7 +222,10 @@ export default {
         const edit = ref(false);
         const editRef = ref(null);
         const edit_switch = () => {
-            console.log(edit.value);
+            if (image.value === null) {
+                ElMessage.error("Please upload image.")
+                return
+            }
             edit.value = true;
             if (editRef.value) {
                 editRef.value.dialog_switch(filename);
@@ -236,10 +245,10 @@ export default {
 
         const reupload = () => {
             image.value = null
-            redit();
+            reedit();
         };
 
-        const redit = () => {
+        const reedit = () => {
             blendurl.value = null;
             edit.value = false;
         };
@@ -356,7 +365,7 @@ export default {
             handleSuccess,
             beforeUpload,
             reupload,
-            redit,
+            reedit,
             handleblendUrl,
             showViewer,
             radio_m,
@@ -385,6 +394,19 @@ export default {
     /* or whatever width you prefer */
     margin-left: 410px;
     /* horizontally center the container */
+}
+
+.intro-line div {
+    display: inline-block;
+    font-size: 2em;
+    font-weight: bold;
+}
+
+:deep(.el-upload.el-upload--text) {
+    display: flex; /* Required to make the element a flex container */
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
 }
 
 .canvas-wrapper {
@@ -450,7 +472,7 @@ canvas {
 }
 
 .edit-button {
-    margin-top: 50px;
+    margin-top: 10px;
     background-color: #141515;
     border: none;
     border-radius: 25px;
@@ -503,14 +525,14 @@ canvas {
 
 .gen-button {
     margin-top: 5px;
-    background-color: #bac04b;
+    background-color: #111110;
     border: none;
     border-radius: 25px;
     color: #ffffff;
     cursor: pointer;
     font-size: 28px;
     /* Increase from 16px to 32px */
-    padding: 17px 36px;
+    padding: 15px 33px;
     /* Increase from 10px 20px to 20px 40px */
     outline: none;
     transition: background-color 0.3s, transform 0.3s;
@@ -529,16 +551,16 @@ canvas {
     box-shadow: 0 0 0 2px #7d863d;
 }
 
-.el-radio__input.is-checked+.el-radio__label {
-    color: #277b56;
+:deep(.el-radio__input.is-checked+.el-radio__label) {
+    color: #141515;
 }
 
-.el-radio__input.is-checked .el-radio__inner {
-    border-color: #69726e;
-    background: #69726e5c;
+:deep(.el-radio__input.is-checked .el-radio__inner) {
+    border-color: #353535;
+    background: #0a0b0b5c;
 }
 
-.el-radio.el-radio--large .el-radio__label {
+:deep(.el-radio.el-radio--large .el-radio__label) {
     font-size: 18px;
 }
 
