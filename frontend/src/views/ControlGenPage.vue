@@ -4,8 +4,8 @@
             <nav-bar page="generate" :closePanel="closePanel" />
             <div class="container min-w-screen" style="margin-top: 8ch;">
                 <div class="intro-line">
-                    <div style="margin-left: 9ch;">Original image</div>
-                    <div style="margin-left: 17.5ch;">Edit area</div>
+                    <div style="margin-left: 8ch;">Original image</div>
+                    <div style="margin-left: 18.5ch;">Edit area</div>
                 </div>
                 <div class="canvas-wrapper">
                     <div class="canvas-container flex items-center justify-center flex-col">
@@ -87,7 +87,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, nextTick } from 'vue';
 import { api as viewerApi } from 'v-viewer'
 import axios from "axios";
 import { ElMessage } from 'element-plus'
@@ -227,9 +227,11 @@ export default {
                 return
             }
             edit.value = true;
-            if (editRef.value) {
-                editRef.value.dialog_switch(filename);
-            }
+            nextTick(() => {
+                if (editRef.value) {
+                    editRef.value.dialog_switch(filename);
+                }
+            });
         };
 
         const handleblendUrl = (url) => {
@@ -240,7 +242,6 @@ export default {
             };
             blendImage.src = url;
             edit.value = false;
-            console.log(edit.value);
         };
 
         const reupload = () => {

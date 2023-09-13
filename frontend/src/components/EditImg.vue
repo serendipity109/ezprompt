@@ -121,7 +121,6 @@ export default {
                         img: filename.value
                     }
                 });
-                console.log(response.data);
                 sendUrl(response.data.data);
                 dialog.value = !dialog.value;
             } catch (error) {

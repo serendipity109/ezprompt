@@ -188,7 +188,7 @@ export default defineComponent({
             if (sessionUser) {
                 const parsedUser = JSON.parse(sessionUser);
                 user_id.value = parsedUser.user;
-                console.log(username.value);
+                // console.log(username.value);
             }
         });
 
