@@ -1,6 +1,6 @@
 <template>
   <div>
-    <nav-bar page="home" :closePanel="closePanel"/>
+    <nav-bar page="home" :closePanel="closePanel" />
     <div
       class="min-h-screen absolute top-0 bottom-0 left-0 right-0 overflow-x-hidden flex flex-col bg-zinc-800 text-gray-100 text-sm">
       <div class="mb-[56px] sm:mb-0 sm:mt-[56px]">
@@ -361,13 +361,13 @@ export default defineComponent({
 
     onMounted(async () => {
       const sessionUser = sessionStorage.getItem('vuex'); // 'vuex' 是默认的键名
-          if (sessionUser) {
-              const parsedUser = JSON.parse(sessionUser);
-              token.value = parsedUser.token;
-              user_id.value = parsedUser.user;
-              email.value = parsedUser.email;
-              auth.value = parsedUser.auth;
-          }
+      if (sessionUser) {
+        const parsedUser = JSON.parse(sessionUser);
+        token.value = parsedUser.token;
+        user_id.value = parsedUser.user;
+        email.value = parsedUser.email;
+        auth.value = parsedUser.auth;
+      }
       if (create_account_token) {
         const user_res = await axios.post(`http://${process.env.VUE_APP_BACKEND_IP}/user/decode?token=${create_account_token}`)
         const user = user_res.data.user_id
@@ -454,28 +454,30 @@ export default defineComponent({
   height: auto;
 }
 
-.parent :deep(.el-progress-bar__innerText) {
+:deep(.el-progress-bar__innerText) {
   color: #000;
 }
 
-.parent :deep(.el-progress--line) {
+:deep(.el-progress--line) {
   width: 500px;
   margin: 0 auto;
   display: off;
 }
 
-.parent :deep(.el-radio__input.is-checked .el-radio__inner) {
+:deep(.el-radio__input.is-checked .el-radio__inner) {
   border-color: #a153e6;
   background: #a153e6;
 }
 
-.parent :deep(.el-radio__input.is-checked+.el-radio__label) {
+:deep(.el-radio__input.is-checked+.el-radio__label) {
   color: #a153e6;
 }
 
-.parent :deep(.el-radio__inner) {
+:deep(.el-radio__inner) {
   background-color: #ffffff12;
-}.parent :deep(.el-radio__label) {
+}
+
+:deep(.el-radio__label) {
   color: #ffffff6e;
 }
 
