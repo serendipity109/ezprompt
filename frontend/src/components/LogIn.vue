@@ -85,7 +85,7 @@
                     </button>
                 </form>
                 <div class="flex flex-1 w-64 text-m text-slate-50 justify-center items-center mt-2 mb-2">
-                    Already have an account? Log in
+                    Already have an account?<button @click="gotologin" class="text-purple-400 ml-2">Log in</button>
                 </div>
                 <div class="flex flex-1 w-64 text-s text-slate-50 justify-center items-center mb-4">
                     <div class="bar"></div>
@@ -132,6 +132,10 @@ export default defineComponent({
         const closeModal = () => {
             context.emit('login-click');
         }
+
+        const gotologin = () => {
+            page.value = 1;
+        };
 
         const gotoCreate = () => {
             page.value = 3;
@@ -184,6 +188,7 @@ export default defineComponent({
         return {
             store,
             page,
+            gotologin,
             gotoCreate,
             closeModal,
             username,
