@@ -101,6 +101,7 @@ export default defineComponent({
 
 
         const chunkArray = (array, size) => {
+            if (!array) return [];
             const chunkedArray = [];
             for (let i = 0; i < array.length; i += size) {
                 chunkedArray.push(array.slice(i, i + size));

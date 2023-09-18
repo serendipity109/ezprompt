@@ -120,8 +120,8 @@ export default {
         const resCanvas = ref(null);
         const img_res = ref([]);
         const models = ref(["A", "B", "C", "D"]);
-        const md0_urls = ref(["http://192.168.3.16:9527/media/mock/0_a.png", "http://192.168.3.16:9527/media/mock/0_b.png", "http://192.168.3.16:9527/media/mock/0_c.png", "http://192.168.3.16:9527/media/mock/0_d.png"])
-        const md1_urls = ref(["http://192.168.3.16:9527/media/mock/1_a.png", "http://192.168.3.16:9527/media/mock/1_b.png", "http://192.168.3.16:9527/media/mock/1_c.png", "http://192.168.3.16:9527/media/mock/1_d.png"])
+        const md0_urls = ref([`http://${process.env.VUE_APP_BACKEND_IP}/media/mock/0_a.png`, `http://${process.env.VUE_APP_BACKEND_IP}/media/mock/0_b.png`, `http://${process.env.VUE_APP_BACKEND_IP}/media/mock/0_c.png`, `http://${process.env.VUE_APP_BACKEND_IP}/media/mock/0_d.png`])
+        const md1_urls = ref([`http://${process.env.VUE_APP_BACKEND_IP}/media/mock/1_a.png`, `http://${process.env.VUE_APP_BACKEND_IP}/media/mock/1_b.png`, `http://${process.env.VUE_APP_BACKEND_IP}/media/mock/1_c.png`, `http://${process.env.VUE_APP_BACKEND_IP}/media/mock/1_d.png`])
         const locations = ref(["beach", "street", "cafe"]);
         const loc_urls = ref(["https://ai-global-image.weshop.com/ad30c49b-0c28-458b-be06-4b1f73a10965.png_256x256.jpeg", "https://ai-global-image.weshop.com/20c29716-f083-41f1-8c26-db9df6f37135.png_256x256.jpeg", "https://ai-global-image.weshop.com/64207f3d-c144-4197-88b1-df6843359394.png_256x256.jpeg"]);
         const loading = ref(false);

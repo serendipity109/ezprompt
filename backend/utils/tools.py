@@ -4,25 +4,140 @@ from opencc import OpenCC
 import random
 import string
 import logging
-import httpx
 import requests
 from PIL import Image
 import json
 import pickle
 from json import JSONDecodeError
 
+from utils.gpt import translator
 from utils.mj_styles import apply_style
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-IP = os.environ.get("IP")
-BACKEND_IP = f"{IP}:9527"
-
+URL = os.environ.get("url", "https://tti-dev.emotibot.com/")
 
 with open("utils/midjourney-banned-prompt.pickle", "rb") as f:
     banned_words = pickle.load(f)
     f.close()
+
+
+async def imagine_preprocessor(websocket):
+    try:
+        data = await schema_validator(websocket)
+        user_id = data["user_id"]
+        prompt = await translator(data["prompt"])
+        prompt = await prompt_censorer(prompt)
+        if "nprompt" in data.keys():
+            nprompt = data["nprompt"]
+            nprompt = await translator(nprompt)
+        else:
+            nprompt = ""
+        if "preset" in data.keys():
+            prompt = await style_parser(prompt, nprompt, data["preset"])
+        if "size" in data.keys():
+            size = data["size"]
+            prompt += f" --ar {size} "
+        else:
+            size = "1:1"
+        if "mode" in data.keys():
+            mode = data["mode"]
+            if mode:
+                prompt += f" --{mode}"
+        else:
+            mode = "fast"
+        if "iw" in data.keys():
+            iw = data["iw"]
+            prompt += f" --iw {iw}"
+        url = ""
+        if "image_urls" in data.keys():
+            data["image_url"] = data["image_urls"]
+        if "image_url" in data.keys():
+            url = data["image_url"]
+            prompt = url + " " + prompt
+        payload = {
+            "prompt": prompt,
+            "user_id": user_id,
+            "image_url": url,
+            "size": size,
+            "mode": mode,
+        }
+    except Exception as e:
+        msg = {"code": 404, "message": "URL download error.", "data": str(e)}
+        if websocket:
+            await websocket.send_text(json.dumps(msg))
+        logger.exception(e)
+        raise Exception(e)
+    logger.info(f"prompt: {prompt}")
+    folder = f"/workspace/output/{user_id}"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    return payload
+
+
+async def zoom_preprocessor(websocket):
+    try:
+        data = await schema_validator(websocket)
+        user_id = data["user_id"]
+        prompt = await translator(data["prompt"])
+        prompt = await prompt_censorer(prompt)
+        if "nprompt" in data.keys():
+            nprompt = data["nprompt"]
+            nprompt = await translator(nprompt)
+        else:
+            nprompt = ""
+        if "preset" in data.keys():
+            prompt = await style_parser(prompt, nprompt, data["preset"])
+        if "size" in data.keys():
+            size = data["size"]
+        else:
+            size = "1:1"
+    except Exception as e:
+        logger.exception(e)
+        raise Exception(e)
+    logger.info(f"prompt: {prompt}")
+    folder = f"/workspace/output/{user_id}"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    payload = {
+        "customId": data["customId"],
+        "taskId": data["taskId"],
+        "prompt": prompt,
+        "ar": size,
+        "zoom": data["zoom"],
+    }
+    return user_id, payload
+
+
+async def inpaint_preprocessor(websocket):
+    try:
+        data = await schema_validator(websocket)
+        user_id = data["user_id"]
+        prompt = await translator(data["prompt"])
+        prompt = await prompt_censorer(prompt)
+        if "nprompt" in data.keys():
+            nprompt = data["nprompt"]
+            nprompt = await translator(nprompt)
+        else:
+            nprompt = ""
+        if "preset" in data.keys():
+            prompt = await style_parser(prompt, nprompt, data["preset"])
+    except Exception as e:
+        logger.exception(e)
+        raise Exception(e)
+    logger.info(f"prompt: {prompt}")
+    folder = f"/workspace/output/{user_id}"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    payload = {
+        "customId": data["customId"],
+        "taskId": data["taskId"],
+        "prompt": prompt,
+        "mask": data["mask"],
+    }
+    return user_id, payload
 
 
 async def schema_validator(websocket):
@@ -30,48 +145,31 @@ async def schema_validator(websocket):
         data = await websocket.receive_json()
         logger.info(json.dumps(data))
     except JSONDecodeError as e:
-        msg = {"code": 400, "message": "Invalid message format!", "result": ""}
+        msg = {"code": 404, "message": "Invalid message format!", "result": ""}
         await websocket.send_text(json.dumps(msg))
         raise Exception(e)
-    if "image_url" in data.keys():
-        if isinstance(data["image_url"], str) and len(data["image_url"]) > 0:
-            url = data["image_url"].replace("61.216.75.236:9528", "192.168.3.16:9527")
-            async with httpx.AsyncClient() as client:
-                res = await client.get(url)
-            if res.status_code == 404:
-                logger.error("Image url error!")
-                msg = {"code": 400, "message": "Image url error!", "result": ""}
-                await websocket.send_text(json.dumps(msg))
-                raise Exception("Image url error!")
-            else:
-                msg = {"code": 200, "message": "Image url is valid!", "result": ""}
-                await websocket.send_text(json.dumps(msg))
+    # if "image_url" in data.keys():
+    #     if isinstance(data["image_url"], str) and len(data["image_url"]) > 0:
+    #         url = data["image_url"].replace("http://20.6.72.133:8889/", "https://tti-dev.emotibot.com/")
+    #         async with httpx.AsyncClient() as client:
+    #             res = await client.get(url)
+    #         if res.status_code == 404:
+    #             logger.info("Image url error!")
+    #             msg = {"code": 404, "message": "Image url error!", "result": ""}
+    #             await websocket.send_text(json.dumps(msg))
+    #             raise Exception("Image url error!")
+    #         else:
+    #             msg = {"code": 200, "message": "Image url is valid!", "result": ""}
+    #             await websocket.send_text(json.dumps(msg))
     if "size" in data.keys():
         pattern = r"^[1-9]+\d*:[1-9]+\d*$"
         size = data["size"]
         if isinstance(size, str) and re.match(pattern, size):
             pass
         else:
-            msg = {"code": 400, "message": "Invalid size format!", "result": ""}
+            msg = {"code": 404, "message": "Invalid size format!", "result": ""}
             await websocket.send_text(json.dumps(msg))
             raise Exception("Size format error!")
-    if "mode" in data.keys():
-        mode = data["mode"]
-        match mode:
-            case "turbo":
-                pass
-            case "fast":
-                pass
-            case "relax":
-                pass
-            case _:
-                msg = {
-                    "code": 400,
-                    "message": f"Mode {mode} is not valid!",
-                    "result": "",
-                }
-                await websocket.send_text(json.dumps(msg))
-                raise Exception(f"Mode {mode} is not valid!")
     return data
 
 
@@ -91,15 +189,26 @@ async def prompt_censorer(prompt):
     for pmt in prompt_list:
         if pmt not in banned_words:
             new_prompt_list.append(pmt)
-    return " ".join(new_prompt_list)
+    prompt = " ".join(new_prompt_list)
+    matches = re.findall(r"(--[\w\s\d]+)", prompt)
+    for match in matches:
+        prompt = prompt.replace(match, "")
+    prompt = (
+        prompt.replace("-", ",")
+        .replace("--", ",")
+        .replace("\uff04750", "")
+        .replace("$", "")
+    )
+    return prompt
 
 
 async def download_image(user_id, url):
     response = requests.get(url)
+    logger.info(url)
     file_name = os.path.basename(url)
-    file_name = file_name.split("_")[1] + ".png"
+    file_name = file_name.split("_")[-1]
     file_path = f"/workspace/output/{user_id}/{file_name}"
-    file_prefix = file_path.replace(".png", "")
+    file_prefix = file_path.split(".")[0]
     with open(file_path, "wb") as f:
         f.write(response.content)
     top_left, top_right, bottom_left, bottom_right = await split_image(file_path)
@@ -117,10 +226,7 @@ async def download_image(user_id, url):
         file_prefix + "_3.png",
         file_prefix + "_4.png",
     ]
-    return [
-        path.replace("/workspace/output/", f"http://{BACKEND_IP}/dcmj/media/")
-        for path in image_list
-    ]
+    return [path.replace("/workspace/output/", "dcmj/media/") for path in image_list]
 
 
 async def split_image(image_file):
@@ -139,12 +245,7 @@ async def split_image(image_file):
         return top_left, top_right, bottom_left, bottom_right
 
 
-async def make_user_folder(user_id):
-    folder = f"/workspace/output/{user_id}"
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-
-
 async def generate_random_id(n=10):
-    chars = string.ascii_letters + string.digits
-    return "".join(random.choice(chars) for _ in range(n))
+    letters_and_digits = string.digits
+    random_id = "".join(random.choice(letters_and_digits) for _ in range(n))
+    return random_id

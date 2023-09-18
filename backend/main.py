@@ -30,7 +30,7 @@ class BlockIPMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.max_404 = max_404
         self.ip_404_counter = defaultdict(int)
-        self.allowed_ips = {"192.168.3.16", "127.0.0.1"}  # 将其他允许的 IP 地址添加到这里
+        self.allowed_ips = {IP, "127.0.0.1"}  # 将其他允许的 IP 地址添加到这里
 
     async def dispatch(self, request: Request, call_next):
         client_ip = request.client.host
@@ -115,7 +115,7 @@ async def get_images():
         res.append(
             {
                 "img": img,
-                "url": f"http://192.168.3.16:9527/media/mock/{img}.jpg",
+                "url": f"http://{BACKEND_IP}/media/mock/{img}.jpg",
                 "view1": view1,
                 "view2": view2,
             }
@@ -183,14 +183,14 @@ def delete_old_files(folder_path: str, max_age: timedelta):
     crud.delete_expires()
 
 
-@app.on_event("startup")
-async def start_scheduler():
-    delete_old_files(FOLDER_PATH, DELETE_INTERVAL)
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(
-        delete_old_files, "interval", days=1, args=[FOLDER_PATH, DELETE_INTERVAL]
-    )
-    scheduler.start()
+# @app.on_event("startup")
+# async def start_scheduler():
+#     delete_old_files(FOLDER_PATH, DELETE_INTERVAL)
+#     scheduler = AsyncIOScheduler()
+#     scheduler.add_job(
+#         delete_old_files, "interval", days=1, args=[FOLDER_PATH, DELETE_INTERVAL]
+#     )
+#     scheduler.start()
 
 
 app.include_router(api_router)

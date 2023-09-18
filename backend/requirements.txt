@@ -1,6 +1,7 @@
 apscheduler
 cryptography
 fastapi
+gradio==3.32.0
 httpx
 minio
 openai
