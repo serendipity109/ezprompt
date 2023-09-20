@@ -1,3 +1,4 @@
+import os
 import time
 import json
 import logging
@@ -14,14 +15,16 @@ logger = logging.getLogger(__name__)
 
 crud = IntegratedCRUD()
 monitor = SQLAlchemyMon()
+IP = os.environ.get("IP")
+BACKEND_IP = f"{IP}:9527"
 
 
 async def imagine_worker(websocket, start, job_id):
     payload = await imagine_preprocessor(websocket)
     res = await job_handler(websocket, "imagine", payload, job_id)
     taskid, url, buttons = res["task_id"], res["imageUrl"], res["buttons"]
-    image_list = await download_image(user_id="fw-adam", url=url)
-    image_list = [f"http://192.168.2.16:9527/{url}" for url in image_list]
+    image_list = await download_image(user_id=payload["user_id"], url=url)
+    image_list = [f"http://{BACKEND_IP}/{url}" for url in image_list]
     image_list.insert(0, image_list[0].replace("_1.png", ".png"))
     elapsed_time = time.time() - start
     return_msg = {

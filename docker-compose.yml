@@ -26,7 +26,7 @@ services:
       - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
       - MYSQL_URI=mysql+pymysql://root:password@mysql:3306
       - MYSQL_DATABASE=ezprompt
-      - IP=192.168.2.16
+      - IP=192.168.3.16
       - proxy=20.6.72.133:8080
       - mj-api-secret=Biscuit007
     ports:

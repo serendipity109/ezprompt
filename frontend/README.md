@@ -1,34 +1,26 @@
 # frontend
 
-## Project setup
+## 安裝環境
+### 先安裝 nvm, node, npm
+node 版本為 v14.21.3 
 ```
-yarn install
+sudo apt-get update
+sudo apt-get install build-essential libssl-dev
+curl https://raw.githubusercontent.com/creationix/nvm/v0.39.5/install.sh | bash
+source ~/.profile
+nvm install v14.21.3 
 ```
-
-### Compiles and hot-reloads for development
+### 再安裝用到的node_modules
 ```
-yarn serve
-```
-
-### Compiles and minifies for production
-```
-yarn build
-```
-
-### Lints and fixes files
-```
-yarn lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
-
-### 測試
-```
-nvm use 14
-npm ci
-npm install --save-dev @vue/vue3-jest@27
-vue add unit-jest
 npm install
+npm ci
+```
+## 本地啟動
+```
+npm run serve
+```
+
+## unit測試
+```
 npm run test:unit
 ```
