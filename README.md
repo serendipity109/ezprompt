@@ -31,14 +31,3 @@ pytest tests/test_unit.py
 4. 即可去首頁生成圖片。
 ### 管理API
 可以上 http://localhost:9527/docs#/ 管理後端API
-## k8s應用部屬
-1. [安裝kubectl](https://kubernetes.io/zh-cn/docs/tasks/tools/install-kubectl-linux/)
-2. [安裝minikube](https://minikube.sigs.k8s.io/docs/start/)
-3. 啟動minikube
-```
-minikube start
-```
-4. 部屬k8s腳本
-```
-kubectl apply -f k8s.yaml
-```

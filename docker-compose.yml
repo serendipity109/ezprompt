@@ -76,8 +76,6 @@ services:
     ports:
       - 8087:80
     restart: always
-    volumes:
-      - ./frontend/dist:/usr/share/nginx/html
     depends_on:
       - frontend
       - backend
