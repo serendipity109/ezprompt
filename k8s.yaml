@@ -17,7 +17,7 @@ kind: Deployment
 metadata:
   name: frontend-deployment
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: frontend
@@ -28,13 +28,20 @@ spec:
     spec:
       containers:
       - name: frontend-container
-        image: harbor.emotibot.com/emotimage/ezpmt-frontend:1c571fc-20230802-1632
+        image: harbor.emotibot.com/emotimage/ezpmt-frontend:446c6c7-20230920-1124
         ports:
         - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
         volumeMounts:
         - name: frontend-volume
           mountPath: /workspace
       volumes:
       - name: frontend-volume
         hostPath:
-          path: ./frontend
+          path: /media/adamwang/hd/ezpmt/frontend

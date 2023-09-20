@@ -11,4 +11,4 @@ COPY frontend/. .
 HEALTHCHECK --start-period=10m --interval=10m --timeout=10m --retries=3 \
     CMD curl http://127.0.0.1:8080
 
-CMD ["sh", "-c", "npm run build -- --mode external && npm run serve -- --mode internal"]
+CMD ["sh", "-c", "npm run build -- --mode internal && npm run serve -- --mode internal"]

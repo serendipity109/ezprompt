@@ -68,19 +68,19 @@ services:
       TZ: UTC
       MYSQLD__wait_timeout: 86400
       MYSQLD__interactive_timeout: 86400
-  # nginx:
-  #   container_name: nginx
-  #   build:
-  #       context: ./
-  #       dockerfile: ./docker/nginx
-  #   ports:
-  #     - 8087:80
-  #   restart: always
-  #   volumes:
-  #     - ./frontend/dist:/usr/share/nginx/html
-  #   depends_on:
-  #     - frontend
-  #     - backend
-  #     - minio
-  #     - cache
-  #     - mysql
+  nginx:
+    container_name: nginx
+    build:
+        context: ./
+        dockerfile: ./docker/nginx
+    ports:
+      - 8087:80
+    restart: always
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html
+    depends_on:
+      - frontend
+      - backend
+      - minio
+      - cache
+      - mysql
