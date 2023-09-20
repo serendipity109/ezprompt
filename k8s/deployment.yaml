@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: ezpmt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ezpmt
+  template:
+    metadata:
+      labels:
+        app: ezpmt
+    spec:
+      containers:
+      - name: ezpmt-container
+        image: ezpmt_nginx:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8087
+        resources:
+          requests:
+            cpu: "1"  # 请求 1 核
+            memory: "1Gi"  # 请求 1 GB RAM
+          limits:
+            cpu: "2"  # 限制为 1 核
+            memory: "2Gi"  # 限制为 1 GB RAM
