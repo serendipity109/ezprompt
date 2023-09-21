@@ -13,7 +13,7 @@ class MinioClient:
         MINIO_SECURE = bool(strtobool(os.environ.get("MINIO_SECURE", "false")))
 
         self.client = Minio(
-            MINIO_URL,
+            endpoint=MINIO_URL,
             access_key=MINIO_ACCESS_KEY,
             secret_key=MINIO_SECRET_KEY,
             secure=MINIO_SECURE,
